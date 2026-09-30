@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>OpenCycle UI harness</title>
+<style>body{margin:0;background:#0b0d12;color:#A9B2C0;font:12px sans-serif}canvas{margin:8px;image-rendering:pixelated}</style>
+<body>
+<script type="module">
+// Screenshot harness for the Lucent UI. Serve the repo root (python3 -m http.server) and open
+// /docs/ui/harness.html. docs/ui/shoot.mjs drives it with Playwright and writes the PNGs.
+import { createDevice, SCREENS, SOFTKEYS, fontsReady, W, H } from '../../viewer/ui/screens_color.js';
+
+// representative moment (seconds) for each screen
+const SHOT_T = { ride: 2.0, hr: 1.3, climb: 9, map: 3.2, workout: 5, status: 1, lap: 1.6, summary: 3, menu: 0.9, boot: 3.4 };
+const dev = createDevice();
+
+function frame(id, t) {
+  dev.render(id, t ?? SHOT_T[id] ?? 2);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  c.getContext('2d').drawImage(dev.canvas, 0, 0);
+  return c;
+}
+function up(c, k) {
+  const o = document.createElement('canvas'); o.width = c.width * k; o.height = c.height * k;
+  const g = o.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0, o.width, o.height); return o;
+}
+// contact sheet: each screen at 2x in a device-like frame with the three front keys underneath
+function overview(ids) {
+  const k = 2, sw = W * k, sh = H * k, pad = 30, cols = 5;
+  const dw = sw + 2 * pad, dh = sh + pad + 86;
+  const rows = Math.ceil(ids.length / cols), gap = 44, m = 64, cap = 58;
+  const o = document.createElement('canvas');
+  o.width = m * 2 + cols * dw + (cols - 1) * gap; o.height = m * 2 + 96 + rows * (dh + cap) + (rows - 1) * gap;
+  const g = o.getContext('2d');
+  const bgr = g.createLinearGradient(0, 0, 0, o.height); bgr.addColorStop(0, '#1b1e24'); bgr.addColorStop(1, '#0e1014');
+  g.fillStyle = bgr; g.fillRect(0, 0, o.width, o.height);
+  g.fillStyle = '#F4F6FA'; g.font = '600 36px "Inter Display"'; g.fillText('OpenCycle — Lucent', m, m + 32);
+  g.fillStyle = '#A9B2C0'; g.font = '500 18px "Inter"'; g.fillText('240 × 320 · RGB565 · LVGL 9 · screens at 2× (nearest neighbour), quantised to RGB565', m, m + 64);
+  ids.forEach((id, i) => {
+    const x = m + (i % cols) * (dw + gap), y = m + 96 + Math.floor(i / cols) * (dh + cap + gap);
+    // device body
+    g.save(); g.shadowColor = 'rgba(0,0,0,0.5)'; g.shadowBlur = 30; g.shadowOffsetY = 10;
+    g.fillStyle = '#23262c'; g.beginPath(); g.roundRect(x, y, dw, dh, 40); g.fill(); g.restore();
+    const bb = g.createLinearGradient(0, y, 0, y + dh); bb.addColorStop(0, '#34383f'); bb.addColorStop(1, '#1d2025');
+    g.strokeStyle = bb; g.lineWidth = 2; g.beginPath(); g.roundRect(x + 1, y + 1, dw - 2, dh - 2, 39); g.stroke();
+    g.fillStyle = '#030405'; g.beginPath(); g.roundRect(x + pad - 10, y + pad - 10, sw + 20, sh + 20, 10); g.fill();
+    g.imageSmoothingEnabled = false; g.drawImage(frame(id), x + pad, y + pad, sw, sh);
+    for (let j = 0; j < 3; j++) { // the three unlabelled front keys, centred under each soft-key third
+      const cx = x + pad + (sw / 3) * (j + 0.5), ky = y + pad + sh + 32;
+      g.fillStyle = '#15171b'; g.beginPath(); g.roundRect(cx - 46, ky - 2, 92, 30, 15); g.fill();
+      const kg = g.createLinearGradient(0, ky, 0, ky + 26); kg.addColorStop(0, '#3a3f47'); kg.addColorStop(1, '#2a2e34');
+      g.fillStyle = kg; g.beginPath(); g.roundRect(cx - 44, ky, 88, 26, 13); g.fill();
+    }
+    g.fillStyle = '#F4F6FA'; g.font = '600 20px "Inter"';
+    g.fillText(id, x + 8, y + dh + 38);
+    g.fillStyle = '#6B7485'; g.font = '500 16px "Inter"'; g.textAlign = 'right';
+    g.fillText(SOFTKEYS[id].filter(Boolean).join('  ·  ') || '(no keys)', x + dw - 8, y + dh + 38); g.textAlign = 'left';
+  });
+  return o;
+}
+window.shots = async () => {
+  await fontsReady();
+  const out = {};
+  for (const { id } of SCREENS) { const c = frame(id); out[`${id}.png`] = c.toDataURL('image/png'); out[`${id}@3x.png`] = up(c, 3).toDataURL('image/png'); }
+  out['overview.png'] = overview(SCREENS.map((s) => s.id)).toDataURL('image/png');
+  return out;
+};
+window.frameAt = async (id, t, k = 3) => { await fontsReady(); return up(frame(id, t), k).toDataURL('image/png'); };
+await fontsReady();
+for (const { id } of SCREENS) document.body.appendChild(up(frame(id), 2));
+window.ready = true;
+</script>
