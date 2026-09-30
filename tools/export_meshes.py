@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT / "cad"))
 import cadquery as cq  # noqa: E402
 from model import build  # noqa: E402
 
-KEEP = ["battery", "display", "display_active_area", "lens_mask", "cover_lens", "foam_gasket", "buttons",
+KEEP = ["battery", "display", "display_active_area", "lens_mask", "cover_lens", "foam_gasket", "buttons", "front_keys", "key_primary",
         "oring", "usb_flap", "speaker", "speaker_membrane"]
 
 parts, shells = build()

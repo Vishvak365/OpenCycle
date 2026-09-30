@@ -6,7 +6,7 @@ from model import build
 ALLOWED = {
     frozenset({"oring", "std_front_bezel"}), frozenset({"oring", "aero_front_bezel"}),
     frozenset({"display", "display_active_area"}),
-    frozenset({"tact_switches", "pcb"}),
+    frozenset({"tact_switches", "pcb"}), frozenset({"front_switches", "pcb"}),
     frozenset({"lens_mask", "cover_lens"}),
     frozenset({"speaker", "speaker_membrane"}),
 }

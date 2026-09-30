@@ -35,8 +35,11 @@ def outline(inset=0.0, t=1.0, z0=0.0):
 
 CAVITY_INSET_BACK = (BODY_W - (PCB_W + 2 * CLEAR + 0.2)) / 2      # ~2.7
 LENS_W = BODY_W - 2 * LENS_INSET
-LENS_H = BODY_H - 2 * LENS_INSET
+LENS_H = BODY_H - LENS_INSET - LENS_Y0                             # lens stops above the key row
+LENS_R = CORNER_R - LENS_INSET
 BEZEL_INNER_INSET = LENS_INSET + 1.5                               # 1.5 mm ledge
+FACE_T = 1.5                                                       # bezel face thickness around the keys
+KEY_HOLE_CLEAR = 0.25
 
 PCB_HOLES = [
     (PCB_X0 + PCB_HOLE_INSET, PCB_Y0 + PCB_HOLE_INSET),
@@ -58,17 +61,14 @@ def internal_parts():
 
     # back-side modules (hang below the PCB, toward the battery)
     back_z = lambda t: PCB_Z - t
-    p["nrf52840"] = block(NRF["w"], NRF["h"], NRF["t"], 10.0, 62.0, back_z(NRF["t"]))
-    p["gnss_max_m10s"] = block(GNSS["w"], GNSS["h"], GNSS["t"], 22.0, 64.0, back_z(GNSS["t"]))
-    p["microsd"] = block(USD["w"], USD["h"], USD["t"], 33.5, 61.0, back_z(USD["t"]))
-    p["usb_c"] = rrect(USBC["w"], USBC["h"], USBC["t"], 1.4,
-                       (BODY_W - USBC["w"]) / 2, PCB_Y0 - 1.0, back_z(USBC["t"])) \
-        if False else block(USBC["w"], USBC["h"], USBC["t"],
-                            (BODY_W - USBC["w"]) / 2, PCB_Y0 - 1.0, back_z(USBC["t"]))
+    for m in (ESP, BLE, GNSS):
+        p[m["name"]] = block(m["w"], m["h"], m["t"], m["x0"], m["y0"], back_z(m["t"]))
+    p["usb_c"] = block(USBC["w"], USBC["h"], USBC["t"],
+                       (BODY_W - USBC["w"]) / 2, PCB_Y0 - 1.0, back_z(USBC["t"]))
 
     # front-side small chips under the display (<=0.9 mm tall)
-    chips = [("baro", 2, 2, 12, 20), ("imu", 3, 3, 18, 20),
-             ("charger", 2.5, 2.5, 26, 20), ("fuel_gauge", 2, 2, 32, 20)]
+    chips = [("baro", 2, 2, 12, 30), ("light", 2, 2, 18, 30),
+             ("charger", 2.5, 2.5, 26, 30), ("amp", 3, 3, 32, 30)]
     small = None
     for (_, w, h, x, y) in chips:
         c = block(w, h, 0.9, x, y, PCB_Z + PCB_T)
@@ -83,13 +83,19 @@ def internal_parts():
     for y in BTN_LEFT_Y:
         sw = sw.union(block(3.2, 6.0, 3.5, CAVITY_INSET_BACK + 0.6 + 0.3, y - 3.0, PCB_Z - 3.5))
     p["tact_switches"] = sw
+    # top-actuated switches under the three front keys
+    fsw = None
+    for x in KEY_X:
+        f = block(3.6, 3.6, KEY_SW_T, x - 1.8, KEY_Y - 1.8, PCB_Z + PCB_T)
+        fsw = f if fsw is None else fsw.union(f)
+    p["front_switches"] = fsw
 
     p["gnss_patch_antenna"] = block(ANT["w"], ANT["h"], ANT["t"],
                                     (BODY_W - ANT["w"]) / 2, ANT_Y0, PCB_Z + PCB_T)
 
     p["battery"] = rrect(BATT_W, BATT_H, BATT_T, 1.5, BATT_X0, BATT_Y0, BATT_Z)
 
-    dx0 = (BODY_W - DISP_W) / 2
+    dx0 = DISP_X0
     foam_outer = rrect(DISP_W, DISP_H, FOAM_T, 1.0, dx0, DISP_Y0, DISP_Z - FOAM_T)
     foam_inner = rrect(DISP_W - 2 * FOAM_W, DISP_H - 2 * FOAM_W, FOAM_T + 1, 0.5,
                        dx0 + FOAM_W, DISP_Y0 + FOAM_W, DISP_Z - FOAM_T - 0.5)
@@ -97,19 +103,16 @@ def internal_parts():
 
     p["display"] = rrect(DISP_W, DISP_H, DISP_T, 1.0, dx0, DISP_Y0, DISP_Z)
     # active area as a separate very thin part so the viewer can colour it
-    p["display_active_area"] = block(DISP_ACTIVE_W, DISP_ACTIVE_H, 0.05,
-                                     (BODY_W - DISP_ACTIVE_W) / 2,
-                                     DISP_Y0 + (DISP_H - DISP_ACTIVE_H) / 2,
+    aa_x0, aa_y0 = DISP_X0 + DISP_AA_DX, DISP_Y0 + DISP_AA_DY
+    p["display_active_area"] = block(DISP_ACTIVE_W, DISP_ACTIVE_H, 0.05, aa_x0, aa_y0,
                                      DISP_Z + DISP_T - 0.05)
 
-    p["cover_lens"] = rrect(LENS_W, LENS_H, LENS_T, CORNER_R - LENS_INSET,
-                            LENS_INSET, LENS_INSET, LENS_Z)
+    p["cover_lens"] = rrect(LENS_W, LENS_H, LENS_T, LENS_R, LENS_INSET, LENS_Y0, LENS_Z)
 
     # black print on the underside of the lens, open over the active area
-    mask = rrect(LENS_W, LENS_H, 0.05, CORNER_R - LENS_INSET, LENS_INSET, LENS_INSET, LENS_Z)
-    p["lens_mask"] = mask.cut(block(DISP_ACTIVE_W + 1, DISP_ACTIVE_H + 1, 1,
-                                    (BODY_W - DISP_ACTIVE_W - 1) / 2,
-                                    DISP_Y0 + (DISP_H - DISP_ACTIVE_H - 1) / 2, LENS_Z - 0.5))
+    mask = rrect(LENS_W, LENS_H, 0.05, LENS_R, LENS_INSET, LENS_Y0, LENS_Z)
+    p["lens_mask"] = mask.cut(block(DISP_ACTIVE_W + 0.6, DISP_ACTIVE_H + 0.6, 1,
+                                    aa_x0 - 0.3, aa_y0 - 0.3, LENS_Z - 0.5))
 
     # buttons (plungers through the side walls)
     btn = None
@@ -123,11 +126,22 @@ def internal_parts():
                               -BTN_PROUD, y - BTN_L / 2, BTN_Z - BTN_T / 2))
     p["buttons"] = btn
 
+    # front soft keys: a round cap with a retaining flange under the bezel face
+    def key(x):
+        base = PCB_Z + PCB_T + KEY_SW_T
+        cap = cq.Workplane("XY").circle(KEY_D / 2).extrude(BODY_D + KEY_PROUD - base).translate((x, KEY_Y, base))
+        cap = cap.faces(">Z").edges().fillet(0.6)
+        flange = cq.Workplane("XY").circle(KEY_D / 2 + 0.8).extrude(0.8).translate((x, KEY_Y, base))
+        return cap.union(flange)
+    p["front_keys"] = key(KEY_X[0]).union(key(KEY_X[1]))
+    p["key_primary"] = key(KEY_X[2])          # right key (start / pause), accent colour
+
     spk = rrect(SPK_W, SPK_H, SPK_T, 1.2, SPK_X0, SPK_Y0, SPK_Z)
     p["speaker"] = spk
     p["speaker_membrane"] = rrect(SPK_W - 2.5, SPK_H - 2.5, 0.05, 0.8, SPK_X0 + 1.25, SPK_Y0 + 1.25, SPK_Z - 0.05)
     p["oring"] = oring()
     p["usb_flap"] = rrect(13.0, 0.8, 6.0, 0.35, (BODY_W - 13) / 2, -0.8, USB_Z - 3.0)
+    p["display_ffc"] = block(DISP_FFC_W, 27.8, 0.3, DISP_FFC_X0, DISP_Y0 + 0.5, PCB_Z + PCB_T + 1.0)
     return p
 
 
@@ -199,9 +213,24 @@ def front_bezel(front_fillet=1.2):
     t = BODY_D - SPLIT_Z
     s = outline(0, t, SPLIT_Z)
     s = s.faces(">Z").edges().fillet(front_fillet)
-    s = s.cut(rrect(LENS_W + 0.2, LENS_H + 0.2, LENS_T + 1, CORNER_R - LENS_INSET + 0.1,
-                    LENS_INSET - 0.1, LENS_INSET - 0.1, LENS_Z))
-    s = s.cut(outline(BEZEL_INNER_INSET, t + 1, SPLIT_Z - 0.5))
+    # lens pocket
+    s = s.cut(rrect(LENS_W + 0.2, LENS_H + 0.2, LENS_T + 1, LENS_R + 0.1,
+                    LENS_INSET - 0.1, LENS_Y0 - 0.1, LENS_Z))
+    # window behind the lens (display, top band), leaving a 1.5 mm ledge for the lens
+    top = BODY_H - BEZEL_INNER_INSET
+    s = s.cut(rrect(BODY_W - 2 * BEZEL_INNER_INSET, top - (LENS_Y0 + 1.5), t + 1, LENS_R - 1.5,
+                    BEZEL_INNER_INSET, LENS_Y0 + 1.5, SPLIT_Z - 0.5))
+    # hollow under the key-row face so the bezel is a 1.5 mm shell there
+    lower = outline(CAVITY_INSET_BACK, t + 1, SPLIT_Z - 0.5).intersect(
+        block(BODY_W, LENS_Y0 + 1.5, BODY_D - FACE_T - SPLIT_Z + 0.5, 0, 0, SPLIT_Z - 0.5))
+    s = s.cut(lower)
+    # relief over the GPS patch: the lens ledge stays, the patch tucks under it
+    s = s.cut(block(ANT["w"] + 4, 6, LENS_Z - 0.7 - SPLIT_Z + 0.5, (BODY_W - ANT["w"] - 4) / 2,
+                    top - 2, SPLIT_Z - 0.5))
+    # key holes
+    for x in KEY_X:
+        s = s.cut(cq.Workplane("XY").circle(KEY_D / 2 + KEY_HOLE_CLEAR).extrude(4)
+                  .translate((x, KEY_Y, BODY_D - FACE_T - 1)))
     # tongue that presses the O-ring
     mid = CAVITY_INSET_BACK / 2
     tongue = outline(mid - 0.4, 0.4, SPLIT_Z - 0.4).cut(outline(mid + 0.4, 2, SPLIT_Z - 1))
