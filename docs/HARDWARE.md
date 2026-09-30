@@ -81,4 +81,5 @@ With the 1200 mAh cell: **~10–22 h**. Sleep: ESP32 deep sleep + GPS backup mod
 1. RF: the ESP32 and BL652 antennas are at the board edges with keep-outs, but the case walls and battery are close; the GPS patch ground is smaller than Taoglas's 50 × 50 mm test board. Nothing is measured yet.
 2. Battery polarity at J2 (see [`instructions/05-bring-up.md`](../instructions/05-bring-up.md)); Q2 protects the board either way.
 3. Backlight current: firmware should cap the PWM duty on a full battery if the panel gets warm.
-4. The BMP581 INT pin is tied to ground (Bosch-recommended when unused): firmware must keep `INT_CONFIG.int_en = 0`.
+4. No USB power path: the board always runs from the battery; the charger feeds cell and load in parallel and may not terminate while the device is on (see `pcb/README.md`).
+5. The BMP581 INT pin is tied to ground (Bosch-recommended when unused): firmware must keep `INT_CONFIG.int_en = 0`.

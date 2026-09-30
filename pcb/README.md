@@ -27,4 +27,5 @@ Everything is generated from `design.py` — do not hand-edit the board and then
 3. **JLCPCB rotation offsets** in `cpl_jlcpcb.csv` — JLC's preview shows each part; fix any that are rotated (common for SOT-23, QFN and connectors) in their tool before paying.
 4. **RF_IN impedance**: 0.2 mm on the 1.0 mm JLC04101H-3313 stack-up is close to 50 Ω; confirm with the JLC impedance calculator or ask for impedance control.
 5. **Backlight brightness** with 33 Ω ballasts (conservative for LED safety); drop to 22 Ω in `design.py` if the screen is too dim in sun and the panel stays cool.
-6. **Firmware**: nothing is written yet; the pin map is in `docs/HARDWARE.md`.
+6. **Charging while running:** there is no USB power path — the system always runs from VBAT and the MCP73831 charges the cell and feeds the load in parallel (the same approach as Adafruit Feather boards). While the device is on and plugged in, the charger may not terminate (it holds 4.20 V). Fine for a few hours of charging; a power-path charger (e.g. BQ24072) is the v0.3 upgrade if this matters.
+7. **Firmware**: nothing is written yet; the pin map is in `docs/HARDWARE.md`.
