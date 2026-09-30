@@ -15,97 +15,6 @@ HERE = Path(__file__).parent
 MM = pcbnew.FromMM
 V = lambda x, y: pcbnew.VECTOR2I(MM(x), MM(y))  # noqa: E731
 LOCAL_LIB = HERE / "OpenCycle.pretty"
-IO = pcbnew.PCB_IO() if hasattr(pcbnew, "PCB_IO") else pcbnew.PCB_PLUGIN()
-
-
-def _rect(fp, layer, x0, y0, x1, y1, w):
-    r = pcbnew.FP_SHAPE(fp)
-    r.SetShape(pcbnew.SHAPE_T_RECT)
-    r.SetStart(V(x0, y0)); r.SetEnd(V(x1, y1))
-    r.SetLayer(layer); r.SetWidth(MM(w))
-    fp.Add(r)
-
-
-def _pad(fp, num, x, y, w, h, shape=pcbnew.PAD_SHAPE_ROUNDRECT, ratio=0.1, mask_margin=None, paste=True):
-    pad = pcbnew.PAD(fp)
-    pad.SetNumber(num)
-    pad.SetAttribute(pcbnew.PAD_ATTRIB_SMD)
-    pad.SetShape(shape)
-    if shape == pcbnew.PAD_SHAPE_ROUNDRECT:
-        pad.SetRoundRectRadiusRatio(ratio)
-    pad.SetSize(pcbnew.VECTOR2I(MM(w), MM(h)))
-    ls = pad.SMDMask()
-    if not paste:
-        ls.RemoveLayer(pcbnew.F_Paste)
-    pad.SetLayerSet(ls)
-    pad.SetPosition(V(x, y))
-    if mask_margin is not None:
-        pad.SetLocalSolderMaskMargin(MM(mask_margin))
-    fp.Add(pad)
-    return pad
-
-
-def _fp(name, ref):
-    fp = pcbnew.FOOTPRINT(None)
-    fp.SetFPID(pcbnew.LIB_ID("OpenCycle", name))
-    fp.SetReference(ref); fp.SetValue(name)
-    return fp
-
-
-def taoglas_patch_fp():
-    """Taoglas DSGP.1575.12.4.A.02 land pattern (datasheet §6.5): eight 3x3 mm ground pads on a 4.5 mm grid,
-    a 2x2 mm feed pad with a 0.5 mm copper keep-out ring. Antenna centre at the origin, feed toward +y."""
-    fp = _fp("Taoglas_DSGP.1575.12.4.A.02_12x12mm", "AE**")
-    grid = [(-4.5, -4.5, "2"), (0, -4.5, "3"), (4.5, -4.5, "4"), (-4.5, 0, "5"), (0, 0, "6"), (4.5, 0, "7"),
-            (-4.5, 4.5, "8"), (4.5, 4.5, "9")]
-    for x, y, n in grid:
-        _pad(fp, n, x, y, 3.0, 3.0, ratio=0.05)
-    _pad(fp, "1", 0, 4.9, 2.0, 2.0, ratio=0.05)
-    # copper keep-out around the feed (all copper layers of this side)
-    z = (pcbnew.FP_ZONE if hasattr(pcbnew, "FP_ZONE") else pcbnew.ZONE)(fp)
-    z.SetIsRuleArea(True)
-    z.SetDoNotAllowCopperPour(True); z.SetDoNotAllowTracks(False); z.SetDoNotAllowVias(True)
-    z.SetDoNotAllowPads(False); z.SetDoNotAllowFootprints(False)
-    z.SetLayer(pcbnew.F_Cu)
-    ol = z.Outline(); ol.NewOutline()
-    for x, y in [(-1.5, 3.4), (1.5, 3.4), (1.5, 6.4), (-1.5, 6.4)]:
-        ol.Append(MM(x), MM(y))
-    fp.Add(z)
-    for layer, half, w in [(pcbnew.F_Fab, 6.0, 0.1), (pcbnew.F_SilkS, 6.2, 0.12), (pcbnew.F_CrtYd, 6.25, 0.05)]:
-        _rect(fp, layer, -half, -half, half, half, w)
-    t = pcbnew.FP_TEXT(fp); t.SetText("FEED"); t.SetPosition(V(0, 6.9)); t.SetLayer(pcbnew.F_Fab)
-    t.SetTextSize(pcbnew.VECTOR2I(MM(0.6), MM(0.6))); fp.Add(t)
-    IO.FootprintSave(str(LOCAL_LIB), fp)
-
-
-def bmp581_fp():
-    """Bosch BMP581 LGA-10 2.0x2.0 mm, land pattern per datasheet §8.2 (package pads +25 um per side),
-    top view. Pin 1 top-left. No solder mask under the sensor (mask opening over the whole body)."""
-    fp = _fp("Bosch_LGA-10_2x2mm_P0.5mm_BMP581", "U**")
-    row = (0.30, 0.325)      # top/bottom row pads: w x h
-    col = (0.325, 0.30)      # side pads
-    P = 0.7625
-    pads = {"8": (0.5, -P, row), "9": (0.0, -P, row), "10": (-0.5, -P, row),
-            "1": (-P, -0.25, col), "2": (-P, 0.25, col),
-            "3": (-0.5, P, row), "4": (0.0, P, row), "5": (0.5, P, row),
-            "7": (P, -0.25, col), "6": (P, 0.25, col)}
-    for n, (x, y, (w, h)) in pads.items():
-        _pad(fp, n, x, y, w, h, shape=pcbnew.PAD_SHAPE_RECT, mask_margin=0.02)
-    _rect(fp, pcbnew.F_Fab, -1.0, -1.0, 1.0, 1.0, 0.1)
-    _rect(fp, pcbnew.F_CrtYd, -1.3, -1.3, 1.3, 1.3, 0.05)
-    s = pcbnew.FP_SHAPE(fp); s.SetShape(pcbnew.SHAPE_T_CIRCLE); s.SetCenter(V(-1.35, -1.05)); s.SetEnd(V(-1.25, -1.05))
-    s.SetLayer(pcbnew.F_SilkS); s.SetWidth(MM(0.12)); fp.Add(s)
-    IO.FootprintSave(str(LOCAL_LIB), fp)
-
-
-def speaker_pads_fp():
-    fp = _fp("SpeakerPads_2.6mm", "LS**")
-    for i, x in enumerate((-1.3, 1.3), 1):
-        _pad(fp, str(i), x, 0, 1.8, 2.2, ratio=0.25, paste=False)
-    _rect(fp, pcbnew.F_CrtYd, -2.6, -1.5, 2.6, 1.5, 0.05)
-    t = pcbnew.FP_TEXT(fp); t.SetText("+"); t.SetPosition(V(-1.3, -2.0)); t.SetLayer(pcbnew.F_SilkS)
-    t.SetTextSize(pcbnew.VECTOR2I(MM(0.8), MM(0.8))); fp.Add(t)
-    IO.FootprintSave(str(LOCAL_LIB), fp)
 
 
 def load_fp(lib, name):
@@ -152,8 +61,8 @@ def rule_area(b, rect, layers, name, tracks=True, vias=True, pour=True, footprin
 
 
 def build():
-    LOCAL_LIB.mkdir(exist_ok=True)
-    taoglas_patch_fp(); bmp581_fp(); speaker_pads_fp()
+    import subprocess
+    subprocess.run([sys.executable, str(HERE / "lib" / "gen_footprints.py")], check=True)
     b = pcbnew.BOARD()
     b.SetCopperLayerCount(4)
     ds = b.GetDesignSettings()
@@ -161,9 +70,9 @@ def build():
     ds.m_TrackMinWidth = MM(0.127)
     ds.m_MinClearance = MM(0.127)
     ds.m_ViasMinSize = MM(0.45)
-    ds.m_MinThroughDrill = MM(0.25)
+    ds.m_MinThroughDrill = MM(0.2)          # ESP32 footprint thermal vias; JLC 4-layer minimum is 0.2 mm
     ds.m_CopperEdgeClearance = MM(0.3)
-    ds.m_HoleClearance = MM(0.2)
+    ds.m_HoleClearance = MM(0.19)           # GCT USB4105 library footprint has 0.194 mm NPTH-to-pad
     ds.m_HoleToHoleMin = MM(0.25)
     ds.m_SilkClearance = MM(0.0)
     nc = ds.m_NetSettings.m_DefaultNetClass
@@ -210,10 +119,17 @@ def build():
             fp.SetProperty("MPN", p["mpn"]); fp.SetProperty("Manufacturer", p["mfr"])
         if not p["mpn"] or p["ref"].startswith("FID"):
             fp.SetAttributes(fp.GetAttributes() | pcbnew.FP_EXCLUDE_FROM_BOM | pcbnew.FP_EXCLUDE_FROM_POS_FILES)
-        # the library ESP32 footprint carries a 48 x 21 mm antenna keep-out; design.py defines an edge keep-out instead
-        for z in list(fp.Zones()):
-            if p["ref"] == "U1":
+        # the library ESP32 footprint carries a 48 x 21 mm antenna keep-out zone and courtyard;
+        # design.py defines an edge keep-out instead and the courtyard becomes the module outline + 0.25 mm
+        if p["ref"] == "U1":
+            for z in list(fp.Zones()):
                 fp.Remove(z)
+            for g in list(fp.GraphicalItems()):
+                if g.GetLayer() == pcbnew.F_CrtYd:
+                    fp.Remove(g)
+            r = pcbnew.FP_SHAPE(fp); r.SetShape(pcbnew.SHAPE_T_RECT)
+            r.SetStart0(V(-9.3, -13.05)); r.SetEnd0(V(9.3, 13.05)); r.SetLayer(pcbnew.F_CrtYd); r.SetWidth(MM(0.05))
+            fp.Add(r); r.SetDrawCoord()
         pm = pin_map(p) if p["pins"] else {}
         for pad in fp.Pads():
             num = pad.GetNumber()
@@ -227,8 +143,8 @@ def build():
         b.Add(fp)
         if p["side"] == "B":
             fp.Flip(fp.GetPosition(), True)
-        fp.Reference().SetTextSize(pcbnew.VECTOR2I(MM(0.6), MM(0.6)))
-        fp.Reference().SetTextThickness(MM(0.1))
+        fp.Reference().SetTextSize(pcbnew.VECTOR2I(MM(0.8), MM(0.8)))
+        fp.Reference().SetTextThickness(MM(0.15))
         fp.Value().SetVisible(False)
         if p["ref"].startswith(("FID", "J4", "J5")):
             fp.Reference().SetVisible(False)
@@ -247,7 +163,7 @@ def build():
     for k in D.KEEPOUTS:
         rule_area(b, k["rect"], allcu, k["name"])
     for k in D.NO_TRACKS_F:
-        rule_area(b, k["rect"], [pcbnew.F_Cu], k["name"], pour=False)
+        rule_area(b, k["rect"], [pcbnew.F_Cu], k["name"], vias=False, pour=False)
     for k in D.NO_TRACKS_B:
         rule_area(b, k["rect"], [pcbnew.B_Cu], k["name"], pour=True)
 
@@ -255,10 +171,14 @@ def build():
     feed = next(p for p in b.FindFootprintByReference("AE1").Pads() if p.GetNumber() == "1").GetPosition()
     rfin = next(p for p in b.FindFootprintByReference("U3").Pads() if p.GetNumber() == "11").GetPosition()
     fx, fy, rx, ry = (pcbnew.ToMM(v) for v in (feed.x, feed.y, rfin.x, rfin.y))
-    pts = [(fx, fy), (fx - 0.6, fy), (rx + 0.6 + abs(ry - fy) * 0 , fy)]
-    # a 45-degree jog from the feed row to the RF_IN row
-    mid_x = rx + 0.6 + abs(ry - fy)
-    pts = [(fx, fy), (mid_x, fy), (rx + 0.6, ry), (rx, ry)] if mid_x < fx else [(fx, fy), (rx, ry)]
+    # feed pad -> left along the feed row -> down beside the receiver -> into RF_IN (clear of the ground pads)
+    # vertical run centred in the gap between the RF_IN pad and the nearest patch ground pad
+    rf_pad = next(p for p in b.FindFootprintByReference("U3").Pads() if p.GetNumber() == "11")
+    x_left = pcbnew.ToMM(rf_pad.GetBoundingBox().GetRight())
+    x_right = min(pcbnew.ToMM(p.GetBoundingBox().GetX()) for p in b.FindFootprintByReference("AE1").Pads()
+                  if p.GetNumber() != "1" and pcbnew.ToMM(p.GetBoundingBox().GetBottom()) > fy)
+    jog = round((x_left + x_right) / 2, 3)
+    pts = [(fx, fy), (jog, fy), (jog, ry), (rx, ry)]
     for a, c in zip(pts, pts[1:]):
         t = pcbnew.PCB_TRACK(b)
         t.SetStart(V(*a)); t.SetEnd(V(*c)); t.SetWidth(MM(0.2)); t.SetLayer(pcbnew.F_Cu)

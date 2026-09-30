@@ -109,16 +109,16 @@ part("J4", "SWD (BL652)", "Connector:Conn_ARM_SWD_TagConnect_TC2030-NL",
          "SWO": None}, "Tag-Connect pads: programs the BL652. Nothing to assemble.", "", "", 0.0)
 
 # ============================================================ GPS (front, top band, left of the patch)
-part("U3", "MAX-M10S", "RF_GPS:MAX-M10S", "RF_GPS:ublox_MAX", "F", 14.3, 9.6, 0, {
+part("U3", "MAX-M10S", "RF_GPS:MAX-M10S", "RF_GPS:ublox_MAX", "F", 14.6, 9.6, 0, {
     "GND": "GND", "TXD": "GPS_TX", "RXD": "GPS_RX", "TIMEPULSE": None, "EXTINT": "GPS_EXTINT",
     "V_BCKP": "+3V3", "VCC_IO": "+3V3", "VCC": "+3V3", "~{RESET}": "GPS_RST", "RF_IN": "RF_IN",
     "LNA_EN": None, "VCC_RF": None, "VIO_SEL": None, "SDA": None, "SCL": None, "~{SAFEBOOT}": None,
 }, "u-blox M10. Pin 15 is 'Reserved' on the MAX-M10S (KiCad names it VIO_SEL): left open.",
     "MAX-M10S-00B", "u-blox", 2.5)
-C("C6", "10uF", "F", 11.4, 16.9, 0, "+3V3")
-C("C7", "100nF", "F", 14.4, 16.9, 0, "+3V3")
+C("C6", "10uF", "F", 11.7, 16.9, 0, "+3V3")
+C("C7", "100nF", "F", 14.7, 16.9, 0, "+3V3")
 part("AE1", "DSGP.1575.12.4.A.02", "OpenCycle:DSGP.1575.12.4.A.02", "OpenCycle:Taoglas_DSGP.1575.12.4.A.02_12x12mm",
-     "F", 26.0, 9.4, -90, {"FEED": "RF_IN", "GND": "GND"},
+     "F", 26.9, 9.4, -90, {"FEED": "RF_IN", "GND": "GND"},
      "12 mm ceramic patch, feed toward the receiver. RF_IN is a short hand-placed 0.2 mm trace over the In1 ground plane.",
      "DSGP.1575.12.4.A.02", "Taoglas", 4.0)
 
@@ -156,11 +156,11 @@ R("R9", "100R", "F", 40.2, 40.6, 0, "LCD_BL", "BL_G")
 R("R10", "100k", "F", 43.4, 43.8, 90, "BL_G", "GND", "Backlight off while the ESP32 boots")
 
 # ============================================================ 3.3 V regulator (front, left, under the display)
-part("U5", "AP7361C-33E", "Regulator_Linear:AP7361C-33E", "Package_TO_SOT_SMD:SOT-223-3_TabPin2", "F", 9.2, 33.0, 0,
+part("U5", "AP7361C-33E", "Regulator_Linear:AP7361C-33E", "Package_TO_SOT_SMD:SOT-223-3_TabPin2", "F", 11.8, 33.0, 0,
      {"VI": "VBAT", "GND": "GND", "VO": "+3V3"}, "1 A LDO (ESP32 Wi-Fi peaks ~500 mA)", "AP7361C-33E-13", "Diodes", 1.8)
-C("C11", "10uF", "F", 11.0, 27.6, 0, "VBAT")
-C("C12", "22uF", "F", 6.6, 39.2, 90, "+3V3")
-C("C13", "100nF", "F", 8.8, 39.2, 90, "+3V3")
+C("C11", "10uF", "F", 10.2, 27.8, 0, "VBAT")
+C("C12", "22uF", "F", 8.4, 39.4, 90, "+3V3")
+C("C13", "100nF", "F", 10.4, 39.4, 90, "+3V3")
 
 # ============================================================ USB-C, charger, battery (back, bottom)
 part("J1", "USB4105-GF-A", "Connector:USB_C_Receptacle_USB2.0_16P",
@@ -251,9 +251,9 @@ PLANE_NETS = {"GND": "In1.Cu", "+3V3": "In2.Cu"}
 # Keep-outs (board coords). "all": no copper on any layer (antennas).
 KEEPOUTS = [
     dict(name="ESP32 antenna", rect=(42.3, 10.5, 49.5, 31.0), layers="all"),
-    dict(name="BL652 antenna", rect=(2.5, 15.0, 9.0, 29.0), layers="all"),
+    dict(name="BL652 antenna", rect=(2.5, 15.0, 8.9, 29.0), layers="all"),
 ]
-NO_TRACKS_F = [dict(name="under patch", rect=(20.2, 3.6, 31.8, 15.2))]   # no F.Cu tracks under the ceramic
+NO_TRACKS_F = [dict(name="under patch", rect=(23.1, 3.6, 32.7, 15.2))]   # no F.Cu tracks under the ceramic
 NO_TRACKS_B = [dict(name="under BMP581", rect=(44.4, 47.2, 46.8, 49.6))]
 
 # Height limits (side, rect, max height mm) - from the enclosure stack in cad/params.py
