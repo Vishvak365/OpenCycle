@@ -1,0 +1,630 @@
+<title>OpenCycle Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=Barlow+Condensed:wght@500;600;700&family=Barlow+Semi+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: a product-photo stage on top (the device on a studio floor), controls and inspector below; stage left, controls right on wide screens. */
+:root {
+  --bg: #eef0f2;
+  --stage: #e3e6ea;
+  --panel: #ffffff;
+  --ink: #16191e;
+  --ink-2: #5b6370;
+  --line: #d7dbe1;
+  --accent: #1d6fa5;
+  --accent-ink: #ffffff;
+  --glow: #19b6e6;
+  --warn: #b5541c;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111418; --stage: #181c22; --panel: #1a1e25; --ink: #e5e8ed; --ink-2: #98a1ae; --line: #2a3039;
+  --accent: #5aa9dd; --accent-ink: #0b1620; --glow: #38c9f5; --warn: #f0985e; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111418; --stage: #181c22; --panel: #1a1e25; --ink: #e5e8ed; --ink-2: #98a1ae; --line: #2a3039;
+  --accent: #5aa9dd; --accent-ink: #0b1620; --glow: #38c9f5; --warn: #f0985e; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); padding-inline: 16px; padding-block: 16px 40px }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px }
+h1 { font: 700 28px/1.05 var(--font-display); letter-spacing: .01em; margin: 0; text-wrap: balance }
+h2 { font: 600 12px/1.2 var(--font-display); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 10px }
+.sub { color: var(--ink-2); font: 12px var(--font-data) }
+.grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) }
+@media (min-width: 960px) { .grid { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: start } }
+.stage { position: relative; background: var(--stage); border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 5; max-width: 100%; touch-action: none; border: 1px solid var(--line) }
+@media (min-width: 960px) { .stage { aspect-ratio: 5 / 4; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px) } }
+.stage canvas { display: block; width: 100%; height: 100% }
+.overlay { position: absolute; left: 12px; right: 12px; top: 12px; display: flex; justify-content: space-between; align-items: start; gap: 8px; pointer-events: none }
+.overlay > * { pointer-events: auto }
+.hint { position: absolute; left: 12px; bottom: 10px; font: 11px var(--font-data); color: var(--ink-2); pointer-events: none }
+.badge { font: 500 11px var(--font-data); padding: 4px 9px; border-radius: 999px; border: 1px solid var(--warn); color: var(--warn); background: var(--panel) }
+.status { position: absolute; inset: 0; display: grid; place-items: center; font: 13px var(--font-data); color: var(--ink-2) }
+.seg { display: inline-grid; grid-auto-flow: column; background: var(--panel); border: 1px solid var(--line); border-radius: 9px; overflow: hidden }
+.seg button { font: 500 13px var(--font-body); background: transparent; color: var(--ink); border: 0; border-right: 1px solid var(--line); padding: 8px 12px; cursor: pointer; min-height: 36px }
+.seg button:last-child { border-right: 0 }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px }
+.controls { display: grid; gap: 12px }
+.chips { display: flex; flex-wrap: wrap; gap: 8px }
+.chip { font: 13px var(--font-body); border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 12px 6px 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; min-height: 34px }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent) }
+.chip .dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line) }
+.chip.net { padding: 5px 10px; font: 12px var(--font-data) }
+.chip.net.warn::after { content: "unrouted"; font: 10px var(--font-data); color: var(--warn); margin-left: 2px }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.group { display: grid; gap: 6px }
+.group + .group { margin-top: 12px }
+.group > span { font: 11px var(--font-data); color: var(--ink-2); text-transform: uppercase; letter-spacing: .06em }
+.inspector h3 { font: 700 20px/1.1 var(--font-display); margin: 0 }
+.inspector .meta { font: 12px var(--font-data); color: var(--ink-2); margin: 2px 0 8px }
+.inspector p { margin: 0 0 8px; font-size: 14px }
+.note { color: var(--ink-2); font-size: 13px; margin: 0 }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px }
+.kv dt { color: var(--ink-2); font-family: var(--font-data); font-size: 12px }
+.kv dd { margin: 0; font-variant-numeric: tabular-nums }
+.screens { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start }
+@media (min-width: 860px) { .screens { grid-template-columns: auto minmax(0, 1fr) } }
+.device { justify-self: center; background: #151619; border-radius: 26px; padding: 30px 22px 36px; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 40px -18px rgba(0,0,0,.45); width: min(100%, 330px) }
+.device.actual { width: auto; padding: 5.5mm 3.5mm 6mm; border-radius: 7mm }
+.lcd { position: relative; border-radius: 3px; overflow: hidden; background: #c4c9be; aspect-ratio: 240 / 400; width: 100% }
+.device.actual .lcd { width: 35mm }
+.lcd canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated }
+.lcd::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(to right, rgba(0,0,0,.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.07) 1px, transparent 1px);
+  background-size: calc(100% / 240) calc(100% / 400) }
+.lcd::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.04) 38%, transparent 38.2%) }
+.device.actual .lcd::before { display: none }
+.scrlist { display: grid; gap: 8px }
+.scr { text-align: left; font: inherit; color: inherit; background: transparent; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: grid; gap: 2px }
+.scr b { font: 700 17px/1.2 var(--font-display) }
+.scr span { font-size: 13px; color: var(--ink-2) }
+.scr[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent) }
+.specs { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 12px var(--font-data); color: var(--ink-2); margin-top: 6px }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>OpenCycle bike computer</h1>
+    <span class="sub">86 × 52 × 16 mm · FDM-printed case · 4-layer board</span>
+  </header>
+
+  <div class="grid">
+    <div class="stage" id="stage">
+      <div class="status" id="status">Loading model…</div>
+      <div class="overlay">
+        <div class="seg" role="group" aria-label="View">
+          <button id="m-product" data-mode="product" aria-pressed="true">Product</button>
+          <button id="m-exploded" data-mode="exploded" aria-pressed="false">Exploded</button>
+          <button id="m-board" data-mode="board" aria-pressed="false">Board</button>
+        </div>
+        <span class="badge" id="concept" hidden>Concept board · not for fab</span>
+      </div>
+      <div class="hint" id="hint">Drag to orbit · pinch to zoom · tap a part</div>
+    </div>
+
+    <div class="controls">
+      <section class="panel inspector" id="inspector" aria-live="polite">
+        <h2>Inspector</h2>
+        <h3 id="i-title">Tap anything</h3>
+        <div class="meta" id="i-meta">Parts on the board, nets in the Board view</div>
+        <p id="i-desc">Tap a chip or component in 3D to see what it does and how it's connected. In Board view, tap a net to light up its copper.</p>
+        <div class="chips" id="i-links"></div>
+      </section>
+
+      <section class="panel" id="finish-panel">
+        <h2>Print finish</h2>
+        <div class="chips" id="finishes"></div>
+        <h2 style="margin-top:14px">Case</h2>
+        <div class="seg" role="group" aria-label="Case variant">
+          <button id="v-standard" data-v="standard" aria-pressed="true">Standard</button>
+          <button id="v-aero" data-v="aero" aria-pressed="false">Aero</button>
+          <button id="v-rugged" data-v="rugged" aria-pressed="false">Rugged</button>
+        </div>
+        <p class="note" style="margin-top:12px">Rendered with 0.2 mm layer lines on the walls and diagonal top-skin lines, the way it comes off a printer.</p>
+      </section>
+
+      <section class="panel" id="board-panel" hidden>
+        <h2>Board side</h2>
+        <div class="seg" role="group" aria-label="Board side">
+          <button id="s-front" data-side="front" aria-pressed="true">Front · display side</button>
+          <button id="s-back" data-side="back" aria-pressed="false">Back · battery side</button>
+        </div>
+        <h2 style="margin-top:14px">Nets</h2>
+        <div id="nets"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel" id="screens-panel">
+    <h2>On-device screens</h2>
+    <div class="screens">
+      <div class="device" id="device"><div class="lcd"><canvas id="lcd" width="240" height="400" aria-label="Device screen preview"></canvas></div></div>
+      <div style="display:grid;gap:12px;min-width:0">
+        <div class="row">
+          <button class="chip" id="page-btn" type="button">Page ▸</button>
+          <button class="chip" id="actual-btn" type="button" aria-pressed="false">Actual size</button>
+          <button class="chip" id="auto-btn" type="button" aria-pressed="true">Auto-cycle</button>
+        </div>
+        <div class="scrlist" id="scrlist"></div>
+        <div class="specs"><span>240 × 400 px, 1-bit</span><span>12 KB frame buffer</span><span>~13 ms full redraw at 8 MHz SPI</span><span>Tones = 4×4 ordered dither</span><span>Fonts: Barlow, 1-bpp via lv_font_conv</span></div>
+        <p class="note">Rendered pixel for pixel by the same drawing code the firmware will port: nothing here uses grey, blur, or anti-aliasing the panel can't show. "Actual size" uses the panel's real 35 × 59 mm active area.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { createDevice, SCREENS, fontsReady } from './ui/screens.js';
+
+const $ = (id) => document.getElementById(id);
+const stage = $('stage');
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+// ---------------------------------------------------------------- renderer
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(28, 1, 1, 3000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.minDistance = 60; controls.maxDistance = 600;
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8f99, 0.55); scene.add(hemi);
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(90, 160, 120); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -90, right: 90, top: 140, bottom: -40, near: 10, far: 500 });
+key.shadow.radius = 6; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+key.target.position.set(0, 40, 0); scene.add(key, key.target);
+const rim = new THREE.DirectionalLight(0xdfe8ff, 0.8); rim.position.set(-140, 80, -120); scene.add(rim);
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.ShadowMaterial({ opacity: 0.22 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+// CAD mm: x width, y height, z depth (front +z). Centre the device on x and depth.
+const root = new THREE.Group(); root.position.set(-26, 0, -8); scene.add(root);
+const G = {};
+for (const n of ['back', 'batt', 'pcb', 'disp', 'front']) { G[n] = new THREE.Group(); root.add(G[n]); }
+const EXPLODE = { back: -46, batt: -24, pcb: 0, disp: 22, front: 42 };
+
+// ---------------------------------------------------------------- materials
+function printed(color, rough, extra = {}) {
+  const m = new THREE.MeshPhysicalMaterial({ color, roughness: rough, metalness: extra.metal || 0,
+    clearcoat: extra.cc || 0, clearcoatRoughness: 0.45, sheen: extra.sheen || 0, sheenRoughness: 0.6 });
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uLayer = { value: 0.2 };
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vObjP;\nvarying vec3 vLayerN;\nvarying vec3 vDiagN;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObjP = position;\nvLayerN = normalize(normalMatrix * vec3(0.0, 0.0, 1.0));\nvDiagN = normalize(normalMatrix * vec3(0.7071, -0.7071, 0.0));');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vObjP;\nvarying vec3 vLayerN;\nvarying vec3 vDiagN;\nuniform float uLayer;')
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        {
+          float ph = vObjP.z * 6.2831853 / uLayer;
+          float aa = clamp(1.0 - fwidth(ph) / 2.5, 0.0, 1.0);
+          float wall = 1.0 - abs(dot(normal, vLayerN));
+          normal = normalize(normal + vLayerN * cos(ph) * 0.32 * wall * aa);
+          float ph2 = dot(vObjP.xy, vec2(0.7071, -0.7071)) * 6.2831853 / 0.45;
+          float aa2 = clamp(1.0 - fwidth(ph2) / 2.5, 0.0, 1.0);
+          float top = smoothstep(0.92, 1.0, abs(dot(normal, vLayerN)));
+          normal = normalize(normal + vDiagN * cos(ph2) * 0.10 * top * aa2);
+        }`);
+  };
+  return m;
+}
+const FINISHES = [
+  { id: 'black', name: 'Matte black PLA', body: '#1d1f23', bezel: '#141518', btn: '#e0662c', rough: 0.62, dot: '#1d1f23' },
+  { id: 'orange', name: 'Signal orange PETG', body: '#d9602a', bezel: '#17181b', btn: '#17181b', rough: 0.34, cc: 0.25, dot: '#d9602a' },
+  { id: 'silver', name: 'Silver silk PLA', body: '#aeb4bd', bezel: '#1a1b1e', btn: '#2b6fae', rough: 0.3, metal: 0.45, sheen: 0.4, dot: '#aeb4bd' },
+  { id: 'stone', name: 'Stone gray PETG', body: '#7d8388', bezel: '#2a2d31', btn: '#d9e021', rough: 0.4, cc: 0.15, dot: '#7d8388' },
+];
+const M = {
+  body: printed('#1d1f23', 0.62), bezel: printed('#141518', 0.62), btn: printed('#e0662c', 0.5),
+  tpu: printed('#e0662c', 0.7, { sheen: 0.3 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: '#ffffff', metalness: 0, roughness: 0.03, transparent: true, opacity: 0.14, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2.5, depthWrite: false }),
+  mask: new THREE.MeshStandardMaterial({ color: '#0b0c0e', roughness: 0.25 }),
+  panel: new THREE.MeshStandardMaterial({ color: '#6c7076', roughness: 0.5, metalness: 0.3 }),
+  foam: new THREE.MeshStandardMaterial({ color: '#141416', roughness: 0.95 }),
+  pouch: new THREE.MeshPhysicalMaterial({ color: '#d4d6da', roughness: 0.32, metalness: 0.85, clearcoat: 0.3 }),
+  rubber: new THREE.MeshStandardMaterial({ color: '#111214', roughness: 0.8 }),
+  speaker: new THREE.MeshStandardMaterial({ color: '#191a1d', roughness: 0.55, metalness: 0.2 }),
+  membrane: new THREE.MeshStandardMaterial({ color: '#b08d4a', roughness: 0.4, metalness: 0.7 }),
+  fr4: new THREE.MeshStandardMaterial({ color: '#c8b98a', roughness: 0.7 }),
+  tin: new THREE.MeshStandardMaterial({ color: '#cdd1d6', roughness: 0.28, metalness: 1 }),
+  epoxy: new THREE.MeshStandardMaterial({ color: '#1b1c1f', roughness: 0.45, metalness: 0.05 }),
+  ceramic: new THREE.MeshStandardMaterial({ color: '#b39068', roughness: 0.5 }),
+  ceramicW: new THREE.MeshStandardMaterial({ color: '#efeee8', roughness: 0.45 }),
+  silver: new THREE.MeshStandardMaterial({ color: '#dfe2e6', roughness: 0.2, metalness: 1 }),
+  nylon: new THREE.MeshStandardMaterial({ color: '#efe9da', roughness: 0.55 }),
+  brown: new THREE.MeshStandardMaterial({ color: '#6b4a2c', roughness: 0.5 }),
+  ledG: new THREE.MeshPhysicalMaterial({ color: '#7dff9a', roughness: 0.1, transmission: 0.6, thickness: 0.4, transparent: true }),
+  kapton: new THREE.MeshPhysicalMaterial({ color: '#d98a2b', roughness: 0.35, clearcoat: 0.5, side: THREE.DoubleSide }),
+};
+
+// ---------------------------------------------------------------- device screen (shared with the showcase)
+const device = createDevice();
+const lcdCanvas = document.getElementById('lcd');
+const lcdCtx = lcdCanvas.getContext('2d');
+const screenTex = new THREE.CanvasTexture(lcdCanvas);
+screenTex.colorSpace = THREE.SRGBColorSpace; screenTex.magFilter = THREE.NearestFilter; screenTex.minFilter = THREE.LinearFilter; screenTex.generateMipmaps = false;
+const show = { idx: 0, auto: true, since: 0, t0: performance.now() };
+function drawScreen() { return screenTex; }
+function renderLCD(now) {
+  const t = (now - show.t0) / 1000;
+  const id = SCREENS[show.idx].id;
+  device.render(id, t);
+  device.blit(lcdCtx, 1, { off: [196, 201, 190], on: [30, 33, 31] });
+  screenTex.needsUpdate = true;
+  if (show.auto && now - show.since > 6000) setScreen((show.idx + 1) % SCREENS.length, false);
+}
+function setScreen(i, user = true) {
+  show.idx = i; show.since = performance.now();
+  if (SCREENS[i].id === 'lap') show.t0 = performance.now() - 0;   // restart the alert animation
+  if (user) { show.auto = false; document.getElementById('auto-btn').setAttribute('aria-pressed', 'false'); }
+  document.querySelectorAll('.scr').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+}
+{
+  const list = document.getElementById('scrlist');
+  SCREENS.forEach((sc, i) => {
+    const b = document.createElement('button'); b.className = 'scr'; b.type = 'button'; b.setAttribute('aria-pressed', String(i === 0));
+    const n = document.createElement('b'); n.textContent = sc.name; const d = document.createElement('span'); d.textContent = sc.desc;
+    b.append(n, d); b.addEventListener('click', () => setScreen(i)); list.appendChild(b);
+  });
+  document.getElementById('page-btn').addEventListener('click', () => setScreen((show.idx + 1) % SCREENS.length));
+  document.getElementById('auto-btn').addEventListener('click', (e) => { show.auto = !show.auto; show.since = performance.now(); e.currentTarget.setAttribute('aria-pressed', String(show.auto)); });
+  document.getElementById('actual-btn').addEventListener('click', (e) => { const on = document.getElementById('device').classList.toggle('actual'); e.currentTarget.setAttribute('aria-pressed', String(on)); });
+}
+let lcdLast = 0;
+
+// ---------------------------------------------------------------- helpers
+const b64 = (s) => { const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
+const stl = new STLLoader();
+function meshFrom(data, name, mat, group, creased = true) {
+  if (!data[name]) return null;
+  let geo = stl.parse(b64(data[name]));
+  geo = creased ? toCreasedNormals(geo, Math.PI / 5) : geo;
+  const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; m.name = name;
+  group.add(m); return m;
+}
+const K2C = (kx, ky) => [kx, 86 - ky];     // board coords -> CAD coords
+
+// ---------------------------------------------------------------- state
+const state = { mode: 'product', variant: 'standard', side: 'front', explode: 0, explodeTarget: 0, selPart: null, selNet: null };
+const meshes = {};
+const partObjs = [];
+let PCB = null;
+const highlight = new THREE.Group(); G.pcb.add(highlight);
+
+// ---------------------------------------------------------------- PCB from board data
+function buildBoard(data, tex) {
+  const { x0, y0, w, h, r, thickness } = data.board;
+  const s = new THREE.Shape();
+  const X1 = x0 + w, Y1 = y0 + h;
+  s.moveTo(x0 + r, y0); s.lineTo(X1 - r, y0); s.absarc(X1 - r, y0 + r, r, -Math.PI / 2, 0);
+  s.lineTo(X1, Y1 - r); s.absarc(X1 - r, Y1 - r, r, 0, Math.PI / 2);
+  s.lineTo(x0 + r, Y1); s.absarc(x0 + r, Y1 - r, r, Math.PI / 2, Math.PI);
+  s.lineTo(x0, y0 + r); s.absarc(x0 + r, y0 + r, r, Math.PI, Math.PI * 1.5);
+  for (const [hx, hy] of data.holes) { const [cx, cy] = K2C(hx, hy); const p = new THREE.Path(); p.absarc(cx, cy, 1.1, 0, Math.PI * 2, true); s.holes.push(p); }
+  const body = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: thickness - 0.02, bevelEnabled: false, curveSegments: 24 }), M.fr4);
+  body.position.z = 10.01; body.castShadow = body.receiveShadow = true; G.pcb.add(body);
+  const face = (front) => {
+    const g = new THREE.ShapeGeometry(s, 24);
+    const pos = g.attributes.position, uv = g.attributes.uv;
+    for (let i = 0; i < pos.count; i++) {
+      const u = (pos.getX(i) - x0) / w, v = (pos.getY(i) - y0) / h;
+      uv.setXY(i, front ? u : 1 - u, v);
+    }
+    const t = front ? tex.front : tex.back;
+    const mat = new THREE.MeshStandardMaterial({ map: t.color, roughnessMap: t.orm, metalnessMap: t.orm, roughness: 1, metalness: 1, side: front ? THREE.FrontSide : THREE.BackSide });
+    const m = new THREE.Mesh(g, mat); m.position.z = front ? 11.003 : 9.997; m.receiveShadow = true;
+    G.pcb.add(m);
+  };
+  face(true); face(false);
+}
+
+function box(w, d, hgt, mat, x, y, z, rad = 0) {
+  const g = rad > 0 ? new RoundedBoxGeometry(w, d, hgt, 2, Math.min(rad, hgt / 2 - 0.001, w / 2, d / 2)) : new THREE.BoxGeometry(w, d, hgt);
+  const m = new THREE.Mesh(g, mat.clone()); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; return m;
+}
+
+function buildParts(data) {
+  for (const p of data.parts) {
+    if (p.kind === 'pads') continue;
+    const [cx, cy] = K2C(p.cx, p.cy);
+    const up = p.side === 'F' ? 1 : -1;
+    const zb = p.side === 'F' ? 11 : 10;
+    const zc = (hh) => zb + up * hh / 2;
+    const g = new THREE.Group(); g.userData.part = p;
+    const horiz = p.w >= p.d;
+    const add = (m) => { g.add(m); };
+    switch (p.kind) {
+      case 'res': case 'cap': {
+        const big = p.h > 0.5; const L = big ? 1.6 : 1.0, Wd = big ? 0.8 : 0.5, H = big ? 0.8 : 0.35;
+        const [lx, ly] = horiz ? [L, Wd] : [Wd, L];
+        add(box(lx, ly, H, p.kind === 'res' ? M.epoxy : M.ceramic, cx, cy, zc(H)));
+        const e = L * 0.2; const off = L / 2 - e / 2;
+        for (const sgn of [-1, 1]) add(box(horiz ? e : Wd + 0.02, horiz ? Wd + 0.02 : e, H + 0.02, M.tin, cx + (horiz ? sgn * off : 0), cy + (horiz ? 0 : sgn * off), zc(H)));
+        break; }
+      case 'module': {
+        add(box(10.4, 15.6, 0.8, M.fr4, cx, cy - 0.3, zc(0.8)));
+        add(box(10.0, 11.4, 1.4, M.tin, cx, cy - 2.2, zb + up * (0.8 + 0.7), 0.2));
+        break; }
+      case 'can': add(box(9.7, 10.1, 2.4, M.tin, cx, cy, zc(2.4), 0.15)); break;
+      case 'patch': {
+        add(box(15, 15, 3.9, M.ceramicW, cx, cy, zc(3.9), 0.3));
+        add(box(12, 12, 0.1, M.silver, cx, cy + 0.4, zb + up * 3.95));
+        break; }
+      case 'soic': add(box(5.3, 5.3, 1.8, M.epoxy, cx, cy, zc(1.8), 0.15)); break;
+      case 'usbc': add(box(8.94, 7.35, 3.2, M.tin, 26, 86 - 79.9, zc(3.2), 1.55)); break;
+      case 'jst': { add(box(4.5, 4.2, 2.9, M.nylon, cx, cy + 0.6, zc(2.9), 0.2)); break; }
+      case 'fpc': { add(box(8.0, 3.2, 2.0, M.epoxy, cx, cy + 0.6, zc(2.0), 0.1)); add(box(8.2, 1.2, 0.6, M.brown, cx, cy - 1.4, zb + up * 1.9)); break; }
+      case 'switch': { const [a, b] = horiz ? [4.2, 3.4] : [3.4, 4.2]; add(box(a, b, 3.5, M.tin, cx, cy, zc(3.5), 0.2)); break; }
+      case 'led': add(box(1.6, 0.8, 0.6, M.ledG, cx, cy, zc(0.6), 0.1)); break;
+      case 'inductor': add(box(3.0, 3.0, 1.2, M.panel, cx, cy, zc(1.2), 0.3)); break;
+      default: {
+        const bw = Math.max(0.8, p.w * 0.7), bd = Math.max(0.8, p.d * 0.7);
+        add(box(bw, bd, p.h, M.epoxy, cx, cy, zc(p.h), 0.08));
+        // pin-1 dot
+        add(box(0.25, 0.25, 0.02, M.silver, cx - bw / 2 + 0.3, cy + bd / 2 - 0.3, zb + up * (p.h + 0.01)));
+      }
+    }
+    G.pcb.add(g); partObjs.push(g);
+  }
+}
+
+// flexible display ribbon, folded under from the display to J3
+function buildRibbon() {
+  // path in the (y, z) plane: along the back of the display, around a 0.9 mm fold, back under to J3
+  const pts = [[6.0, 14.15], [3.3, 14.15]];
+  for (let i = 1; i < 16; i++) { const t = Math.PI / 2 + (i / 16) * Math.PI; pts.push([3.3 + 0.9 * Math.cos(t), 13.25 + 0.9 * Math.sin(t)]); }
+  pts.push([3.3, 12.35], [12.3, 12.35]);
+  const wdt = 6.4, x0 = 26 - wdt / 2, pos = [], idx = [];
+  pts.forEach(([y, z], i) => { pos.push(x0, y, z, x0 + wdt, y, z); if (i) { const a = (i - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, M.kapton); m.castShadow = true; m.name = 'ribbon'; G.disp.add(m); return m;
+}
+
+// ---------------------------------------------------------------- nets
+const NET_INFO = {
+  GND: 'Ground. Solid plane on inner layer 1, stitched with vias.', '+3V3': '3.3 V rail from the LDO. Solid plane on inner layer 2.',
+  VBAT: 'Raw battery, 3.0 to 4.2 V. Feeds the LDO and the speaker amp.', VBUS: '5 V from USB-C. Feeds the charger.',
+  '+5V_DISP': '5 V made by the boost converter for the Sharp display.', BOOST_SW: 'Boost converter switch node (the inductor side).',
+  BOOST_FB: 'Feedback divider that sets the boost output to 5.05 V.', CHG_PROG: 'Sets the charge current to 500 mA.',
+  CHG_STAT: 'Charger status, drives the charge LED.', LED_A: 'Charge LED anode.', VBAT_SENSE: 'Battery voltage through a 1 M / 1 M divider into the ADC.',
+  DISP_PWR_EN: 'MCU turns the display boost on and off.', RF_IN: 'GPS antenna feed into the receiver.',
+  USB_DP: 'USB data +', USB_DN: 'USB data −', USB_DP_C: 'USB data + at the connector, through ESD protection.', USB_DN_C: 'USB data − at the connector, through ESD protection.',
+  CC1: 'USB-C config pin, 5.1 k to ground asks the charger for 5 V.', CC2: 'USB-C config pin, 5.1 k to ground asks the charger for 5 V.',
+  I2C_SDA: 'I²C data to the barometer and accelerometer.', I2C_SCL: 'I²C clock to the barometer and accelerometer.', IMU_INT1: 'Accelerometer interrupt: wake on motion.',
+  'SPK+': 'Speaker output +', 'SPK-': 'Speaker output −', I2S_BCLK: 'Digital audio bit clock.', I2S_LRCLK: 'Digital audio word clock.', I2S_DIN: 'Digital audio data.', AMP_EN: 'Speaker amp enable.',
+  SWDIO: 'Programming and debug data.', SWDCLK: 'Programming and debug clock.', SWO: 'Debug trace output.', '~RESET': 'MCU reset.',
+};
+const netGroup = (n) => /^(GND|\+3V3|VBAT|VBUS|\+5V|BOOST|CHG|LED_A|VBAT_SENSE|DISP_PWR_EN)/.test(n) ? 'Power'
+  : /^(USB|CC)/.test(n) ? 'USB' : /^DISP_/.test(n) ? 'Display' : /^(GNSS|RF_IN)/.test(n) ? 'GPS'
+  : /^(I2C|IMU)/.test(n) ? 'Sensors' : /^FLASH/.test(n) ? 'Flash' : /^(I2S|AMP|SPK)/.test(n) ? 'Audio'
+  : /^BTN/.test(n) ? 'Buttons' : 'Debug';
+const describeNet = (n) => NET_INFO[n] || (n.startsWith('DISP_') ? (n.endsWith('_3V') ? 'Display signal at 3.3 V, from the MCU into a level shifter.' : 'Display signal at 5 V, from a level shifter to the screen.')
+  : n.startsWith('GNSS_') ? 'GPS receiver control or data line to the MCU.' : n.startsWith('FLASH_') ? 'Quad-SPI line to the 16 MB flash.' : n.startsWith('BTN_') ? 'Button input, pulled low when pressed.' : '');
+
+function clearHighlight() {
+  for (const c of [...highlight.children]) { highlight.remove(c); c.geometry.dispose(); }
+  for (const g of partObjs) g.traverse((m) => { if (m.material && m.material.emissive) { m.material.emissive.setHex(0); m.material.emissiveIntensity = 0; } });
+}
+const glowMat = new THREE.MeshBasicMaterial({ color: '#19b6e6', transparent: true, opacity: 0.95, depthWrite: false });
+const glowMatDim = new THREE.MeshBasicMaterial({ color: '#19b6e6', transparent: true, opacity: 0.45, depthWrite: false });
+function showNet(net) {
+  clearHighlight();
+  state.selNet = net; state.selPart = null;
+  glowMat.color.set(css('--glow') || '#19b6e6'); glowMatDim.color.copy(glowMat.color);
+  let nt = 0, nv = 0;
+  for (const [n, side, x1, y1, x2, y2, w] of PCB.tracks) {
+    if (n !== net) continue;
+    const [a0, a1] = K2C(x1, y1), [b0, b1] = K2C(x2, y2);
+    const L = Math.hypot(b0 - a0, b1 - a1);
+    const g = new THREE.CapsuleGeometry(Math.max(w, 0.2) * 0.6, L, 2, 8);
+    const m = new THREE.Mesh(g, side === 'F' ? glowMat : glowMatDim);
+    m.position.set((a0 + b0) / 2, (a1 + b1) / 2, side === 'F' ? 11.06 : 9.94);
+    m.rotation.z = Math.atan2(b1 - a1, b0 - a0) - Math.PI / 2;
+    m.scale.z = 0.25; highlight.add(m); nt++;
+  }
+  for (const [n, x, y] of PCB.vias) { if (n !== net) continue; const [cx, cy] = K2C(x, y); const m = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 1.25, 16), glowMat); m.rotation.x = Math.PI / 2; m.position.set(cx, cy, 10.5); highlight.add(m); nv++; }
+  const refs = new Set();
+  for (const [n, ref, , side, x, y] of PCB.pads) { if (n !== net) continue; refs.add(ref); const [cx, cy] = K2C(x, y); const m = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 12), glowMat); m.position.set(cx, cy, side === 'F' ? 11.1 : 9.9); highlight.add(m); }
+  for (const g of partObjs) if (refs.has(g.userData.part.ref)) g.traverse((m) => { if (m.material && m.material.emissive) { m.material.emissive.copy(glowMat.color); m.material.emissiveIntensity = 0.35; } });
+  const unrouted = PCB.unrouted.includes(net);
+  setInspector(net, `${netGroup(net)} net · ${refs.size} parts · ${nt} track segments · ${nv} vias`,
+    describeNet(net) + (unrouted ? ' Not fully routed yet on this concept board.' : ''),
+    [...refs].sort().map((r) => ({ label: r, fn: () => selectPart(r) })));
+  document.querySelectorAll('.chip.net').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.net === net)));
+}
+
+function selectPart(ref) {
+  const g = partObjs.find((o) => o.userData.part.ref === ref);
+  if (!g) return;
+  clearHighlight(); state.selPart = ref; state.selNet = null;
+  const p = g.userData.part;
+  g.traverse((m) => { if (m.material && m.material.emissive) { m.material.emissive.set(css('--glow') || '#19b6e6'); m.material.emissiveIntensity = 0.45; } });
+  setInspector(`${p.ref} · ${p.value}`, `${p.side === 'F' ? 'Front, display side' : 'Back, battery side'} · ${p.w.toFixed(1)} × ${p.d.toFixed(1)} mm footprint`,
+    [p.desc, p.note].filter(Boolean).join(' '), p.nets.filter((n) => n !== 'GND').map((n) => ({ label: n, fn: () => { if (state.mode !== 'board') setMode('board'); showNet(n); } })));
+  document.querySelectorAll('.chip.net').forEach((c) => c.setAttribute('aria-pressed', 'false'));
+}
+
+function setInspector(title, meta, desc, links) {
+  $('i-title').textContent = title; $('i-meta').textContent = meta; $('i-desc').textContent = desc || '';
+  const box = $('i-links'); box.replaceChildren();
+  for (const l of links) { const b = document.createElement('button'); b.className = 'chip net'; b.textContent = l.label; b.addEventListener('click', l.fn); box.appendChild(b); }
+}
+
+function buildNetList() {
+  const nets = [...new Set(PCB.pads.map((p) => p[0]))].sort();
+  const groups = {};
+  for (const n of nets) (groups[netGroup(n)] ||= []).push(n);
+  const wrap = $('nets'); wrap.replaceChildren();
+  for (const gname of ['Power', 'Display', 'GPS', 'USB', 'Sensors', 'Flash', 'Audio', 'Buttons', 'Debug']) {
+    if (!groups[gname]) continue;
+    const div = document.createElement('div'); div.className = 'group';
+    const lab = document.createElement('span'); lab.textContent = gname; div.appendChild(lab);
+    const chips = document.createElement('div'); chips.className = 'chips';
+    for (const n of groups[gname]) {
+      const b = document.createElement('button'); b.className = 'chip net' + (PCB.unrouted.includes(n) ? ' warn' : '');
+      b.textContent = n; b.dataset.net = n; b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => showNet(n)); chips.appendChild(b);
+    }
+    div.appendChild(chips); wrap.appendChild(div);
+  }
+}
+
+// ---------------------------------------------------------------- modes, variants, finishes
+const camTo = { pos: null, target: null };
+function flyTo(pos, target) { camTo.pos = new THREE.Vector3(...pos); camTo.target = new THREE.Vector3(...target); }
+
+function applyVisibility() {
+  const board = state.mode === 'board';
+  const v = state.variant;
+  for (const [name, m] of Object.entries(meshes)) {
+    if (!m) continue;
+    let vis = true;
+    if (name.startsWith('std_')) vis = v !== 'aero';
+    if (name.startsWith('aero_')) vis = v === 'aero';
+    if (name.startsWith('rugged_')) vis = v === 'rugged';
+    if (board && m.parent !== G.pcb) vis = false;
+    m.visible = vis;
+  }
+  if (meshes.ribbon) meshes.ribbon.visible = !board && state.explode < 0.05;
+  if (meshes.screen) meshes.screen.visible = !board;
+  root.position.y = v === 'rugged' ? 2.88 : 0.02;   // rest the lowest point (bottom edge / bumper) on the floor
+  $('finish-panel').hidden = board; $('board-panel').hidden = !board; $('concept').hidden = !board;
+}
+
+function setMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+  state.explodeTarget = mode === 'exploded' ? 1 : 0;
+  if (mode === 'board') { state.explodeTarget = 0; setSide(state.side, true); }
+  else if (mode === 'exploded') flyTo([170, 120, 170], [0, 46, 0]);
+  else flyTo([110, 95, 190], [0, 44, 0]);
+  if (mode !== 'board') clearHighlight();
+  applyVisibility();
+  $('hint').textContent = mode === 'board' ? 'Tap a net to light its copper · tap a part for details' : 'Drag to orbit · pinch to zoom · tap a part';
+}
+function setSide(side, fly = true) {
+  state.side = side;
+  document.querySelectorAll('[data-side]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === side)));
+  if (fly) flyTo(side === 'front' ? [0, 44, 205] : [0, 44, -205], [0, 44, 2.5]);
+}
+function setVariant(v) {
+  state.variant = v;
+  document.querySelectorAll('[data-v]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+  applyVisibility();
+}
+function setFinish(f) {
+  M.body.color.set(f.body); M.body.roughness = f.rough; M.body.metalness = f.metal || 0; M.body.clearcoat = f.cc || 0; M.body.sheen = f.sheen || 0;
+  M.bezel.color.set(f.bezel); M.btn.color.set(f.btn); M.tpu.color.set(f.btn === '#17181b' ? '#2a2c30' : f.btn);
+  document.querySelectorAll('#finishes .chip').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.f === f.id)));
+}
+const fbox = $('finishes');
+for (const f of FINISHES) {
+  const b = document.createElement('button'); b.className = 'chip'; b.dataset.f = f.id; b.setAttribute('aria-pressed', 'false');
+  const d = document.createElement('span'); d.className = 'dot'; d.style.background = f.dot; b.append(d, document.createTextNode(f.name));
+  b.addEventListener('click', () => setFinish(f)); fbox.appendChild(b);
+}
+document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+document.querySelectorAll('[data-v]').forEach((b) => b.addEventListener('click', () => setVariant(b.dataset.v)));
+document.querySelectorAll('[data-side]').forEach((b) => b.addEventListener('click', () => setSide(b.dataset.side)));
+
+// tap to pick
+const ray = new THREE.Raycaster(); let down = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+  const vis = partObjs.filter((g) => g.visible);
+  const blockers = Object.values(meshes).filter((m) => m && m.visible && m.parent !== G.pcb);
+  const hits = ray.intersectObjects([...vis, ...blockers], true);
+  if (!hits.length) return;
+  let o = hits[0].object; while (o && !o.userData.part) o = o.parent;
+  if (o) selectPart(o.userData.part.ref);
+});
+
+function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage);
+
+// ---------------------------------------------------------------- load
+const texLoader = new THREE.TextureLoader();
+const loadTex = (u, srgb) => new Promise((res, rej) => texLoader.load(u, (t) => { t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 8; res(t); }, undefined, rej));
+
+Promise.all([fetch('meshes.json').then((r) => r.json()), fetch('pcb.json').then((r) => r.json()),
+  loadTex('pcb_front_color.png', true), loadTex('pcb_front_orm.png', false), loadTex('pcb_back_color.png', true), loadTex('pcb_back_orm.png', false),
+  fontsReady()])
+.then(([data, pcb, fc, fo, bc, bo]) => {
+  PCB = pcb;
+  const add = (n, mat, grp, cr) => { meshes[n] = meshFrom(data, n, mat, grp, cr); };
+  add('std_back_shell', M.body, G.back); add('aero_back_shell', M.body, G.back);
+  add('std_front_bezel', M.bezel, G.front); add('aero_front_bezel', M.bezel, G.front);
+  add('rugged_bumper', M.tpu, G.back); add('rugged_button_covers', M.tpu, G.back);
+  add('buttons', M.btn, G.back); add('usb_flap', M.rubber, G.back); add('oring', M.rubber, G.back);
+  add('battery', M.pouch, G.batt); add('speaker', M.speaker, G.batt); add('speaker_membrane', M.membrane, G.batt);
+  add('display', M.panel, G.disp); add('foam_gasket', M.foam, G.disp);
+  add('lens_mask', M.mask, G.front, false); add('cover_lens', M.glass, G.front);
+  if (meshes.cover_lens) meshes.cover_lens.castShadow = false;
+  // live screen on the display's active area
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(35, 59), new THREE.MeshStandardMaterial({ map: drawScreen(), roughness: 0.62, metalness: 0 }));
+  scr.position.set(26, 4 + 62.8 / 2, 15.01);
+  scr.receiveShadow = true; G.disp.add(scr); meshes.screen = scr;
+  meshes.ribbon = buildRibbon();
+  buildBoard(pcb, { front: { color: fc, orm: fo }, back: { color: bc, orm: bo } });
+  buildParts(pcb);
+  buildNetList();
+  setFinish(FINISHES[0]);
+  $('status').hidden = true;
+  const start = location.hash === '#board' ? 'board' : location.hash === '#exploded' ? 'exploded' : 'product';
+  setMode(start);
+  camera.position.copy(camTo.pos); controls.target.copy(camTo.target); camTo.pos = null;
+}).catch((e) => { console.error(e); $('status').textContent = 'The model files did not load. Reload to try again.'; });
+
+// ---------------------------------------------------------------- loop
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const k = reduce ? 1 : 1 - Math.exp(-dt * 6);
+  state.explode += (state.explodeTarget - state.explode) * k;
+  for (const [n, off] of Object.entries(EXPLODE)) G[n].position.z = off * state.explode;
+  if (meshes.ribbon) meshes.ribbon.visible = state.mode !== 'board' && state.explode < 0.05;
+  if (camTo.pos) {
+    camera.position.lerp(camTo.pos, k); controls.target.lerp(camTo.target, k);
+    if (camera.position.distanceTo(camTo.pos) < 0.5) camTo.pos = null;
+  }
+  glowMat.opacity = state.selNet ? 0.75 + 0.25 * Math.sin(now / 260) : 0.95;
+  if (now - lcdLast > 50) { lcdLast = now; renderLCD(now); }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+resize(); requestAnimationFrame(loop);
+</script>

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+out/
+pcb/placed.kicad_pcb
+pcb/routed.kicad_pcb
+pcb/*.pass*
+pcb/*-backups/
+pcb/fp-info-cache
+pcb/live/
+*.kicad_prl
+.DS_Store

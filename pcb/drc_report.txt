@@ -1,0 +1,1097 @@
+** Drc report for routed.kicad_pcb **
+** Created on 2026-09-29 23:28:33 **
+
+** Found 295 DRC violations **
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(25.3000 mm, 67.7600 mm): Line on F.Silkscreen
+    @(26.0000 mm, 67.9000 mm): Reference 'J3'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(14.3800 mm, 48.1536 mm): Line on F.Silkscreen
+    @(14.2300 mm, 48.0000 mm): Reference 'R11'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(10.0000 mm, 54.1700 mm): Reference 'D2'
+    @(9.8464 mm, 53.9800 mm): Line on F.Silkscreen
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(15.7800 mm, 48.1536 mm): Line on F.Silkscreen
+    @(15.6400 mm, 48.0000 mm): Reference 'C21'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(23.8464 mm, 36.3800 mm): Line on F.Silkscreen
+    @(24.0000 mm, 36.2300 mm): Reference 'R9'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(13.0000 mm, 61.5600 mm): Line on F.Silkscreen
+    @(13.0000 mm, 61.6300 mm): Reference 'R3'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(13.0000 mm, 61.5600 mm): Line on F.Silkscreen
+    @(13.0000 mm, 61.6300 mm): Reference 'R3'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(26.0000 mm, 11.3000 mm): Reference 'AE1'
+    @(26.0000 mm, 11.3000 mm): Rect on F.Silkscreen
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(23.0900 mm, 23.1406 mm): Line on B.Silkscreen
+    @(23.4600 mm, 23.0000 mm): Reference 'C2'
+[silk_overlap]: Silkscreen overlap
+    Rule: board setup constraints silk; Severity: warning
+    @(25.0300 mm, 23.0000 mm): Reference 'C1'
+    @(24.9400 mm, 23.1078 mm): Line on B.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(22.2400 mm, 66.6000 mm): Reference 'C14'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(32.2400 mm, 66.6000 mm): Reference 'C16'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(27.2400 mm, 66.6000 mm): Reference 'C15'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(37.2400 mm, 66.6000 mm): Reference 'C17'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(14.2300 mm, 48.0000 mm): Reference 'R11'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(10.0000 mm, 54.1700 mm): Reference 'D2'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(24.0000 mm, 36.2300 mm): Reference 'R9'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(15.6400 mm, 48.0000 mm): Reference 'C21'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(21.0750 mm, 41.0750 mm): Line on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(26.0000 mm, 11.3000 mm): Reference 'AE1'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(26.0000 mm, 11.3000 mm): Rect on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(17.2400 mm, 66.6000 mm): Reference 'C13'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(21.8500 mm, 74.3600 mm): Line on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(21.8500 mm, 76.1000 mm): Line on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(30.1500 mm, 76.1000 mm): Line on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(23.4600 mm, 23.0000 mm): Reference 'C2'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(25.0300 mm, 23.0000 mm): Reference 'C1'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(44.2000 mm, 72.2000 mm): Reference 'LS1'
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(33.1600 mm, 10.4400 mm): Line on B.Silkscreen
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; Severity: error
+    @(44.2000 mm, 72.2000 mm): Pad 1 [SPK+] of LS1 on B.Cu
+    @(44.2000 mm, 72.2000 mm): Pad 2 [SPK-] of LS1 on B.Cu
+[starved_thermal]: Thermal relief connection to zone incomplete (zone min spoke count 2; actual 1)
+    Local override; Severity: error
+    @(2.0000 mm, 2.0000 mm): Zone [GND] on B.Cu
+    @(21.6800 mm, 80.4500 mm): PTH pad S1 [GND] of J1
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(22.2400 mm, 66.6000 mm): Reference 'C14'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(28.0000 mm, 42.2400 mm): Reference 'C20'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(44.0000 mm, 55.7700 mm): Reference 'C22'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(32.2400 mm, 66.6000 mm): Reference 'C16'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(27.2400 mm, 66.6000 mm): Reference 'C15'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(13.0000 mm, 57.6000 mm): Reference 'U4'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(15.2400 mm, 60.0000 mm): Reference 'C8'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(37.2400 mm, 66.6000 mm): Reference 'C17'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(17.8400 mm, 60.0000 mm): Reference 'C9'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(22.6000 mm, 57.6000 mm): Reference 'U5'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(14.2300 mm, 48.0000 mm): Reference 'R11'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(16.0000 mm, 64.3500 mm): Reference 'U7'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(28.0000 mm, 37.3000 mm): Reference 'U13'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(44.0000 mm, 58.2000 mm): Reference 'U14'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(24.8700 mm, 60.0000 mm): Reference 'C10'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(31.0000 mm, 55.6300 mm): Reference 'R5'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(26.0000 mm, 64.3500 mm): Reference 'U9'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(8.4400 mm, 60.0000 mm): Reference 'C7'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(27.4400 mm, 60.0000 mm): Reference 'C12'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(32.0000 mm, 61.7700 mm): Reference 'C11'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(10.0000 mm, 54.1700 mm): Reference 'D2'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(10.0000 mm, 52.4300 mm): Reference 'R4'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(31.4400 mm, 70.4000 mm): Reference 'C18'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(24.0000 mm, 36.2300 mm): Reference 'R9'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(20.0000 mm, 41.8400 mm): Reference 'C19'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(15.6400 mm, 48.0000 mm): Reference 'C21'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(34.7000 mm, 60.0000 mm): Reference 'L1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(36.0000 mm, 64.3500 mm): Reference 'U11'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(21.0000 mm, 64.3500 mm): Reference 'U8'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(28.4000 mm, 55.6300 mm): Reference 'R7'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(20.0000 mm, 36.9000 mm): Reference 'U12'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(40.0400 mm, 59.2000 mm): Reference 'C23'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(32.0000 mm, 57.7500 mm): Reference 'U6'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(40.0300 mm, 63.0000 mm): Reference 'R12'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(13.0000 mm, 61.6300 mm): Reference 'R3'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(26.0000 mm, 11.3000 mm): Reference 'AE1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(17.2400 mm, 66.6000 mm): Reference 'C13'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(26.0000 mm, 67.9000 mm): Reference 'J3'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(11.0000 mm, 29.7000 mm): Reference 'J4'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(33.6000 mm, 55.6300 mm): Reference 'R6'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(12.8300 mm, 48.0000 mm): Reference 'R10'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(26.0000 mm, 77.0000 mm): Reference 'D1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(31.0000 mm, 64.3500 mm): Reference 'U10'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(24.0000 mm, 34.8300 mm): Reference 'R8'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(20.3700 mm, 77.0000 mm): Reference 'R1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(21.2000 mm, 15.8000 mm): Reference 'U1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(32.8000 mm, 22.0400 mm): Reference 'C5'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(23.4600 mm, 23.0000 mm): Reference 'C2'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(33.9700 mm, 77.0000 mm): Reference 'R2'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(41.0000 mm, 17.8400 mm): Reference 'C6'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(41.0000 mm, 10.6400 mm): Reference 'U3'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(25.0300 mm, 23.0000 mm): Reference 'C1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(44.2000 mm, 72.2000 mm): Reference 'LS1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(26.4600 mm, 23.0000 mm): Reference 'C3'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(49.5000 mm, 50.0000 mm): Reference 'SW2'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(29.6000 mm, 21.7700 mm): Reference 'C4'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(28.2000 mm, 9.6000 mm): Reference 'U2'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(13.0000 mm, 83.5800 mm): Reference 'J2'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(49.5000 mm, 34.0000 mm): Reference 'SW1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(26.0000 mm, 73.7550 mm): Reference 'J1'
+[text_height]: Text height out of range (board setup constraints silk text height min height 0.8000 mm; actual 0.6000 mm)
+    Rule: board setup constraints silk text height; Severity: warning
+    @(2.5000 mm, 34.0000 mm): Reference 'SW3'
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(23.4000 mm, 66.6000 mm): Footprint C14
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(28.0000 mm, 43.4000 mm): Footprint C20
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(44.0000 mm, 57.2000 mm): Footprint C22
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(33.4000 mm, 66.6000 mm): Footprint C16
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(28.4000 mm, 66.6000 mm): Footprint C15
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(13.0000 mm, 60.0000 mm): Footprint U4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(16.4000 mm, 60.0000 mm): Footprint C8
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(38.4000 mm, 66.6000 mm): Footprint C17
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(19.0000 mm, 60.0000 mm): Footprint C9
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(22.6000 mm, 60.0000 mm): Footprint U5
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(15.4000 mm, 48.0000 mm): Footprint R11
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(16.0000 mm, 66.6000 mm): Footprint U7
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(28.0000 mm, 40.0000 mm): Footprint U13
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(44.0000 mm, 61.0000 mm): Footprint U14
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(26.3000 mm, 60.0000 mm): Footprint C10
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(31.0000 mm, 56.8000 mm): Footprint R5
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(26.0000 mm, 66.6000 mm): Footprint U9
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(9.6000 mm, 60.0000 mm): Footprint C7
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(28.6000 mm, 60.0000 mm): Footprint C12
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(32.0000 mm, 63.2000 mm): Footprint C11
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(10.0000 mm, 55.6000 mm): Footprint D2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(10.0000 mm, 53.6000 mm): Footprint R4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(32.6000 mm, 70.4000 mm): Footprint C18
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(24.0000 mm, 37.4000 mm): Footprint R9
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(45.5000 mm, 79.5000 mm): Footprint H4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(20.0000 mm, 43.0000 mm): Footprint C19
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(45.5000 mm, 6.5000 mm): Footprint H2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(16.8000 mm, 48.0000 mm): Footprint C21
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(37.2000 mm, 60.0000 mm): Footprint L1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(36.0000 mm, 66.6000 mm): Footprint U11
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(21.0000 mm, 66.6000 mm): Footprint U8
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(6.5000 mm, 79.5000 mm): Footprint H3
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(28.4000 mm, 56.8000 mm): Footprint R7
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(20.0000 mm, 40.0000 mm): Footprint U12
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(41.2000 mm, 59.2000 mm): Footprint C23
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(32.0000 mm, 60.0000 mm): Footprint U6
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(41.2000 mm, 63.0000 mm): Footprint R12
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(13.0000 mm, 62.8000 mm): Footprint R3
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(26.0000 mm, 11.3000 mm): Footprint AE1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(6.5000 mm, 6.5000 mm): Footprint H1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(18.4000 mm, 66.6000 mm): Footprint C13
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(26.0000 mm, 71.6000 mm): Footprint J3
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(11.0000 mm, 27.0000 mm): Footprint J4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(33.6000 mm, 56.8000 mm): Footprint R6
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(14.0000 mm, 48.0000 mm): Footprint R10
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(26.0000 mm, 79.4000 mm): Footprint D1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(31.0000 mm, 66.6000 mm): Footprint U10
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(24.0000 mm, 36.0000 mm): Footprint R8
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(19.2000 mm, 77.0000 mm): Footprint R1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(15.2000 mm, 15.8000 mm): Footprint U1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(32.8000 mm, 23.2000 mm): Footprint C5
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(22.3000 mm, 23.0000 mm): Footprint C2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(32.8000 mm, 77.0000 mm): Footprint R2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(41.0000 mm, 19.0000 mm): Footprint C6
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(41.0000 mm, 14.2000 mm): Footprint U3
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(23.6000 mm, 23.0000 mm): Footprint C1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(44.2000 mm, 72.2000 mm): Footprint LS1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(25.3000 mm, 23.0000 mm): Footprint C3
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(46.8000 mm, 50.0000 mm): Footprint SW2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(29.6000 mm, 23.2000 mm): Footprint C4
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(28.2000 mm, 15.6000 mm): Footprint U2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(13.0000 mm, 79.6000 mm): Footprint J2
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(46.8000 mm, 34.0000 mm): Footprint SW1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(26.0000 mm, 79.4000 mm): Footprint J1
+[lib_footprint_issues]: The current configuration does not include the library ''.
+    Local override; Severity: warning
+    @(5.2000 mm, 34.0000 mm): Footprint SW3
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(49.0000 mm, 7.0000 mm): Line on Edge.Cuts
+    @(47.7000 mm, 51.2250 mm): Pad 1 [BTN_START] of SW2 on B.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(49.0000 mm, 7.0000 mm): Line on Edge.Cuts
+    @(47.7000 mm, 48.7750 mm): Pad 1 [BTN_START] of SW2 on B.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(49.0000 mm, 7.0000 mm): Line on Edge.Cuts
+    @(47.7000 mm, 50.0000 mm): Pad 2 [GND] of SW2 on B.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(49.0000 mm, 7.0000 mm): Line on Edge.Cuts
+    @(47.7000 mm, 35.2250 mm): Pad 1 [BTN_PAGE] of SW1 on B.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(49.0000 mm, 7.0000 mm): Line on Edge.Cuts
+    @(47.7000 mm, 32.7750 mm): Pad 1 [BTN_PAGE] of SW1 on B.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(49.0000 mm, 7.0000 mm): Line on Edge.Cuts
+    @(47.7000 mm, 34.0000 mm): Pad 2 [GND] of SW1 on B.Cu
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(45.0000 mm, 83.0000 mm): Line on Edge.Cuts
+    @(30.7000 mm, 81.4000 mm): Line on B.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; Severity: warning
+    @(45.0000 mm, 83.0000 mm): Line on Edge.Cuts
+    @(21.3000 mm, 81.4000 mm): Line on B.Silkscreen
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(3.0000 mm, 79.0000 mm): Line on Edge.Cuts
+    @(4.3000 mm, 32.7750 mm): Pad 1 [BTN_POWER] of SW3 on B.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(3.0000 mm, 79.0000 mm): Line on Edge.Cuts
+    @(4.3000 mm, 35.2250 mm): Pad 1 [BTN_POWER] of SW3 on B.Cu
+[copper_edge_clearance]: Board edge clearance violation (board setup constraints edge clearance 0.5000 mm; actual 0.4000 mm)
+    Rule: board setup constraints edge; Severity: error
+    @(3.0000 mm, 79.0000 mm): Line on Edge.Cuts
+    @(4.3000 mm, 34.0000 mm): Pad 2 [GND] of SW3 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(30.7000 mm, 60.5000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(31.0500 mm, 60.0000 mm): Pad 2 [BOOST_FB] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(35.0500 mm, 67.2500 mm): Track [GND] on F.Cu, length 0.3808 mm
+    @(35.0500 mm, 66.6000 mm): Pad 2 [DISP_ON_3V] of U11 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(30.0500 mm, 67.2500 mm): Track [GND] on F.Cu, length 0.3808 mm
+    @(30.0500 mm, 66.6000 mm): Pad 2 [DISP_EXTCOM_3V] of U10 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(19.7000 mm, 67.1000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(20.0500 mm, 66.6000 mm): Pad 2 [DISP_SI_3V] of U8 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(34.7000 mm, 67.1000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(35.0500 mm, 66.6000 mm): Pad 2 [DISP_ON_3V] of U11 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.7000 mm, 67.1000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(30.0500 mm, 66.6000 mm): Pad 2 [DISP_EXTCOM_3V] of U10 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(14.7000 mm, 67.1000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(15.0500 mm, 66.6000 mm): Pad 2 [DISP_SCLK_3V] of U7 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1791 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(19.6750 mm, 40.8000 mm): Track [GND] on F.Cu, length 0.3473 mm
+    @(19.0250 mm, 40.8000 mm): Pad 8 [+3V3] of U12 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(25.0500 mm, 67.2500 mm): Track [GND] on F.Cu, length 0.3808 mm
+    @(25.0500 mm, 66.6000 mm): Pad 2 [DISP_SCS_3V] of U9 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1912 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(27.7000 mm, 69.0000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(27.2500 mm, 69.7500 mm): Pad 8 [+5V_DISP] of J3 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.7000 mm, 67.1000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(25.0500 mm, 66.6000 mm): Pad 2 [DISP_SCS_3V] of U9 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(31.0500 mm, 60.6500 mm): Track [GND] on F.Cu, length 0.3808 mm
+    @(31.0500 mm, 60.0000 mm): Pad 2 [BOOST_FB] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1791 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(19.5000 mm, 40.5000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(19.0250 mm, 40.8000 mm): Pad 8 [+3V3] of U12 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1750 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.5000 mm, 40.2000 mm): Track [GND] on F.Cu, length 0.4000 mm
+    @(29.2750 mm, 39.7500 mm): Pad 11 [IMU_INT1] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1810 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(27.7500 mm, 69.7500 mm): Track [GND] on F.Cu, length 0.7517 mm
+    @(27.2500 mm, 69.7500 mm): Pad 8 [+5V_DISP] of J3 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(15.0500 mm, 67.2500 mm): Track [GND] on F.Cu, length 0.3808 mm
+    @(15.0500 mm, 66.6000 mm): Pad 2 [DISP_SCLK_3V] of U7 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1750 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.2750 mm, 40.2500 mm): Track [GND] on F.Cu, length 0.2305 mm
+    @(29.2750 mm, 39.7500 mm): Pad 11 [IMU_INT1] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1911 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.2750 mm, 39.2500 mm): Track [GND] on F.Cu, length 0.1521 mm
+    @(29.7000 mm, 39.6000 mm): Track [IMU_INT1] on F.Cu, length 0.2000 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1911 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.2750 mm, 39.2500 mm): Track [GND] on F.Cu, length 0.1521 mm
+    @(29.2750 mm, 39.7500 mm): Track [IMU_INT1] on F.Cu, length 0.2704 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1941 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(20.0500 mm, 67.2500 mm): Track [GND] on F.Cu, length 0.3808 mm
+    @(20.0500 mm, 66.6000 mm): Pad 2 [DISP_SI_3V] of U8 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(26.7000 mm, 41.3000 mm): Via [GND] on F.Cu - B.Cu
+    @(26.7250 mm, 40.7500 mm): Pad 4 [I2C_SCL] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.3000 mm, 38.7000 mm): Via [GND] on F.Cu - B.Cu
+    @(28.7500 mm, 38.7250 mm): Pad 13 [<no net>] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1885 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(22.1000 mm, 19.7000 mm): Via [GND] on F.Cu - B.Cu
+    @(33.3000 mm, 19.2000 mm): Track [FLASH_IO1] on F.Cu, length 11.0000 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1885 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(22.1000 mm, 19.7000 mm): Via [GND] on F.Cu - B.Cu
+    @(22.3000 mm, 19.2000 mm): Track [FLASH_IO1] on F.Cu, length 3.8184 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.3000 mm, 58.8000 mm): Via [GND] on F.Cu - B.Cu
+    @(27.2000 mm, 59.0000 mm): Track [VBAT] on B.Cu, length 2.4042 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(13.3000 mm, 62.0000 mm): Via [GND] on F.Cu - B.Cu
+    @(12.7000 mm, 61.7000 mm): Track [VBUS] on F.Cu, length 0.8485 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(41.6000 mm, 61.4000 mm): Via [GND] on F.Cu - B.Cu
+    @(47.9000 mm, 56.0000 mm): Track [VBUS] on B.Cu, length 12.3037 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(38.1000 mm, 65.4000 mm): Via [GND] on F.Cu - B.Cu
+    @(37.9000 mm, 64.7000 mm): Track [VBUS] on B.Cu, length 13.7179 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1828 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(21.6000 mm, 14.7000 mm): Track [GNSS_PPS] on B.Cu, length 1.9799 mm
+    @(19.8500 mm, 15.5500 mm): Pad 4 [GNSS_RXD] of U1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1828 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(21.3000 mm, 15.8000 mm): Track [FLASH_CLK] on B.Cu, length 1.5556 mm
+    @(19.8500 mm, 16.3500 mm): Pad 6 [GNSS_PPS] of U1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1978 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(38.1000 mm, 16.7000 mm): Track [FLASH_IO2] on B.Cu, length 5.6569 mm
+    @(37.4000 mm, 16.1050 mm): Pad 5 [FLASH_IO0] of U3 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1978 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(41.9000 mm, 16.7000 mm): Track [FLASH_IO2] on B.Cu, length 3.8000 mm
+    @(37.4000 mm, 16.1050 mm): Pad 5 [FLASH_IO0] of U3 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1765 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(34.2000 mm, 19.4000 mm): Via [FLASH_IO0] on F.Cu - B.Cu
+    @(32.9500 mm, 18.9000 mm): Pad 8 [+3V3] of U2 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.7000 mm, 39.6000 mm): Track [IMU_INT1] on F.Cu, length 0.2000 mm
+    @(29.2750 mm, 39.2500 mm): Pad 12 [GND] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.2750 mm, 39.7500 mm): Track [IMU_INT1] on F.Cu, length 0.2704 mm
+    @(29.2750 mm, 39.2500 mm): Pad 12 [GND] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1828 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.9000 mm, 39.4000 mm): Track [IMU_INT1] on F.Cu, length 0.2828 mm
+    @(29.2750 mm, 39.2500 mm): Pad 12 [GND] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1631 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(17.5000 mm, 47.7000 mm): Track [VBAT_SENSE] on F.Cu, length 0.7071 mm
+    @(16.8000 mm, 47.5200 mm): Pad 2 [GND] of C21 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1885 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(16.1000 mm, 21.3000 mm): Via [VBAT_SENSE] on F.Cu - B.Cu
+    @(15.6000 mm, 21.1000 mm): Track [I2S_DIN] on F.Cu, length 0.1000 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1885 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(16.1000 mm, 21.3000 mm): Via [VBAT_SENSE] on F.Cu - B.Cu
+    @(15.4000 mm, 21.3000 mm): Track [I2S_DIN] on F.Cu, length 0.2828 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1822 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(41.4000 mm, 63.2000 mm): Track [AMP_EN] on F.Cu, length 0.9899 mm
+    @(41.2000 mm, 62.4900 mm): Pad 2 [GND] of R12 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(45.3000 mm, 54.5000 mm): Via [I2S_DIN] on F.Cu - B.Cu
+    @(41.9000 mm, 57.0000 mm): Track [VBAT] on B.Cu, length 4.5255 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(45.3000 mm, 54.5000 mm): Via [I2S_DIN] on F.Cu - B.Cu
+    @(45.5000 mm, 53.8000 mm): Track [VBAT] on B.Cu, length 0.7071 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1822 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(22.9000 mm, 38.9000 mm): Track [I2C_SCL] on F.Cu, length 1.8385 mm
+    @(23.4900 mm, 37.4000 mm): Pad 1 [+3V3] of R9 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1897 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.9000 mm, 36.7000 mm): Via [I2C_SCL] on F.Cu - B.Cu
+    @(24.5100 mm, 36.0000 mm): Pad 2 [I2C_SDA] of R8 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1062 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(27.6000 mm, 40.7000 mm): Track [I2C_SDA] on F.Cu, length 0.3000 mm
+    @(27.2500 mm, 41.2750 mm): Pad 5 [GND] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1062 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(27.7500 mm, 41.2750 mm): Track [I2C_SDA] on F.Cu, length 0.3132 mm
+    @(27.2500 mm, 41.2750 mm): Pad 5 [GND] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(9.1000 mm, 23.5000 mm): Via [I2C_SDA] on F.Cu - B.Cu
+    @(11.3000 mm, 22.2000 mm): Track [VBUS] on F.Cu, length 5.6569 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1750 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.2000 mm, 38.5000 mm): Track [+3V3] on F.Cu, length 0.4000 mm
+    @(27.7500 mm, 38.7250 mm): Pad 15 [<no net>] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1791 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.2500 mm, 41.2750 mm): Track [+3V3] on F.Cu, length 0.2795 mm
+    @(27.7500 mm, 41.2750 mm): Pad 6 [I2C_SDA] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1750 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.2500 mm, 38.7250 mm): Track [+3V3] on F.Cu, length 0.2305 mm
+    @(27.7500 mm, 38.7250 mm): Pad 15 [<no net>] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1791 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.2000 mm, 41.0000 mm): Track [+3V3] on F.Cu, length 0.4000 mm
+    @(27.7500 mm, 41.2750 mm): Pad 6 [I2C_SDA] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1791 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(19.5000 mm, 38.9000 mm): Track [+3V3] on F.Cu, length 0.4000 mm
+    @(19.0250 mm, 39.2000 mm): Pad 1 [GND] of U12 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1791 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(19.6750 mm, 39.2000 mm): Track [+3V3] on F.Cu, length 0.3473 mm
+    @(19.0250 mm, 39.2000 mm): Pad 1 [GND] of U12 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.2000 mm, 41.3000 mm): Via [+3V3] on F.Cu - B.Cu
+    @(29.2750 mm, 40.7500 mm): Pad 9 [<no net>] of U13 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1791 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(12.8000 mm, 22.9500 mm): Track [+3V3] on B.Cu, length 0.4610 mm
+    @(12.0000 mm, 22.9500 mm): Pad 31 [<no net>] of U1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1791 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(12.5000 mm, 22.6000 mm): Track [+3V3] on B.Cu, length 0.4000 mm
+    @(12.0000 mm, 22.9500 mm): Pad 31 [<no net>] of U1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(11.3000 mm, 22.2000 mm): Track [VBUS] on F.Cu, length 5.6569 mm
+    @(8.5000 mm, 24.1000 mm): Via [~RESET] on F.Cu - B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1903 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(12.7000 mm, 61.7000 mm): Track [VBUS] on F.Cu, length 0.8485 mm
+    @(12.9000 mm, 60.6000 mm): Via [VBAT] on F.Cu - B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1903 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(13.3000 mm, 61.1000 mm): Track [VBUS] on F.Cu, length 0.1000 mm
+    @(12.9000 mm, 60.6000 mm): Via [VBAT] on F.Cu - B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1803 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(27.8000 mm, 79.2000 mm): Track [VBUS] on F.Cu, length 0.7071 mm
+    @(27.1375 mm, 78.4500 mm): Pad 6 [USB_DP_C] of D1 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1864 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(37.9000 mm, 64.7000 mm): Track [VBUS] on B.Cu, length 13.7179 mm
+    @(33.9000 mm, 67.8000 mm): Via [DISP_ON] on F.Cu - B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1780 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(37.9000 mm, 64.7000 mm): Track [VBUS] on B.Cu, length 13.7179 mm
+    @(27.7500 mm, 75.3550 mm): Pad B8 [<no net>] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1513 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(23.4000 mm, 74.6000 mm): Track [VBUS] on B.Cu, length 1.7000 mm
+    @(22.7500 mm, 75.3550 mm): Pad A12 [GND] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1513 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(23.4000 mm, 74.6000 mm): Track [VBUS] on B.Cu, length 1.7000 mm
+    @(22.7500 mm, 75.3550 mm): Pad B1 [GND] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1015 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.2000 mm, 74.6000 mm): Track [VBUS] on B.Cu, length 0.2000 mm
+    @(27.7500 mm, 75.3550 mm): Pad B8 [<no net>] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1765 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.4500 mm, 75.3550 mm): Track [VBUS] on B.Cu, length 0.7953 mm
+    @(27.7500 mm, 75.3550 mm): Pad B8 [<no net>] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1748 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.2000 mm, 74.4000 mm): Track [VBUS] on B.Cu, length 0.4243 mm
+    @(27.7500 mm, 75.3550 mm): Pad B8 [<no net>] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1717 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(20.0500 mm, 66.6000 mm): Track [DISP_SI_3V] on F.Cu, length 0.4031 mm
+    @(20.0500 mm, 65.9500 mm): Pad 1 [<no net>] of U8 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1717 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(19.5000 mm, 66.4000 mm): Track [DISP_SI_3V] on F.Cu, length 0.2000 mm
+    @(20.0500 mm, 65.9500 mm): Pad 1 [<no net>] of U8 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1885 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(8.5000 mm, 24.1000 mm): Via [~RESET] on F.Cu - B.Cu
+    @(8.0000 mm, 21.1000 mm): Track [SWO] on B.Cu, length 2.8000 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1885 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(8.5000 mm, 24.1000 mm): Via [~RESET] on F.Cu - B.Cu
+    @(8.0000 mm, 23.9000 mm): Track [SWO] on B.Cu, length 0.1414 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(27.2500 mm, 75.3550 mm): Track [CC1] on B.Cu, length 0.6622 mm
+    @(26.7500 mm, 75.3550 mm): Pad B7 [USB_DN_C] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(27.1000 mm, 76.0000 mm): Track [CC1] on B.Cu, length 3.8000 mm
+    @(26.7500 mm, 75.3550 mm): Pad B7 [USB_DN_C] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(25.1000 mm, 76.0000 mm): Track [USB_DP_C] on B.Cu, length 1.7000 mm
+    @(24.7500 mm, 75.3550 mm): Pad A8 [<no net>] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(25.2500 mm, 75.3550 mm): Track [USB_DP_C] on B.Cu, length 0.6622 mm
+    @(24.7500 mm, 75.3550 mm): Pad A8 [<no net>] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1970 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(25.8000 mm, 76.2000 mm): Track [USB_DN_C] on B.Cu, length 0.2828 mm
+    @(26.2500 mm, 75.3550 mm): Pad A6 [USB_DP_C] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(26.7500 mm, 75.3550 mm): Track [USB_DN_C] on B.Cu, length 0.6622 mm
+    @(26.2500 mm, 75.3550 mm): Pad A6 [USB_DP_C] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(26.6000 mm, 76.0000 mm): Track [USB_DN_C] on B.Cu, length 3.5000 mm
+    @(26.2500 mm, 75.3550 mm): Pad A6 [USB_DP_C] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.2500 mm, 75.3550 mm): Track [CC2] on B.Cu, length 0.6622 mm
+    @(23.5500 mm, 75.3550 mm): Pad A9 [VBUS] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.2500 mm, 75.3550 mm): Track [CC2] on B.Cu, length 0.6622 mm
+    @(23.5500 mm, 75.3550 mm): Pad B4 [VBUS] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.1000 mm, 76.0000 mm): Track [CC2] on B.Cu, length 1.0000 mm
+    @(23.5500 mm, 75.3550 mm): Pad A9 [VBUS] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1500 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.1000 mm, 76.0000 mm): Track [CC2] on B.Cu, length 1.0000 mm
+    @(23.5500 mm, 75.3550 mm): Pad B4 [VBUS] of J1 on B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1950 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(15.4000 mm, 58.8000 mm): Track [VBAT] on F.Cu, length 0.9000 mm
+    @(15.3000 mm, 60.3000 mm): Track [CHG_PROG] on F.Cu, length 0.8485 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1618 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(45.9000 mm, 62.3000 mm): Track [VBAT] on F.Cu, length 1.4142 mm
+    @(45.4375 mm, 61.7500 mm): Pad 9 [SPK+] of U14 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1950 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(15.4000 mm, 59.7000 mm): Track [VBAT] on F.Cu, length 0.8485 mm
+    @(15.3000 mm, 64.4000 mm): Track [CHG_PROG] on F.Cu, length 4.1000 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1950 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(15.4000 mm, 59.7000 mm): Track [VBAT] on F.Cu, length 0.8485 mm
+    @(15.3000 mm, 60.3000 mm): Track [CHG_PROG] on F.Cu, length 0.8485 mm
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1243 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(19.3000 mm, 60.6000 mm): Track [VBAT] on F.Cu, length 1.5000 mm
+    @(21.4625 mm, 60.0000 mm): Pad 2 [GND] of U5 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1980 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(22.2000 mm, 60.7000 mm): Track [VBAT] on F.Cu, length 0.5657 mm
+    @(21.4625 mm, 60.0000 mm): Pad 2 [GND] of U5 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1993 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(21.4625 mm, 60.9500 mm): Track [VBAT] on F.Cu, length 0.7493 mm
+    @(21.4625 mm, 60.0000 mm): Pad 2 [GND] of U5 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1918 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(41.9000 mm, 59.1000 mm): Via [VBAT] on F.Cu - B.Cu
+    @(41.2000 mm, 58.7200 mm): Pad 2 [GND] of C23 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1717 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(31.0500 mm, 60.0000 mm): Track [BOOST_FB] on F.Cu, length 0.4031 mm
+    @(31.0500 mm, 59.3500 mm): Pad 1 [+3V3] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1717 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(30.7000 mm, 59.8000 mm): Track [BOOST_FB] on F.Cu, length 0.4000 mm
+    @(31.0500 mm, 59.3500 mm): Pad 1 [+3V3] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1885 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(30.3000 mm, 59.8000 mm): Track [BOOST_FB] on B.Cu, length 1.3000 mm
+    @(31.8000 mm, 59.3000 mm): Via [BOOST_SW] on F.Cu - B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1885 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(31.6000 mm, 59.8000 mm): Track [BOOST_FB] on B.Cu, length 0.1414 mm
+    @(31.8000 mm, 59.3000 mm): Via [BOOST_SW] on F.Cu - B.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1566 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(20.4000 mm, 67.8000 mm): Track [+5V_DISP] on F.Cu, length 1.1314 mm
+    @(20.0500 mm, 67.2500 mm): Pad 3 [GND] of U8 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1888 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(31.7000 mm, 56.0000 mm): Track [+5V_DISP] on F.Cu, length 0.9899 mm
+    @(31.5100 mm, 56.8000 mm): Pad 2 [BOOST_FB] of R5 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1508 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(33.3000 mm, 60.5000 mm): Track [+5V_DISP] on F.Cu, length 0.1000 mm
+    @(32.9500 mm, 60.0000 mm): Pad 5 [BOOST_SW] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1758 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(32.9500 mm, 60.6500 mm): Track [+5V_DISP] on F.Cu, length 0.2915 mm
+    @(32.9500 mm, 60.0000 mm): Pad 5 [BOOST_SW] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1750 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(33.6000 mm, 59.0000 mm): Track [+5V_DISP] on F.Cu, length 1.2000 mm
+    @(32.9500 mm, 60.0000 mm): Pad 5 [BOOST_SW] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1750 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(33.6000 mm, 59.0000 mm): Track [+5V_DISP] on F.Cu, length 1.2000 mm
+    @(32.9500 mm, 59.3500 mm): Pad 6 [DISP_PWR_EN] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1131 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(29.1000 mm, 66.3000 mm): Track [+5V_DISP] on F.Cu, length 0.7071 mm
+    @(28.4000 mm, 66.1200 mm): Pad 2 [GND] of C15 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1131 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.1000 mm, 66.3000 mm): Track [+5V_DISP] on F.Cu, length 0.7071 mm
+    @(23.4000 mm, 66.1200 mm): Pad 2 [GND] of C14 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1212 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(33.6000 mm, 60.2000 mm): Track [+5V_DISP] on F.Cu, length 0.4243 mm
+    @(32.9500 mm, 60.0000 mm): Pad 5 [BOOST_SW] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1130 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(32.8000 mm, 70.6000 mm): Track [+5V_DISP] on F.Cu, length 0.7071 mm
+    @(32.6000 mm, 69.9200 mm): Pad 2 [GND] of C18 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1131 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(34.1000 mm, 66.3000 mm): Track [+5V_DISP] on F.Cu, length 0.7071 mm
+    @(33.4000 mm, 66.1200 mm): Pad 2 [GND] of C16 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1670 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(32.6000 mm, 59.9000 mm): Track [BOOST_SW] on F.Cu, length 0.2000 mm
+    @(32.9500 mm, 59.3500 mm): Pad 6 [DISP_PWR_EN] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1750 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(31.8000 mm, 59.3000 mm): Via [BOOST_SW] on F.Cu - B.Cu
+    @(31.0500 mm, 59.3500 mm): Pad 1 [+3V3] of U6 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1236 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.1000 mm, 69.0000 mm): Track [DISP_SI] on F.Cu, length 0.2000 mm
+    @(23.7500 mm, 69.7500 mm): Pad 1 [DISP_SCLK] of J3 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1157 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(24.2500 mm, 69.7500 mm): Track [DISP_SI] on F.Cu, length 0.7649 mm
+    @(23.7500 mm, 69.7500 mm): Pad 1 [DISP_SCLK] of J3 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.1828 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(28.7000 mm, 70.5000 mm): Track [DISP_EXTCOM] on F.Cu, length 0.4243 mm
+    @(28.2500 mm, 69.7500 mm): Pad 10 [GND] of J3 on F.Cu
+[clearance]: Clearance violation (netclass 'Default' clearance 0.2000 mm; actual 0.0000 mm)
+    Rule: netclass 'Default'; Severity: error
+    @(44.2000 mm, 72.2000 mm): Pad 1 [SPK+] of LS1 on B.Cu
+    @(44.2000 mm, 72.2000 mm): Pad 2 [SPK-] of LS1 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.1500 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(46.8000 mm, 52.1250 mm): NPTH pad of SW2
+    @(45.7500 mm, 51.8500 mm): Pad MP [GND] of SW2 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0993 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(46.8000 mm, 52.1250 mm): NPTH pad of SW2
+    @(47.7000 mm, 51.2250 mm): Pad 1 [BTN_START] of SW2 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.1500 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(46.8000 mm, 47.8750 mm): NPTH pad of SW2
+    @(45.7500 mm, 48.1500 mm): Pad MP [GND] of SW2 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0993 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(46.8000 mm, 47.8750 mm): NPTH pad of SW2
+    @(47.7000 mm, 48.7750 mm): Pad 1 [BTN_START] of SW2 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0993 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(46.8000 mm, 36.1250 mm): NPTH pad of SW1
+    @(47.7000 mm, 35.2250 mm): Pad 1 [BTN_PAGE] of SW1 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.1500 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(46.8000 mm, 36.1250 mm): NPTH pad of SW1
+    @(45.7500 mm, 35.8500 mm): Pad MP [GND] of SW1 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.1500 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(46.8000 mm, 31.8750 mm): NPTH pad of SW1
+    @(45.7500 mm, 32.1500 mm): Pad MP [GND] of SW1 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0993 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(46.8000 mm, 31.8750 mm): NPTH pad of SW1
+    @(47.7000 mm, 32.7750 mm): Pad 1 [BTN_PAGE] of SW1 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.1500 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(5.2000 mm, 31.8750 mm): NPTH pad of SW3
+    @(6.2500 mm, 32.1500 mm): Pad MP [GND] of SW3 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0993 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(5.2000 mm, 31.8750 mm): NPTH pad of SW3
+    @(4.3000 mm, 32.7750 mm): Pad 1 [BTN_POWER] of SW3 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.0993 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(5.2000 mm, 36.1250 mm): NPTH pad of SW3
+    @(4.3000 mm, 35.2250 mm): Pad 1 [BTN_POWER] of SW3 on B.Cu
+[hole_clearance]: Hole clearance violation (board setup constraints hole clearance 0.2500 mm; actual 0.1500 mm)
+    Rule: board setup constraints hole; Severity: error
+    @(5.2000 mm, 36.1250 mm): NPTH pad of SW3
+    @(6.2500 mm, 35.8500 mm): Pad MP [GND] of SW3 on B.Cu
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; Severity: warning
+    @(18.2000 mm, 18.9000 mm): Via [BTN_START] on F.Cu - B.Cu
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; Severity: warning
+    @(13.8000 mm, 21.3000 mm): Via [DISP_ON_3V] on F.Cu - B.Cu
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; Severity: warning
+    @(13.0000 mm, 21.3000 mm): Via [DISP_EXTCOM_3V] on F.Cu - B.Cu
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; Severity: warning
+    @(12.1000 mm, 20.5000 mm): Via [DISP_SCS_3V] on F.Cu - B.Cu
+
+** Found 14 unconnected pads **
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(10.4000 mm, 22.9500 mm): Track [GND] on B.Cu, length 0.4610 mm
+    @(12.2700 mm, 27.6350 mm): Pad 5 [GND] of J4 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(19.8500 mm, 13.9500 mm): Pad 3 [GNSS_TXD] of U1 on B.Cu
+    @(32.9500 mm, 12.3000 mm): Pad 2 [GNSS_TXD] of U2 on B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(19.8500 mm, 18.7500 mm): Pad 12 [GNSS_RST] of U1 on B.Cu
+    @(32.9500 mm, 20.0000 mm): Pad 9 [GNSS_RST] of U2 on B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(26.7250 mm, 40.7500 mm): Pad 4 [I2C_SCL] of U13 on F.Cu
+    @(24.5100 mm, 37.4000 mm): Track [I2C_SCL] on F.Cu, length 0.4100 mm
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(35.0500 mm, 66.6000 mm): Pad 2 [DISP_ON_3V] of U11 on F.Cu
+    @(14.0000 mm, 22.0500 mm): Track [DISP_ON_3V] on B.Cu, length 0.4031 mm
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(9.7300 mm, 27.6350 mm): Pad 1 [+3V3] of J4 on F.Cu
+    @(13.4000 mm, 23.6000 mm): Via [+3V3] on F.Cu - B.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(30.0500 mm, 66.6000 mm): Pad 2 [DISP_EXTCOM_3V] of U10 on F.Cu
+    @(13.2000 mm, 22.0500 mm): Track [DISP_EXTCOM_3V] on B.Cu, length 0.4031 mm
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(11.4500 mm, 20.7500 mm): Track [DISP_SCS_3V] on B.Cu, length 0.3536 mm
+    @(25.0500 mm, 66.6000 mm): Pad 2 [DISP_SCS_3V] of U9 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(10.5500 mm, 20.3500 mm): Pad 37 [DISP_SCLK_3V] of U1 on B.Cu
+    @(15.0500 mm, 66.6000 mm): Pad 2 [DISP_SCLK_3V] of U7 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(10.5500 mm, 13.1500 mm): Pad 53 [SWDCLK] of U1 on B.Cu
+    @(11.0000 mm, 26.3650 mm): Pad 4 [SWDCLK] of J4 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(26.2500 mm, 75.3550 mm): Pad A6 [USB_DP_C] of J1 on B.Cu
+    @(25.2500 mm, 75.3550 mm): Track [USB_DP_C] on B.Cu, length 0.6622 mm
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(33.0900 mm, 56.8000 mm): Track [BOOST_FB] on F.Cu, length 0.3195 mm
+    @(31.5100 mm, 56.8000 mm): Pad 2 [BOOST_FB] of R5 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(44.2000 mm, 72.2000 mm): Pad 1 [SPK+] of LS1 on B.Cu
+    @(45.4375 mm, 61.7500 mm): Pad 9 [SPK+] of U14 on F.Cu
+[unconnected_items]: Missing connection between items
+    Local override; Severity: error
+    @(44.2000 mm, 72.2000 mm): Pad 2 [SPK-] of LS1 on B.Cu
+    @(45.4375 mm, 61.2500 mm): Pad 10 [SPK-] of U14 on F.Cu
+
+** Found 0 Footprint errors **
+
+** End of Report **
