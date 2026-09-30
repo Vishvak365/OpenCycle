@@ -1,22 +1,23 @@
 # Roadmap
 
-## Board v0.1 → orderable
-- [ ] Resolve open decisions in DECISIONS.md (module source, battery, assembly route).
-- [ ] Apply agreed part swaps in `pcb/design.py` (footprints + symbols).
-- [ ] Generate the schematic (`.kicad_sch`) from `design.py`; export PDF.
-- [ ] Route to 100% (fix router or hand-finish in KiCad); DRC 0 errors.
-- [ ] Human review: power path, RF keep-outs and 50 Ω feed, display pinout and voltages, battery polarity.
-- [ ] Gerbers, drill, BOM, pick-and-place.
+## v0.2 prototype (now)
+- [x] Colour build parts chosen, pinouts verified against datasheets, all parts priced with links.
+- [x] Enclosure v0.2 (52 × 92.4 × 17 mm), fit-checked against the real board; print files.
+- [x] Board routed, DRC clean, schematic generated + netlist-matched, ERC clean; Gerbers, BOM, CPL.
+- [x] Screen design language (Lucent) with 10 screens and an LVGL recipe.
+- [ ] Order parts + boards, print, assemble, bring up ([instructions/](../instructions/README.md)).
+- [ ] Measure: GPS fix / C/N0 in the case, BLE + Wi-Fi range, backlight current and temperature, battery life.
 
-## Enclosure
-- [ ] Sync with the final board (USB-C position for USB4105, switch height, battery choice).
-- [ ] Verify the Garmin mount against a known-good model; test-print.
-- [ ] Front light option.
-
-## Firmware
-- [ ] DK + display breakout: `ride` screen in LVGL.
-- [ ] GPS + FIT logging; BLE sensors; ANT+.
-- [ ] Map tiles and navigation.
+## Firmware (after the UI is final)
+- [ ] ESP-IDF + LVGL: display, ride screen, page model, soft-key bar.
+- [ ] GPS + FIT logging; BMP581 altitude; light-sensor backlight.
+- [ ] BL652 ANT+/BLE bridge firmware + UART protocol.
+- [ ] Map tiles and navigation; audio prompts.
 
 ## App
 - [ ] Route import, tile generation, ride sync (React Native or Web Bluetooth).
+
+## v0.3 ideas
+- Power-path charger (run from USB without cycling the battery).
+- Pin-fed or larger GPS patch if reception in the case is weak.
+- Transflective display option if one becomes buyable in small quantities.

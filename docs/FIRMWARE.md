@@ -1,21 +1,21 @@
 # Firmware plan (not started)
 
+The owner is finishing the UI design first; nothing here is implemented yet.
+
 ## Stack
 
-- **nRF Connect SDK (Zephyr)** on the nRF52840: FreeRTOS-like scheduling, BLE stack, drivers.
-- **Display:** Zephyr's `ls0xx` Sharp memory-display driver + **LVGL**. Port `viewer/ui/screens.js` screen by screen.
-- **Storage:** LittleFS on the 16 MB QSPI flash. Rides as FIT files (Garmin FIT SDK), routes as GPX, map tiles as pre-rendered 1-bit vector/bitmap tiles pushed by the phone app.
-- **GPS:** UBX protocol over UART, 1 Hz while riding; u-blox power-save when stopped.
-- **Sensors:** BLE heart rate / cycling power / CSC profiles; ANT+ via Nordic's ANT SoftDevice (licence key needed for commercial use).
-- **Audio:** I²S to the MAX98357A; short PCM clips in flash for alerts and turn prompts.
+- **ESP32-S3 (main MCU):** ESP-IDF (FreeRTOS) + **LVGL 9**. ST7789 over SPI (FSPI IO_MUX pins, 40–80 MHz), two 150 KB frame buffers in PSRAM, partial refresh. Port `viewer/ui/screens_color.js` screen by screen following `docs/UI.md` (Lucent).
+- **Storage:** LittleFS on the module's 16 MB flash (app partitions + data). Rides as FIT (Garmin FIT SDK), routes as GPX, map tiles pre-rendered by the phone app.
+- **GPS (MAX-M10S):** UBX over UART (IO38 RX / IO39 TX), 1 Hz while riding; software backup when stopped; EXTINT on IO48 to wake it.
+- **ANT+ / BLE sensors:** the **BL652 (nRF52832)** runs Nordic's SoftDevice S332 (ANT + BLE) as a sensor bridge and streams parsed data (HR, power, cadence, speed, radar) to the ESP32 over UART (IO41 RX / IO42 TX, reset IO47). Programmed over SWD through Tag-Connect J4. ANT licence terms must be checked before publishing.
+- **BLE to the phone + Wi-Fi sync:** ESP32 native radios.
+- **Sensors:** BMP581 (I²C 0x46, keep INT disabled — the pin is grounded) for altitude/climb; LTR-303 (0x29) for backlight auto-dimming.
+- **Audio:** I²S (IO15/16/17) to the MAX98357A, amp enable on IO3; short PCM clips for alerts and turn prompts.
+- **Keys:** five inputs with 10 k pull-ups; RTC-capable GPIOs so any key can wake from deep sleep. Holding the left key (IO0) at reset enters the ROM bootloader.
+- **Power:** VBAT_SENSE (IO1, ÷2) and VBUS_SENSE (IO2, ÷2) on ADC1; backlight PWM on IO21 with a duty cap from VBAT_SENSE.
 
-## Pin map
-
-Generated: `pcb/pinmap.json` (GPIO → net). Fixed pins: SWDIO/SWDCLK, P0.18 = reset, P1.00 = SWO, USB D+/D−, VBUS.
+Full pin map: [`HARDWARE.md`](HARDWARE.md#esp32-s3-pin-map).
 
 ## Bring-up order
 
-1. nRF52840 DK + Adafruit/SIKTEC Sharp 2.7" breakout: hello world, then the `ride` screen.
-2. GPS over UART (breakout), FIT logging to flash.
-3. BLE sensors, then ANT+.
-4. Custom board: power rails, SWD via Tag-Connect, each peripheral in turn.
+Follow [`instructions/05-bring-up.md`](../instructions/05-bring-up.md): rails → ESP32 over USB → I²C scan → display → GPS NMEA → BL652 over SWD → audio → keys → charging.
