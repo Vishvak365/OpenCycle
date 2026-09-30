@@ -3,7 +3,7 @@
 | Doc | Read it when |
 |---|---|
 | [SETUP.md](SETUP.md) | Installing the toolchain (CadQuery, KiCad 7, Python libs). |
-| [BOM_COLOR.md](BOM_COLOR.md) | Sourced parts list (Mouser + Digi-Key) for the colour-display v0.2 candidate. |
+| [sourcing/](sourcing/README.md) | Everything on sourcing: BOMs, prices, stock, measurements, specs, alternatives, market research. |
 | [HARDWARE.md](HARDWARE.md) | You want to know what each part does, why it was chosen, sourcing, and the power budget. |
 | [PCB.md](PCB.md) | Working on the board: pipeline, router, layer stack, known issues. |
 | [CAD.md](CAD.md) | Working on the enclosure: dimensions, variants, printing notes. |
