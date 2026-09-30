@@ -17,7 +17,7 @@ Architecture: ESP32-S3 (Wi-Fi + BLE, UI, logging) + nRF52832 module as ANT+/BLE 
 | Q1 | Diodes **DMG2302UK-7** | Backlight PWM switch (low side) | [Mouser 621-DMG2302UK-7](https://www.mouser.com/c/?q=DMG2302UK-7) | $0.39 | 238,766 | SOT-23, 20 V, 2.8 A, Vgs(th) 0.3 V. Plus 4 ballast resistors, one per cathode. |
 | U4 | Lite-On **LTR-303ALS-01** | Ambient light: auto-dims the backlight | [Mouser 859-LTR-303ALS-01](https://www.mouser.com/c/?q=LTR-303ALS-01) | $0.68 | 29,622 | 2 × 2 mm ChipLED-6, I²C. KiCad `OptoDevice:Lite-On_LTR-303ALS-01`. Needs a window in the lens mask. |
 | U5 | Bosch **BMP581** | Barometer (altitude, climb) | [Digi-Key 828-BMP581CT-ND](https://www.digikey.com/en/products/result?keywords=BMP581) | $3.07 | 462 | LGA-10, 2.0 × 2.0 × 0.75 mm. Land pattern from SparkFun's production board: pads 0.275 × 0.25 mm at ±0.7625 mm / 0.5 mm pitch. I²C 0x46/0x47 by SDO. (Mouser: 0 stock.) |
-| U6 | Bosch **BMA400** (optional) | Accelerometer, wake on motion | [Mouser 262-BMA400](https://www.mouser.com/c/?q=BMA400) | $2.21 | 104,096 | LGA-12, 2 × 2 × 0.95 mm. **Pin table still to transcribe from datasheet §7.** Can be dropped (power button covers wake). |
+| ~~U6~~ | ~~Bosch BMA400~~ (dropped for v0.2) | Accelerometer, wake on motion | [Mouser 262-BMA400](https://www.mouser.com/c/?q=BMA400) | $2.21 | 104,096 | LGA-12, 2 × 2 × 0.95 mm. **Pin table still to transcribe from datasheet §7.** Can be dropped (power button covers wake). |
 | U7 | Analog Devices **MAX98357AETE+T** | I²S class-D amp | [Mouser 700-MAX98357AETE+T](https://www.mouser.com/c/?q=MAX98357AETE%2BT) | $4.08 | 10,971 | TQFN-16 3 × 3 mm. Mouser flags it as being phased out of their catalogue; Digi-Key also stocks it. |
 | LS1 | Same Sky **CMS-151125-078L100** | Speaker, 8 Ω 0.7 W, IP67 | [Mouser 490-CMS151125078L100](https://www.mouser.com/c/?q=CMS-151125-078L100) | $2.96 | 597 | 15 × 11 × 2.5 mm, 32 AWG wire leads, 91 dBA, resonance ~1 kHz in 1 cc. ([datasheet](https://www.mouser.com/datasheet/3/6118/1/cms-151125-078x-67.pdf)) |
 | U8 | Microchip **MCP73831T-2ACI/OT** | Li-ion charger, 500 mA | [Mouser 579-MCP73831T-2ACIOT](https://www.mouser.com/c/?q=MCP73831T-2ACI%2FOT) | $0.76 | 116,042 | SOT-23-5. |
@@ -56,8 +56,30 @@ With the 1200 mAh cell that's **~10–22 h**. Garmin-class numbers need a transf
 - The outline (42.8 × 59.91) fits the existing display pocket width; height is 3 mm shorter.
 - The ESP32 antenna end and the BL652 antenna need board-edge placement with copper keep-outs, well away from the GPS patch.
 
+## Display mechanical data (Newhaven drawing Rev 2B, 03/11/2025)
+
+All mm, tolerance ±0.3 unless noted. "Front view" = looking at the screen.
+
+| Feature | Value |
+|---|---|
+| Outline | 42.80 ± 0.2 wide × 59.91 ± 0.2 tall × 2.55 ± 0.2 thick |
+| Bezel opening | 38.92 × 51.16; margins 1.94 left/right, 1.92 top |
+| Polariser | 38.42 × 50.66; margins 2.19 left/right, 2.17 top |
+| Active area | 36.72 × 48.96; margins 3.04 left/right, 3.02 top, 7.93 bottom; AA centre 27.50 below the top edge |
+| Frame | SUS304 stainless, 0.15 mm |
+| FFC exit | Bottom edge. EMI-shielded section 39.0 ± 0.2 wide, 13.2 long; then the tail narrows to 20.5 ± 0.07 wide |
+| FFC tail position (unfolded, front view) | Tail left edge 11.15 ± 0.3 from the outline's left edge; tail end 30.0 ± 0.5 below the panel's bottom edge |
+| Contacts | 40 fingers, 0.50 ± 0.05 pitch, 0.35 ± 0.03 wide, span 19.50 ± 0.05; pin 1 at the **left** in front view; stiffener (PI) 0.30 ± 0.03 thick on the side opposite the contacts; stiffened length ≥ 5.5; 2 × R0.3 corners |
+| Folded behind the panel (rear view) | Contacts end 27.80 ± 0.3 above the panel's bottom edge; tail 11.15 ± 0.3 from the rear-view left edge; pin 40 at the left, pin 1 at the right; fold adds ≤ 0.8 behind the panel; bend radius ~(2.43) |
+| Backlight | 4 LEDs in parallel (LEDK1–4 cathodes, common LEDA anode), 3.0 V typ, 160 mA total |
+
+Pinout (pin: signal): 1 GND · 2–5 NC (touch, unused) · 6 SDO · 7 VDD · 8 VDDI · 9 SDA · 10 CSX · 11 DCX · 12 WRX · 13 RDX · 14–29 DB0–DB15 · 30 RESX · 31–33 IM0–IM2 · 34–37 LEDK1–4 · 38 LEDA · 39 GND · 40 TE.
+4-wire SPI: IM2..IM0 = 1,1,0. Unused DB0–DB15 are tied to GND per the ST7789 datasheet.
+
+Layout consequence: with the FFC folded behind the display, the bottom-contact FH12-40S goes on the PCB front face, oriented so the cable enters from the bottom edge of the device. Its contact row sits ~27.8 mm above the display's bottom edge, 11.15 mm in from the right edge when viewed from the front.
+
 ## Still to confirm before layout
 
-1. **Display FFC tail length and exit position** — on the mechanical drawing (datasheet p.4), not in the text layer. The FFC width reads 21.40 mm.
-2. **BMA400 pin table** (datasheet §7) — or drop the accelerometer.
-3. **Taoglas patch land pattern** (datasheet §8.1–8.4 has exact pad sizes; only the pin functions were extracted so far).
+1. ~~Display FFC tail~~ — done (table above).
+2. **Accelerometer:** dropping the BMA400 for v0.2. The power button handles wake, and it removes a part whose pinout we haven't verified.
+3. **Taoglas patch land pattern:** the pad sizes are only in the datasheet's figures (§8.1–8.4 of the [Taoglas datasheet](https://www.taoglas.com/datasheets/DSGP.1575.15.4.A.02.pdf)), not in its text. Needs a screenshot of the composite footprint diagram.
