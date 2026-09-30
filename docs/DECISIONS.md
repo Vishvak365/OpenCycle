@@ -21,3 +21,5 @@ Append new entries at the bottom. Format: date — decision — why.
 - Assembly: JLCPCB PCBA (needs LCSC part numbers) vs hand/US assembly from Digi-Key parts.
 - Front light for night riding.
 - License (likely CERN-OHL-S hardware + MIT software).
+
+- 2026-09-30 — Colour display direction (candidate v0.2): ESP32-S3-WROOM-1-N16R8 + BL652 (nRF52832) as ANT+ coprocessor + Newhaven NHD-2.4-240320AF-CSXP IPS TFT. Parts sourced from Mouser + Digi-Key only; see BOM_COLOR.md. Why: colour UI, Wi-Fi, LVGL headroom; ANT+ kept via coprocessor. Cost: ~10–22 h battery vs ~100 h.
