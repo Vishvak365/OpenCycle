@@ -9,3 +9,9 @@ pcb/fp-info-cache
 pcb/live/
 *.kicad_prl
 .DS_Store
+.claude/
+pcb/placed.kicad_pro
+pcb/routed.kicad_pro
+pcb/*.dsn
+pcb/*.ses
+pcb/freerouting*
