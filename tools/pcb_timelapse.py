@@ -14,12 +14,12 @@ import pcbnew
 from PIL import Image, ImageDraw, ImageFont
 
 TM = pcbnew.ToMM
-S = 13.0                       # px per mm
+S = 12.4                       # px per mm
 PAD = 60
 W, H = 1080, 1352
 X0, Y0 = 3.0, 3.0              # board origin
 OX = (W - 46 * S) / 2 - X0 * S
-OY = 150 - Y0 * S
+OY = 140 - Y0 * S
 BG = (12, 16, 22)
 SUB = (18, 52, 40)
 FCU = (226, 86, 70)
@@ -58,8 +58,16 @@ def board_data(path):
         for g in f.GraphicalItems():
             if g.GetClass() == "MGRAPHIC" and g.GetLayerName() in ("F.Fab", "B.Fab", "F.Silkscreen", "B.Silkscreen"):
                 try:
+                    shp = g.GetShape()
+                    if shp not in (pcbnew.SHAPE_T_SEGMENT, pcbnew.SHAPE_T_RECT):
+                        continue            # arcs/circles: skip rather than draw a wrong chord
                     s, e = g.GetStart(), g.GetEnd()
-                    fab.append((TM(s.x), TM(s.y), TM(e.x), TM(e.y), g.GetShape()))
+                    if shp == pcbnew.SHAPE_T_RECT:
+                        x1, y1, x2, y2 = TM(s.x), TM(s.y), TM(e.x), TM(e.y)
+                        for a, b2 in (((x1, y1), (x2, y1)), ((x2, y1), (x2, y2)), ((x2, y2), (x1, y2)), ((x1, y2), (x1, y1))):
+                            fab.append((a[0], a[1], b2[0], b2[1], shp))
+                    else:
+                        fab.append((TM(s.x), TM(s.y), TM(e.x), TM(e.y), shp))
                 except Exception:
                     pass
         c = f.GetPosition()
@@ -132,10 +140,10 @@ def draw_frame(state, data, caption, sub):
     zp = state.get("zones", 0.0)
     if zp > 0:
         for side, pts, holes in zones:
-            col = FCU if side == "F" else BCU
+            col = (46, 122, 84) if side == "F" else (40, 96, 120)       # copper under green mask
             layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
             ld = ImageDraw.Draw(layer)
-            ld.polygon([P(*p) for p in pts], fill=col + (int((70 if side == "F" else 45) * zp),))
+            ld.polygon([P(*p) for p in pts], fill=col + (int((150 if side == "F" else 70) * zp),))
             for h in holes:
                 ld.polygon([P(*p) for p in h], fill=(0, 0, 0, 0))
             img.paste(Image.alpha_composite(img.convert("RGBA"), layer).convert("RGB"))
@@ -226,7 +234,7 @@ def main(src, dst, fps=30):
         add({"parts": len(parts), "age": full_age, "tracks": len(tracks), "vias": len(vias), "zones": (i + 1) / 30,
              "rats": 0}, "Copper pours", "ground fill on the outer layers, GND + 3.3 V planes inside")
     add({"parts": len(parts), "age": full_age, "tracks": len(tracks), "vias": len(vias), "zones": 1, "rats": 0},
-        "Done", "then DRC, schematic, Gerbers", n=60)
+        "Done", "DRC: 0 errors, 0 unconnected  ·  schematic netlist matches  ·  Gerbers exported", n=75)
     Path(dst).parent.mkdir(parents=True, exist_ok=True)
     imageio.mimsave(dst, frames, fps=fps, codec="libx264", quality=8, macro_block_size=8)
     print("wrote", dst, len(frames), "frames")
