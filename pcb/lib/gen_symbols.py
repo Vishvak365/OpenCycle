@@ -11,7 +11,7 @@ SYMS = {
                    desc="Barometric pressure sensor, I2C/SPI/I3C, LGA-10 2x2 mm",
                    left=[("1", "VDDIO", "power_in"), ("10", "VDD", "power_in"), ("6", "CSB", "input"),
                          ("5", "SDO", "bidirectional")],
-                   right=[("2", "SCK", "input"), ("4", "SDI", "bidirectional"), ("7", "INT", "output")],
+                   right=[("2", "SCK", "input"), ("4", "SDI", "bidirectional"), ("7", "INT", "tri_state")],
                    bottom=[("3", "VSS", "power_in"), ("8", "VSS", "power_in"), ("9", "VSS", "power_in")]),
     "DSGP.1575.12.4.A.02": dict(ref="AE", fp="OpenCycle:Taoglas_DSGP.1575.12.4.A.02_12x12mm",
                    ds="https://www.taoglas.com/datasheets/DSGP.1575.12.4.A.02.pdf",
