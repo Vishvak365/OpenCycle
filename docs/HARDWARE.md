@@ -57,7 +57,7 @@ nRF52840 module talks to: GPS (UART), flash (QSPI), barometer + accelerometer (I
 
 The speaker is negligible on average. No front light yet, so the screen is unreadable in the dark.
 
-## Sourcing (Digi-Key / Mouser, checked 2026-09-29)
+## Sourcing (Digi-Key / Mouser, checked 2026-09-29) — full detail in [sourcing/](sourcing/README.md)
 
 Verified: MAX-M10S (Mouser $9.12), Taoglas patch (Digi-Key $5.43), W25Q128JVSIQ ($2.88), GCT USB4105 ($0.80), MAX98357A ($3.73), Hirose FH12-10S ($1.75), SKRTLAE010 (~$0.34, low stock), LIS3DHTR (Mouser $1.94).
 Problems: the Sharp LS027 showed 0 stock / 28-week lead at Digi-Key; the MDBT50Q is not stocked by Digi-Key or Mouser (SparkFun $8.95 in stock); bare BMP280 is out of stock (swap to LPS22HH).
