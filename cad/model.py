@@ -61,10 +61,10 @@ def internal_parts():
 
     # back-side modules (hang below the PCB, toward the battery)
     back_z = lambda t: PCB_Z - t
-    for m in (ESP, BLE, GNSS):
-        p[m["name"]] = block(m["w"], m["h"], m["t"], m["x0"], m["y0"], back_z(m["t"]))
-    p["usb_c"] = block(USBC["w"], USBC["h"], USBC["t"],
-                       (BODY_W - USBC["w"]) / 2, PCB_Y0 - 1.0, back_z(USBC["t"]))
+    for m in (ESP, BLE, GNSS, JST):
+        z0 = back_z(m["t"]) if m["side"] == "B" else PCB_Z + PCB_T
+        p[m["name"]] = block(m["w"], m["h"], m["t"], m["x0"], m["y0"], z0)
+    p["usb_c"] = block(USBC["w"], USBC["h"], USBC["t"], (BODY_W - USBC["w"]) / 2, USB_Y0, back_z(USBC["t"]))
 
     # front-side small chips under the display (<=0.9 mm tall)
     chips = [("baro", 2, 2, 12, 30), ("light", 2, 2, 18, 30),
@@ -75,23 +75,24 @@ def internal_parts():
         small = c if small is None else small.union(c)
     p["sensors_power_ics"] = small
 
-    # side-actuated tact switches on the PCB back edge
+    # side-actuated tact switches (Alps SKRTLAE010) on the PCB back, stems 0.1 mm from the plungers
     sw = None
     for y in BTN_RIGHT_Y:
-        s = block(3.2, 6.0, 3.5, BODY_W - CAVITY_INSET_BACK - 0.6 - 0.3 - 3.2, y - 3.0, PCB_Z - 3.5)
-        sw = s if sw is None else sw.union(s)
+        s_ = block(2.56, 4.5, 3.55, 45.2, y - 2.25, PCB_Z - 3.55).union(block(0.83, 2.0, 1.2, 47.76, y - 1.0, PCB_Z - 2.4))
+        sw = s_ if sw is None else sw.union(s_)
     for y in BTN_LEFT_Y:
-        sw = sw.union(block(3.2, 6.0, 3.5, CAVITY_INSET_BACK + 0.6 + 0.3, y - 3.0, PCB_Z - 3.5))
+        sw = sw.union(block(2.56, 4.5, 3.55, 4.24, y - 2.25, PCB_Z - 3.55)).union(
+            block(0.83, 2.0, 1.2, 3.41, y - 1.0, PCB_Z - 2.4))
     p["tact_switches"] = sw
     # top-actuated switches under the three front keys
     fsw = None
     for x in KEY_X:
-        f = block(3.6, 3.6, KEY_SW_T, x - 1.8, KEY_Y - 1.8, PCB_Z + PCB_T)
+        f = block(4.2, 3.2, KEY_SW_T, x - 2.1, KEY_Y - 1.6, PCB_Z + PCB_T)
         fsw = f if fsw is None else fsw.union(f)
     p["front_switches"] = fsw
 
     p["gnss_patch_antenna"] = block(ANT["w"], ANT["h"], ANT["t"],
-                                    (BODY_W - ANT["w"]) / 2, ANT_Y0, PCB_Z + PCB_T)
+                                    ANT_X0, ANT_Y0, PCB_Z + PCB_T)
 
     p["battery"] = rrect(BATT_W, BATT_H, BATT_T, 1.5, BATT_X0, BATT_Y0, BATT_Z)
 
@@ -111,8 +112,10 @@ def internal_parts():
 
     # black print on the underside of the lens, open over the active area
     mask = rrect(LENS_W, LENS_H, 0.05, LENS_R, LENS_INSET, LENS_Y0, LENS_Z)
-    p["lens_mask"] = mask.cut(block(DISP_ACTIVE_W + 0.6, DISP_ACTIVE_H + 0.6, 1,
-                                    aa_x0 - 0.3, aa_y0 - 0.3, LENS_Z - 0.5))
+    mask = mask.cut(block(DISP_ACTIVE_W + 0.6, DISP_ACTIVE_H + 0.6, 1, aa_x0 - 0.3, aa_y0 - 0.3, LENS_Z - 0.5))
+    for (wx, wy, wd) in (WIN_SENSOR, WIN_LED):     # clear windows over the light sensor and charge LED
+        mask = mask.cut(cq.Workplane("XY").circle(wd / 2).extrude(1).translate((wx, wy, LENS_Z - 0.5)))
+    p["lens_mask"] = mask
 
     # buttons (plungers through the side walls)
     btn = None
@@ -167,6 +170,8 @@ def back_shell(back_fillet=1.5):
     s = s.faces("<Z").edges().fillet(back_fillet)
     cav = outline(CAVITY_INSET_BACK, SPLIT_Z, WALL)
     s = s.cut(cav)
+    # 0.5 mm pocket for the cell (floor stays 1.0 mm) - more room between the cell and the ESP32 module
+    s = s.cut(rrect(BATT_W + 0.6, BATT_H + 0.6, BATT_POCKET + 0.01, 1.8, BATT_X0 - 0.3, BATT_Y0 - 0.3, WALL - BATT_POCKET))
     # O-ring groove in the top rim
     s = s.cut(oring_groove())
     # PCB standoffs with M2 pilot holes
@@ -205,8 +210,10 @@ def button_holes(extra=0.3):
 
 
 def usb_hole():
-    return rrect(USB_CUT_W, 10, USB_CUT_H, 1.5,
-                 (BODY_W - USB_CUT_W) / 2, -5, USB_Z - USB_CUT_H / 2)
+    hole = rrect(USB_CUT_W, 10, USB_CUT_H, 1.5, (BODY_W - USB_CUT_W) / 2, -5, USB_Z - USB_CUT_H / 2)
+    # counterbore on the outside: USB-C plug overmolds are up to 12.35 x 6.5 mm (spec max)
+    cb = rrect(USB_CBORE_W, USB_CBORE_D + 3, USB_CBORE_H, 2.0, (BODY_W - USB_CBORE_W) / 2, -3, USB_Z - USB_CBORE_H / 2)
+    return hole.union(cb)
 
 
 def front_bezel(front_fillet=1.2):
@@ -234,7 +241,7 @@ def front_bezel(front_fillet=1.2):
     # tongue that presses the O-ring
     mid = CAVITY_INSET_BACK / 2
     tongue = outline(mid - 0.4, 0.4, SPLIT_Z - 0.4).cut(outline(mid + 0.4, 2, SPLIT_Z - 1))
-    return s.union(tongue)
+    return s.union(tongue).cut(usb_hole())       # the USB counterbore crosses the split line
 
 
 def aero_back_shell():

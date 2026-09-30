@@ -43,7 +43,7 @@ PCB_HOLE_INSET = 3.5
 DISP_W, DISP_H, DISP_T = 42.80, 59.91, 2.55
 DISP_ACTIVE_W, DISP_ACTIVE_H = 36.72, 48.96
 DISP_AA_DX, DISP_AA_DY = 3.04, 7.93          # active area offset from the outline's left / bottom edge
-DISP_TOP_BAND = 15.4                          # body top edge to display top edge
+DISP_TOP_BAND = 15.6                          # body top edge to display top edge (patch + 0.3 mm edge clearance)
 DISP_X0 = (BODY_W - DISP_W) / 2               # 4.6
 DISP_Y0 = BODY_H - DISP_TOP_BAND - DISP_H     # 17.09
 DISP_Z = BODY_D - 1.0 - DISP_T                # sits against the lens: 13.45
@@ -64,18 +64,25 @@ FOAM_W = 2.0
 BATT_W, BATT_H, BATT_T = 34.0, 62.0, 5.0     # Adafruit 258, 1200 mAh, protected (Mouser 485-258)
 BATT_X0 = (BODY_W - BATT_W) / 2
 BATT_Y0 = 20.5
-BATT_Z = WALL + 0.1
+BATT_POCKET = 0.5                            # floor thinned to 1.0 mm under the cell
+BATT_Z = WALL - BATT_POCKET + 0.1
 
-# ------------------------------------- modules on PCB back side (Z below PCB)
-# Placeholder positions for the v0.2 board; the real placement comes from pcb/design.py.
-ESP = dict(name="esp32_s3_wroom_1", w=18.0, h=25.5, t=3.1, x0=8.0, y0=58.0)   # antenna end at the top
-BLE = dict(name="bl652", w=10.0, h=14.0, t=2.2, x0=38.0, y0=68.0)
-GNSS = dict(name="gnss_max_m10s", w=9.7, h=10.1, t=2.5, x0=27.0, y0=72.0)
-USBC = dict(name="usb_c", w=9.0, h=7.3, t=3.2)
+# ------------------------------------------------ board parts (from pcb/design.py; cad_y = BODY_H - kicad_y)
+# x0/y0 = lower-left corner in CAD coordinates, t = height above/below the PCB face.
+ESP = dict(name="esp32_s3_wroom_1", w=25.5, h=18.0, t=3.25, x0=23.5, y0=BODY_H - 30.0, side="B")   # antenna at the right edge
+BLE = dict(name="bl652", w=14.0, h=10.0, t=2.2, x0=3.0, y0=BODY_H - 27.0, side="B")                # antenna at the left edge
+GNSS = dict(name="gnss_max_m10s", w=9.7, h=10.1, t=2.5, x0=9.45, y0=BODY_H - 14.65, side="F")
+JST = dict(name="battery_jst_ph", w=7.6, h=7.9, t=6.0, x0=39.2, y0=BODY_H - 81.95, side="B")
+USBC = dict(name="usb_c", w=8.94, h=7.36, t=3.26)
+USB_Y0 = BODY_H - 90.28                       # receptacle mouth (KiCad y 90.28) -> 2.12 mm behind the case face
 
 # ------------------------------------------------ front-side (Z above PCB)
-ANT = dict(name="gnss_patch_antenna", w=12.0, h=12.0, t=4.0)   # Taoglas DSGP.1575.12.4.A.02 class
-ANT_Y0 = DISP_Y0 + DISP_H + 0.3                                  # just above the display: 77.3
+ANT = dict(name="gnss_patch_antenna", w=12.0, h=12.0, t=4.0)   # Taoglas DSGP.1575.12.4.A.02
+ANT_X0 = 26.6 - 6.0                                            # patch centre at KiCad (26.6, 9.4)
+ANT_Y0 = BODY_H - 9.4 - 6.0                                    # 77.0
+# lens-mask windows in the top band (centres, CAD coords) over the light sensor and the charge LED
+WIN_SENSOR = (40.8, BODY_H - 9.4, 1.6)
+WIN_LED = (37.0, BODY_H - 9.4, 1.2)
 
 # ------------------------------------------------------------- buttons
 # Front: three unlabelled soft keys under the screen, labels drawn on the display.
@@ -83,16 +90,17 @@ KEY_D = 9.0                                   # key cap diameter
 KEY_Y = 8.7                                   # key centre height
 KEY_X = tuple(DISP_X0 + DISP_AA_DX + DISP_ACTIVE_W * (i + 0.5) / 3 for i in range(3))  # under each label cell
 KEY_PROUD = 0.8                               # above the front face
-KEY_SW_T = 1.5                                # top-actuated tact switch height (part still to source)
+KEY_SW_T = 2.5                                # C&K PTS810 top-actuated tact switch, 4.2 x 3.2 x 2.5 mm
 # Sides: left = power / back, right = menu.
 BTN_L, BTN_T, BTN_PROUD = 8.0, 3.0, 1.0      # length (Y), thickness (Z), protrusion
 BTN_Z = 8.5                                  # button centre height
-BTN_RIGHT_Y = (58.9,)            # menu
-BTN_LEFT_Y = (58.9,)             # power / back
+BTN_RIGHT_Y = (BODY_H - 34.0,)   # menu (SW5 at KiCad y 34.0)
+BTN_LEFT_Y = (BODY_H - 34.0,)    # power / back (SW4)
 
 # ------------------------------------------------------------- USB-C port
 USB_CUT_W, USB_CUT_H = 10.0, 4.2
 USB_Z = PCB_Z - USBC["t"] / 2               # port centre height
+USB_CBORE_W, USB_CBORE_H, USB_CBORE_D = 12.8, 7.0, 1.9   # outside pocket so the plug overmold reaches the port
 
 # ------------------------------------------------------- O-ring groove
 ORING_W, ORING_D = 1.2, 0.8
