@@ -102,7 +102,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
           <button id="m-exploded" data-mode="exploded" aria-pressed="false">Exploded</button>
           <button id="m-board" data-mode="board" aria-pressed="false">Board</button>
         </div>
-        <span class="badge" id="concept" hidden>v0.1 concept board shown · v0.2 board not designed yet</span>
+        <span class="badge" id="concept" hidden>v0.2 board · DRC clean · not yet built</span>
       </div>
       <div class="hint" id="hint">Drag to orbit · pinch to zoom · tap a part</div>
     </div>
@@ -314,7 +314,7 @@ function meshFrom(data, name, mat, group, creased = true) {
   const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; m.name = name;
   group.add(m); return m;
 }
-const K2C = (kx, ky) => [kx, 86 - ky];     // board coords -> CAD coords
+const K2C = (kx, ky) => [kx, 92.4 - ky];   // board coords -> CAD coords (cad_y = 92.4 - kicad_y)
 
 // ---------------------------------------------------------------- state
 const state = { mode: 'product', variant: 'standard', side: 'front', explode: 0, explodeTarget: 0, selPart: null, selNet: null };
@@ -365,35 +365,37 @@ function buildParts(data) {
     const g = new THREE.Group(); g.userData.part = p;
     const horiz = p.w >= p.d;
     const add = (m) => { g.add(m); };
+    const W = p.w, Dd = p.d, Hh = Math.max(p.h, 0.3);
     switch (p.kind) {
       case 'res': case 'cap': {
-        const big = p.h > 0.5; const L = big ? 1.6 : 1.0, Wd = big ? 0.8 : 0.5, H = big ? 0.8 : 0.35;
+        const big = p.h > 0.7; const L = big ? 1.6 : 1.0, Wd = big ? 0.8 : 0.5, H = big ? 0.8 : 0.45;
         const [lx, ly] = horiz ? [L, Wd] : [Wd, L];
         add(box(lx, ly, H, p.kind === 'res' ? M.epoxy : M.ceramic, cx, cy, zc(H)));
         const e = L * 0.2; const off = L / 2 - e / 2;
         for (const sgn of [-1, 1]) add(box(horiz ? e : Wd + 0.02, horiz ? Wd + 0.02 : e, H + 0.02, M.tin, cx + (horiz ? sgn * off : 0), cy + (horiz ? 0 : sgn * off), zc(H)));
         break; }
       case 'module': {
-        add(box(10.4, 15.6, 0.8, M.fr4, cx, cy - 0.3, zc(0.8)));
-        add(box(10.0, 11.4, 1.4, M.tin, cx, cy - 2.2, zb + up * (0.8 + 0.7), 0.2));
+        // FR4 carrier + metal shield; the antenna end (ESP32: right edge, BL652: left edge) stays bare
+        const ant = p.ref === 'U1' ? 6.0 : 2.2, dir = p.ref === 'U1' ? 1 : -1;
+        add(box(W, Dd, 0.8, M.fr4, cx, cy, zc(0.8)));
+        add(box(W - ant - 0.6, Dd - 1.2, Hh - 0.8, M.tin, cx - dir * ant / 2, cy, zb + up * (0.8 + (Hh - 0.8) / 2), 0.2));
+        add(box(ant - 0.4, Dd - 1.0, 0.05, M.epoxy, cx + dir * (W / 2 - ant / 2), cy, zb + up * 0.83));
         break; }
-      case 'can': add(box(9.7, 10.1, 2.4, M.tin, cx, cy, zc(2.4), 0.15)); break;
+      case 'can': add(box(9.7, 10.1, Hh, M.tin, cx, cy, zc(Hh), 0.15)); break;
       case 'patch': {
-        add(box(15, 15, 3.9, M.ceramicW, cx, cy, zc(3.9), 0.3));
-        add(box(12, 12, 0.1, M.silver, cx, cy + 0.4, zb + up * 3.95));
+        add(box(12, 12, 3.9, M.ceramicW, cx, cy, zc(3.9), 0.3));
+        add(box(9, 9, 0.1, M.silver, cx, cy, zb + up * 3.95));
         break; }
-      case 'soic': add(box(5.3, 5.3, 1.8, M.epoxy, cx, cy, zc(1.8), 0.15)); break;
-      case 'usbc': add(box(8.94, 7.35, 3.2, M.tin, 26, 86 - 79.9, zc(3.2), 1.55)); break;
-      case 'jst': { add(box(4.5, 4.2, 2.9, M.nylon, cx, cy + 0.6, zc(2.9), 0.2)); break; }
-      case 'fpc': { add(box(8.0, 3.2, 2.0, M.epoxy, cx, cy + 0.6, zc(2.0), 0.1)); add(box(8.2, 1.2, 0.6, M.brown, cx, cy - 1.4, zb + up * 1.9)); break; }
-      case 'switch': { const [a, b] = horiz ? [4.2, 3.4] : [3.4, 4.2]; add(box(a, b, 3.5, M.tin, cx, cy, zc(3.5), 0.2)); break; }
+      case 'usbc': add(box(8.94, 7.35, 3.2, M.tin, cx, cy + 0.1, zc(3.2), 1.55)); break;
+      case 'jst': add(box(W * 0.95, Dd * 0.95, Hh, M.nylon, cx, cy, zc(Hh), 0.2)); break;
+      case 'fpc': { add(box(W * 0.96, 3.4, 2.0, M.epoxy, cx, cy + 0.3, zc(2.0), 0.1)); add(box(W * 0.9, 1.1, 0.6, M.brown, cx, cy + 2.3, zb + up * 1.7)); break; }
+      case 'switch': add(box(W * 0.8, Dd * 0.8, Hh, M.tin, cx, cy, zc(Hh), 0.2)); break;
       case 'led': add(box(1.6, 0.8, 0.6, M.ledG, cx, cy, zc(0.6), 0.1)); break;
-      case 'inductor': add(box(3.0, 3.0, 1.2, M.panel, cx, cy, zc(1.2), 0.3)); break;
+      case 'pads': break;
       default: {
-        const bw = Math.max(0.8, p.w * 0.7), bd = Math.max(0.8, p.d * 0.7);
-        add(box(bw, bd, p.h, M.epoxy, cx, cy, zc(p.h), 0.08));
-        // pin-1 dot
-        add(box(0.25, 0.25, 0.02, M.silver, cx - bw / 2 + 0.3, cy + bd / 2 - 0.3, zb + up * (p.h + 0.01)));
+        const bw = Math.max(0.8, W * 0.8), bd = Math.max(0.8, Dd * 0.8);
+        add(box(bw, bd, Hh, M.epoxy, cx, cy, zc(Hh), 0.08));
+        add(box(0.25, 0.25, 0.02, M.silver, cx - bw / 2 + 0.3, cy + bd / 2 - 0.3, zb + up * (Hh + 0.01)));
       }
     }
     G.pcb.add(g); partObjs.push(g);
@@ -413,41 +415,47 @@ function buildRibbon() {
   const m = new THREE.Mesh(g, M.kapton); m.castShadow = true; m.name = 'ribbon'; G.disp.add(m); return m;
 }
 
-// top band print: light-sensor window, wordmark, charge LED (printed on the lens underside)
+// top band print on the lens underside: wordmark left, then the charge-LED and light-sensor windows over
+// the real parts (D1 at x 37.0, U4 at x 40.8, both at KiCad y 9.4 -> CAD y 83.0). Plane spans x 4..48 mm.
 function buildTopBand() {
   const c = document.createElement('canvas'); c.width = 1024; c.height = 128;
   const g = c.getContext('2d');
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 70px "Barlow Condensed", sans-serif';
-  if ('letterSpacing' in g) g.letterSpacing = '22px';
-  g.fillStyle = 'rgba(242,244,246,0.82)'; g.fillText('OPENCYCLE', 512, 66);
-  g.fillStyle = '#34373c'; g.beginPath(); g.arc(150, 64, 18, 0, 7); g.fill();
+  const X = (mm) => (mm - 4) / 44 * 1024;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '600 64px "Inter", "Helvetica Neue", sans-serif';
+  if ('letterSpacing' in g) g.letterSpacing = '14px';
+  g.fillStyle = 'rgba(242,244,246,0.8)'; g.fillText('OPENCYCLE', X(20.5), 66);
+  g.fillStyle = '#6fd08c'; g.shadowColor = '#6fd08c'; g.shadowBlur = 16; g.beginPath(); g.arc(X(37.0), 64, 12, 0, 7); g.fill();
+  g.shadowBlur = 0; g.fillStyle = '#2f3237'; g.beginPath(); g.arc(X(40.8), 64, 17, 0, 7); g.fill();
   g.strokeStyle = 'rgba(255,255,255,0.22)'; g.lineWidth = 3; g.stroke();
-  g.fillStyle = '#6fd08c'; g.shadowColor = '#6fd08c'; g.shadowBlur = 18; g.beginPath(); g.arc(874, 64, 13, 0, 7); g.fill();
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(40, 5), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
-  m.position.set(26, 92.4 - 7.7, 16.06); m.name = 'topband'; G.front.add(m); return m;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(44, 5.5), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+  m.position.set(26, 83.0, 16.06); m.name = 'topband'; G.front.add(m); return m;
 }
 
 // ---------------------------------------------------------------- nets
 const NET_INFO = {
-  GND: 'Ground. Solid plane on inner layer 1, stitched with vias.', '+3V3': '3.3 V rail from the LDO. Solid plane on inner layer 2.',
-  VBAT: 'Raw battery, 3.0 to 4.2 V. Feeds the LDO and the speaker amp.', VBUS: '5 V from USB-C. Feeds the charger.',
-  '+5V_DISP': '5 V made by the boost converter for the Sharp display.', BOOST_SW: 'Boost converter switch node (the inductor side).',
-  BOOST_FB: 'Feedback divider that sets the boost output to 5.05 V.', CHG_PROG: 'Sets the charge current to 500 mA.',
-  CHG_STAT: 'Charger status, drives the charge LED.', LED_A: 'Charge LED anode.', VBAT_SENSE: 'Battery voltage through a 1 M / 1 M divider into the ADC.',
-  DISP_PWR_EN: 'MCU turns the display boost on and off.', RF_IN: 'GPS antenna feed into the receiver.',
-  USB_DP: 'USB data +', USB_DN: 'USB data −', USB_DP_C: 'USB data + at the connector, through ESD protection.', USB_DN_C: 'USB data − at the connector, through ESD protection.',
-  CC1: 'USB-C config pin, 5.1 k to ground asks the charger for 5 V.', CC2: 'USB-C config pin, 5.1 k to ground asks the charger for 5 V.',
-  I2C_SDA: 'I²C data to the barometer and accelerometer.', I2C_SCL: 'I²C clock to the barometer and accelerometer.', IMU_INT1: 'Accelerometer interrupt: wake on motion.',
-  'SPK+': 'Speaker output +', 'SPK-': 'Speaker output −', I2S_BCLK: 'Digital audio bit clock.', I2S_LRCLK: 'Digital audio word clock.', I2S_DIN: 'Digital audio data.', AMP_EN: 'Speaker amp enable.',
-  SWDIO: 'Programming and debug data.', SWDCLK: 'Programming and debug clock.', SWO: 'Debug trace output.', '~RESET': 'MCU reset.',
+  GND: 'Ground. Solid plane on inner layer 1, stitched to the outer pours with vias.', '+3V3': '3.3 V rail from the 1 A LDO. Solid plane on inner layer 2.',
+  VBAT: 'Battery after the reverse-polarity FET, 3.0 to 4.2 V. Feeds the LDO, the speaker amp and the display backlight.',
+  'BATT+': 'Raw battery at the JST-PH socket, before the reverse-polarity FET.', VBUS: '5 V from USB-C. Feeds the charger and the charge LED.',
+  CHG_PROG: 'Sets the charge current to 500 mA (2 k).', CHG_STAT: 'Charger status: lights the charge LED while charging.', LED_A: 'Charge LED anode.',
+  VBAT_SENSE: 'Battery voltage through a 1 M / 1 M divider into the ESP32 ADC.', VBUS_SENSE: 'USB present: 100 k / 100 k divider into the ESP32 ADC.',
+  RF_IN: 'GPS patch feed into the receiver: a short 0.2 mm trace over the ground plane.',
+  USB_DP: 'USB D+ to the ESP32 (native USB).', USB_DN: 'USB D- to the ESP32 (native USB).', USB_DP_C: 'USB D+ at the connector, through ESD protection.', USB_DN_C: 'USB D- at the connector, through ESD protection.',
+  CC1: 'USB-C config pin: 5.1 k to ground asks the charger for 5 V.', CC2: 'USB-C config pin: 5.1 k to ground asks the charger for 5 V.',
+  I2C_SDA: 'I2C data: barometer and light sensor.', I2C_SCL: 'I2C clock: barometer and light sensor.',
+  'SPK+': 'Speaker +', 'SPK-': 'Speaker -', I2S_BCLK: 'Digital audio bit clock.', I2S_LRCLK: 'Digital audio word clock.', I2S_DIN: 'Digital audio data.', AMP_EN: 'Speaker amp enable (off at boot).',
+  LCD_SCK: 'Display SPI clock.', LCD_MOSI: 'Display SPI data.', LCD_CS: 'Display chip select.', LCD_DC: 'Display data / command.', LCD_RST: 'Display reset.', LCD_TE: 'Display tearing-effect sync.', LCD_BL: 'Backlight PWM from the ESP32.',
+  BL_G: 'Backlight switch gate.', BL_SW: 'Backlight LED cathodes, switched to ground by the PWM FET.',
+  BLE_TX: 'UART from the BL652 to the ESP32.', BLE_RX: 'UART from the ESP32 to the BL652.', BLE_RST: 'BL652 reset.', BLE_SWDIO: 'BL652 programming data.', BLE_SWDCLK: 'BL652 programming clock.',
+  GPS_TX: 'UART from the GPS to the ESP32.', GPS_RX: 'UART from the ESP32 to the GPS.', GPS_RST: 'GPS reset.', GPS_EXTINT: 'GPS wake / external interrupt.',
+  KEY_L: 'Left front key (also the ESP32 boot pin).', KEY_C: 'Centre front key.', KEY_R: 'Right front key.', BTN_PWR: 'Left side button: power / back.', BTN_MENU: 'Right side button: menu.',
+  ESP_EN: 'ESP32 enable / reset (10 k x 1 uF delay).', CON_TX: 'ESP32 console TX (recovery pads).', CON_RX: 'ESP32 console RX (recovery pads).',
 };
-const netGroup = (n) => /^(GND|\+3V3|VBAT|VBUS|\+5V|BOOST|CHG|LED_A|VBAT_SENSE|DISP_PWR_EN)/.test(n) ? 'Power'
-  : /^(USB|CC)/.test(n) ? 'USB' : /^DISP_/.test(n) ? 'Display' : /^(GNSS|RF_IN)/.test(n) ? 'GPS'
-  : /^(I2C|IMU)/.test(n) ? 'Sensors' : /^FLASH/.test(n) ? 'Flash' : /^(I2S|AMP|SPK)/.test(n) ? 'Audio'
-  : /^BTN/.test(n) ? 'Buttons' : 'Debug';
-const describeNet = (n) => NET_INFO[n] || (n.startsWith('DISP_') ? (n.endsWith('_3V') ? 'Display signal at 3.3 V, from the MCU into a level shifter.' : 'Display signal at 5 V, from a level shifter to the screen.')
-  : n.startsWith('GNSS_') ? 'GPS receiver control or data line to the MCU.' : n.startsWith('FLASH_') ? 'Quad-SPI line to the 16 MB flash.' : n.startsWith('BTN_') ? 'Button input, pulled low when pressed.' : '');
+const netGroup = (n) => /^(GND|\+3V3|VBAT|BATT|VBUS|CHG|LED_A)/.test(n) ? 'Power'
+  : /^(USB|CC)/.test(n) ? 'USB' : /^(LCD|LED_K|BL_)/.test(n) ? 'Display' : /^(GPS|RF_IN)/.test(n) ? 'GPS'
+  : /^I2C/.test(n) ? 'Sensors' : /^BLE/.test(n) ? 'ANT+ / BLE' : /^(I2S|AMP|SPK)/.test(n) ? 'Audio'
+  : /^(KEY|BTN)/.test(n) ? 'Keys' : 'Debug';
+const describeNet = (n) => NET_INFO[n] || '';
 
 function clearHighlight() {
   for (const c of [...highlight.children]) { highlight.remove(c); c.geometry.dispose(); }
@@ -476,7 +484,7 @@ function showNet(net) {
   for (const g of partObjs) if (refs.has(g.userData.part.ref)) g.traverse((m) => { if (m.material && m.material.emissive) { m.material.emissive.copy(glowMat.color); m.material.emissiveIntensity = 0.35; } });
   const unrouted = PCB.unrouted.includes(net);
   setInspector(net, `${netGroup(net)} net · ${refs.size} parts · ${nt} track segments · ${nv} vias`,
-    describeNet(net) + (unrouted ? ' Not fully routed yet on this concept board.' : ''),
+    describeNet(net) + (unrouted ? ' Not fully routed.' : ''),
     [...refs].sort().map((r) => ({ label: r, fn: () => selectPart(r) })));
   document.querySelectorAll('.chip.net').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.net === net)));
 }
@@ -503,7 +511,7 @@ function buildNetList() {
   const groups = {};
   for (const n of nets) (groups[netGroup(n)] ||= []).push(n);
   const wrap = $('nets'); wrap.replaceChildren();
-  for (const gname of ['Power', 'Display', 'GPS', 'USB', 'Sensors', 'Flash', 'Audio', 'Buttons', 'Debug']) {
+  for (const gname of ['Power', 'Display', 'GPS', 'ANT+ / BLE', 'USB', 'Sensors', 'Audio', 'Keys', 'Debug']) {
     if (!groups[gname]) continue;
     const div = document.createElement('div'); div.className = 'group';
     const lab = document.createElement('span'); lab.textContent = gname; div.appendChild(lab);

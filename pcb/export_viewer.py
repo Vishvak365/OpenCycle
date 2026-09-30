@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 sys.path.insert(0, str(Path(__file__).parent))
 import design as D  # noqa: E402
+from check_place import body  # noqa: E402
 
 TM = pcbnew.ToMM
 OUT = Path(__file__).parent.parent / "viewer"
@@ -110,44 +111,42 @@ def textures(b, side):
                     draw_polys(dc, poly_pts(ps, side), SILK, SILK)
                 except Exception:
                     pass
-        cy = fp.GetCourtyard(pcbnew.F_CrtYd if side == "F" else pcbnew.B_CrtYd)
-        bb = cy.BBox() if cy.OutlineCount() else fp.GetBoundingBox(False, False)
-        x, y = TM(bb.GetX() + bb.GetWidth() // 2), TM(bb.GetBottom()) + 0.25
-        p = px(x, y, side)
-        dc.text(p, fp.GetReference(), fill=SILK, font=font, anchor="mt")
-    if side == "B":
-        dc.text(px(23.0, 44.0, side), "OpenCycle", fill=SILK, font=big, anchor="mm")
-        dc.text(px(23.0, 47.0, side), "v0.1 CONCEPT - NOT FOR FAB", fill=SILK, font=font, anchor="mm")
-    else:
-        dc.text(px(26.0, 50.5, side), "OpenCycle v0.1", fill=SILK, font=font, anchor="mm")
+    for d in b.GetDrawings():
+        if d.GetClass() == "PCB_TEXT" and d.GetLayer() == silk:
+            q = d.GetPosition()
+            sz = TM(d.GetTextHeight())
+            try:
+                f2 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", max(8, int(sz * PX * 1.1)))
+            except OSError:
+                f2 = font
+            dc.text(px(TM(q.x), TM(q.y), side), d.GetText(), fill=SILK, font=f2, anchor="mm")
     col.save(OUT / f"pcb_{'front' if side == 'F' else 'back'}_color.png", optimize=True)
     orm.save(OUT / f"pcb_{'front' if side == 'F' else 'back'}_orm.png", optimize=True)
 
 
 KIND = {
-    "U1": ("module", 2.2, "nRF52840 Bluetooth + ANT+ module: the brain"),
-    "U2": ("can", 2.4, "GPS receiver (u-blox M10)"),
-    "AE1": ("patch", 4.0, "15 mm ceramic GPS patch antenna"),
-    "U3": ("soic", 1.9, "16 MB flash: rides, routes, map tiles"),
-    "J1": ("usbc", 3.2, "USB-C charging and data"),
-    "J2": ("jst", 2.9, "Battery connector"),
-    "J3": ("fpc", 2.0, "Display ribbon connector"),
-    "J4": ("pads", 0.0, "Tag-Connect programming pads"),
-    "U4": ("sot", 1.1, "Li-ion charger, 500 mA"),
-    "U5": ("sot", 1.1, "3.3 V regulator (LDO)"),
-    "U6": ("sot", 1.0, "5 V boost for the display"),
-    "L1": ("inductor", 1.2, "Boost inductor 4.7 uH"),
-    "D1": ("sot", 1.1, "USB ESD protection"),
-    "D2": ("led", 0.6, "Charge LED"),
-    "U12": ("lga", 0.8, "Barometer: altitude and climb"),
-    "U13": ("lga", 1.0, "Accelerometer: wake on motion"),
-    "U14": ("qfn", 0.75, "Class-D speaker amp (I2S)"),
-    "LS1": ("pads", 0.0, "Speaker lead pads"),
+    "U1": ("module", "ESP32-S3 module: UI, logging, Wi-Fi, BLE, native USB"),
+    "U2": ("module", "BL652 (nRF52832): ANT+ and BLE sensor bridge"),
+    "U3": ("can", "GPS receiver (u-blox MAX-M10S)"),
+    "AE1": ("patch", "12 mm ceramic GPS patch antenna (Taoglas)"),
+    "U4": ("ic", "Ambient light sensor: auto-dims the backlight"),
+    "U5": ("sot223", "3.3 V regulator, 1 A (LDO)"),
+    "U6": ("ic", "Li-ion charger, 500 mA"),
+    "U7": ("qfn", "Class-D speaker amp (I2S)"),
+    "U8": ("lga", "Barometer: altitude and climb"),
+    "J1": ("usbc", "USB-C: charging, flashing, data"),
+    "J2": ("jst", "Battery connector (JST-PH)"),
+    "J3": ("fpc", "Display FFC connector, 40 pins"),
+    "J4": ("pads", "Tag-Connect pads: program the BL652"),
+    "J5": ("pads", "Tag-Connect pads: ESP32 console / recovery"),
+    "D1": ("led", "Charge LED (behind the lens window)"),
+    "D2": ("ic", "USB ESD protection"),
+    "Q1": ("ic", "Backlight PWM switch"),
+    "Q2": ("ic", "Reverse-battery protection"),
+    "LS1": ("pads", "Speaker lead pads"),
+    "SW1": ("switch", "Left front key"), "SW2": ("switch", "Centre front key"), "SW3": ("switch", "Right front key"),
+    "SW4": ("switch", "Left side button: power / back"), "SW5": ("switch", "Right side button: menu"),
 }
-for i in range(7, 12):
-    KIND[f"U{i}"] = ("sot", 1.0, "3.3 V to 5 V level shifter for the display")
-for sw, t in (("SW1", "Page / lap button"), ("SW2", "Start / stop button"), ("SW3", "Power button")):
-    KIND[sw] = ("switch", 3.5, t)
 
 
 def export(board_path):
@@ -161,23 +160,24 @@ def export(board_path):
         if ref.startswith("H"):
             continue
         side = "F" if fp.GetLayer() == pcbnew.F_Cu else "B"
-        # body size from pads + courtyard, in footprint-local orientation
-        cy = fp.GetCourtyard(pcbnew.F_CrtYd if side == "F" else pcbnew.B_CrtYd)
-        bb = cy.BBox() if cy.OutlineCount() else fp.GetBoundingBox(False, False)
-        w, h = TM(bb.GetWidth()), TM(bb.GetHeight())
-        c = (TM(bb.GetX() + bb.GetWidth() // 2), TM(bb.GetY() + bb.GetHeight() // 2))
+        if ref.startswith("FID"):
+            continue
+        x0, y0, x1, y1 = body(fp)
+        w, h = x1 - x0, y1 - y0
+        c = ((x0 + x1) / 2, (y0 + y1) / 2)
+        height = notes[ref]["h"] if ref in notes else 1.0
         if ref.startswith(("R", "C")):
-            kind, height = ("res" if ref[0] == "R" else "cap"), (0.35 if "0402" in fp.GetFPIDAsString() else 0.8)
+            kind = "res" if ref[0] == "R" else "cap"
             desc = {"R": "Resistor", "C": "Capacitor"}[ref[0]]
         else:
-            kind, height, desc = KIND.get(ref, ("ic", 1.0, ""))
+            kind, desc = KIND.get(ref, ("ic", ""))
         nets = sorted({p.GetNetname() for p in fp.Pads() if p.GetNetname()})
         rot = fp.GetOrientationDegrees()
         # body box is the courtyard shrunk by 0.35 mm margin
         parts.append(dict(ref=ref, value=fp.GetValue(), side=side, kind=kind, h=height,
-                          cx=round(c[0], 3), cy=round(c[1], 3), w=round(max(w - 0.7, 0.4), 3),
-                          d=round(max(h - 0.7, 0.4), 3), rot=rot, desc=desc,
-                          note=notes.get(ref, {}).get("note", ""), mpn=notes.get(ref, {}).get("value", ""),
+                          cx=round(c[0], 3), cy=round(c[1], 3), w=round(max(w, 0.4), 3),
+                          d=round(max(h, 0.4), 3), rot=rot, desc=desc,
+                          note=notes.get(ref, {}).get("note", ""), mpn=notes.get(ref, {}).get("mpn", ""),
                           nets=nets))
     tracks = []
     for t in b.GetTracks():
@@ -196,9 +196,8 @@ def export(board_path):
                 side = "F" if p.IsOnLayer(pcbnew.F_Cu) else "B"
                 pads.append([p.GetNetname(), fp.GetReference(), p.GetNumber(), side,
                              round(TM(q.x), 3), round(TM(q.y), 3)])
-    unrouted = json.loads((Path(board_path).parent / "routed.unrouted.json").read_text())
-    data = dict(board=D.BOARD, holes=D.HOLES, parts=parts, tracks=tracks, vias=vias, pads=pads,
-                unrouted=[u[1] for u in unrouted])
+    data = dict(board=D.BOARD, holes=D.HOLES, cad_h=D.CAD_H, parts=parts, tracks=tracks, vias=vias, pads=pads,
+                unrouted=[])        # DRC: 0 unconnected (pcb/drc_report.txt)
     (OUT / "pcb.json").write_text(json.dumps(data, separators=(",", ":")))
     print("parts", len(parts), "tracks", len(tracks), "vias", len(vias))
 
