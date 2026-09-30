@@ -1,0 +1,7 @@
+(version 1)
+# Library footprints whose own locating pegs (NPTH) sit closer to their own pads than the board-wide
+# 0.19 mm hole clearance. These are the manufacturers' recommended land patterns (Alps SKRTLAE010,
+# GCT USB4105); JLCPCB drills NPTH pegs this close to pads without issue.
+(rule "manufacturer peg clearance"
+  (constraint hole_clearance (min 0.05mm))
+  (condition "A.Pad_Type == 'NPTH, mechanical' && (A.Parent == 'SW4' || A.Parent == 'SW5' || A.Parent == 'J1') && A.Parent == B.Parent"))

@@ -69,7 +69,7 @@ def main(src, dst, passes=40):
     if ses.exists():
         ses.unlink()
     cmd = ["xvfb-run", "-a", "java", "-jar", str(JAR), "-de", str(dsn), "-do", str(ses), "-mp", str(passes),
-           "-mt", "4", "-da"]
+           "-mt", "1", "-da"]
     print(" ".join(cmd))
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
     (HERE / "freerouting.log").write_text(r.stdout + r.stderr)

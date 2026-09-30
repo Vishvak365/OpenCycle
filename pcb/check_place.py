@@ -82,6 +82,18 @@ def run(path):
             r = 2.4 if s == "B" else 2.1        # back: shell standoff; front: M2 screw head
             if overlap(bx, (hx - r, hy - r, hx + r, hy + r)):
                 issues.append(f"{s}: {ref} overlaps the standoff/screw at {hx},{hy}")
+    # through-holes (NPTH pegs, PTH) go through the board: nothing on the other side may sit on them
+    for f in fps:
+        for pad in f.Pads():
+            if pad.GetAttribute() not in (pcbnew.PAD_ATTRIB_NPTH, pcbnew.PAD_ATTRIB_PTH) or pad.GetDrillSize().x == 0:
+                continue
+            hx, hy = TM(pad.GetPosition().x), TM(pad.GetPosition().y)
+            r = TM(pad.GetDrillSize().x) / 2 + 0.2
+            for g in fps:
+                if g is f or side[g.GetReference()] == side[f.GetReference()]:
+                    continue
+                if overlap(body(g), (hx - r, hy - r, hx + r, hy + r)):
+                    issues.append(f"hole of {f.GetReference()} at ({hx:.2f},{hy:.2f}) under {g.GetReference()} on the other side")
     return issues
 
 

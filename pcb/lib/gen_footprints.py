@@ -65,9 +65,8 @@ def bmp581():
         b += pad(n, x, y, w, h, shape="rect", extra=" (solder_mask_margin 0.02)")
     b += rect("F.Fab", -1, -1, 1, 1, 0.1) + rect("F.CrtYd", -1.3, -1.3, 1.3, 1.3, 0.05)
     b += '  (fp_circle (center -1.35 -1.05) (end -1.25 -1.05) (stroke (width 0.12) (type solid)) (fill none) (layer "F.SilkS"))\n'
-    # Bosch: no solder mask under the sensor -> one mask opening over the body
-    b += ('  (fp_poly (pts (xy -1.02 -1.02) (xy 1.02 -1.02) (xy 1.02 1.02) (xy -1.02 1.02))'
-          ' (stroke (width 0) (type solid)) (fill solid) (layer "F.Mask"))\n')
+    # Bosch recommends no mask under the body; a single opening would bridge all pads (mask-bridge DRC),
+    # so each pad gets its own 20 um mask expansion instead (as on SparkFun's production board).
     return module("Bosch_LGA-10_2x2mm_P0.5mm_BMP581", b,
                   "Bosch BMP581 LGA-10 2.0x2.0 mm, land pattern per datasheet BST-BMP581-DS004-13 section 8.2",
                   "BMP581 LGA barometer")

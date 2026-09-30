@@ -19,5 +19,4 @@
   (fp_rect (start -1 -1) (end 1 1) (stroke (width 0.1) (type solid)) (fill none) (layer "F.Fab"))
   (fp_rect (start -1.3 -1.3) (end 1.3 1.3) (stroke (width 0.05) (type solid)) (fill none) (layer "F.CrtYd"))
   (fp_circle (center -1.35 -1.05) (end -1.25 -1.05) (stroke (width 0.12) (type solid)) (fill none) (layer "F.SilkS"))
-  (fp_poly (pts (xy -1.02 -1.02) (xy 1.02 -1.02) (xy 1.02 1.02) (xy -1.02 1.02)) (stroke (width 0) (type solid)) (fill solid) (layer "F.Mask"))
 )

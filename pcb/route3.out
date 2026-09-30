@@ -1,0 +1,7 @@
+xvfb-run -a java -jar /home/user/OpenCycle/pcb/freerouting-1.9.0.jar -de /home/user/OpenCycle/pcb/work.dsn -do /home/user/OpenCycle/pcb/work.ses -mp 60 -mt 1 -da
+imported tracks/vias: (635, 74)
+routed -> routed.kicad_pcb
+
+real	1m30.528s
+user	1m43.282s
+sys	0m1.651s

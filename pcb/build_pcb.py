@@ -43,6 +43,25 @@ def pin_map(p):
     return out
 
 
+def apply_rules(b):
+    r = D.RULES
+    ds = b.GetDesignSettings()
+    ds.SetBoardThickness(MM(D.BOARD["thickness"]))
+    ds.m_TrackMinWidth = MM(r["track_min"])
+    ds.m_MinClearance = MM(r["clearance_min"])
+    ds.m_ViasMinSize = MM(r["via_min"])
+    ds.m_MinThroughDrill = MM(r["drill_min"])        # ESP32 footprint thermal vias; JLC 4-layer minimum 0.2 mm
+    ds.m_CopperEdgeClearance = MM(r["edge_clearance"])
+    ds.m_HoleClearance = MM(r["hole_clearance"])     # GCT USB4105 library footprint: 0.194 mm NPTH-to-pad
+    ds.m_HoleToHoleMin = MM(r["hole_to_hole"])
+    ds.m_SilkClearance = MM(0.0)
+    nc = ds.m_NetSettings.m_DefaultNetClass
+    nc.SetClearance(MM(r["default_clearance"]))
+    nc.SetTrackWidth(MM(r["default_track"]))
+    nc.SetViaDiameter(MM(r["via_d"]))
+    nc.SetViaDrill(MM(r["via_drill"]))
+
+
 def rule_area(b, rect, layers, name, tracks=True, vias=True, pour=True, footprints=False):
     z = pcbnew.ZONE(b)
     z.SetIsRuleArea(True)
@@ -65,21 +84,7 @@ def build():
     subprocess.run([sys.executable, str(HERE / "lib" / "gen_footprints.py")], check=True)
     b = pcbnew.BOARD()
     b.SetCopperLayerCount(4)
-    ds = b.GetDesignSettings()
-    ds.SetBoardThickness(MM(D.BOARD["thickness"]))
-    ds.m_TrackMinWidth = MM(0.127)
-    ds.m_MinClearance = MM(0.127)
-    ds.m_ViasMinSize = MM(0.45)
-    ds.m_MinThroughDrill = MM(0.2)          # ESP32 footprint thermal vias; JLC 4-layer minimum is 0.2 mm
-    ds.m_CopperEdgeClearance = MM(0.3)
-    ds.m_HoleClearance = MM(0.19)           # GCT USB4105 library footprint has 0.194 mm NPTH-to-pad
-    ds.m_HoleToHoleMin = MM(0.25)
-    ds.m_SilkClearance = MM(0.0)
-    nc = ds.m_NetSettings.m_DefaultNetClass
-    nc.SetClearance(MM(0.15))
-    nc.SetTrackWidth(MM(0.2))
-    nc.SetViaDiameter(MM(0.5))
-    nc.SetViaDrill(MM(0.3))
+    apply_rules(b)
     for i in (pcbnew.In1_Cu, pcbnew.In2_Cu):
         b.SetLayerType(i, pcbnew.LT_POWER)
 
@@ -187,7 +192,7 @@ def build():
     # board marking
     for text, pos, layer, size in [("OpenCycle v0.2", (26, 58.0), pcbnew.B_SilkS, 1.4),
                                    ("github.com/Vishvak365/OpenCycle", (26, 60.2), pcbnew.B_SilkS, 0.8),
-                                   ("rev A  2026-09", (26, 62.0), pcbnew.B_SilkS, 0.7)]:
+                                   ("rev A  2026-09", (26, 62.0), pcbnew.B_SilkS, 0.8)]:
         t = pcbnew.PCB_TEXT(b)
         t.SetText(text); t.SetPosition(V(*pos)); t.SetLayer(layer)
         t.SetTextSize(pcbnew.VECTOR2I(MM(size), MM(size))); t.SetTextThickness(MM(size * 0.15))

@@ -104,21 +104,21 @@ part("U2", "BL652-SA-01", "RF_Bluetooth:BL652", "RF_Module:Laird_BL652", "B", 11
 C("C4", "10uF", "B", 13.6, 29.4, 0, "+3V3")
 C("C5", "100nF", "B", 16.2, 29.4, 0, "+3V3")
 part("J4", "SWD (BL652)", "Connector:Conn_ARM_SWD_TagConnect_TC2030-NL",
-     "Connector:Tag-Connect_TC2030-IDC-NL_2x03_P1.27mm_Vertical", "B", 12.5, 33.6, 0, {
+     "Connector:Tag-Connect_TC2030-IDC-NL_2x03_P1.27mm_Vertical", "B", 19.5, 38.2, 0, {
          "VCC": "+3V3", "SWDIO": "BLE_SWDIO", "~{RESET}": "BLE_RST", "SWCLK": "BLE_SWDCLK", "GND": "GND",
          "SWO": None}, "Tag-Connect pads: programs the BL652. Nothing to assemble.", "", "", 0.0)
 
 # ============================================================ GPS (front, top band, left of the patch)
-part("U3", "MAX-M10S", "RF_GPS:MAX-M10S", "RF_GPS:ublox_MAX", "F", 14.6, 9.6, 0, {
+part("U3", "MAX-M10S", "RF_GPS:MAX-M10S", "RF_GPS:ublox_MAX", "F", 14.95, 9.6, 0, {
     "GND": "GND", "TXD": "GPS_TX", "RXD": "GPS_RX", "TIMEPULSE": None, "EXTINT": "GPS_EXTINT",
     "V_BCKP": "+3V3", "VCC_IO": "+3V3", "VCC": "+3V3", "~{RESET}": "GPS_RST", "RF_IN": "RF_IN",
     "LNA_EN": None, "VCC_RF": None, "VIO_SEL": None, "SDA": None, "SCL": None, "~{SAFEBOOT}": None,
 }, "u-blox M10. Pin 15 is 'Reserved' on the MAX-M10S (KiCad names it VIO_SEL): left open.",
     "MAX-M10S-00B", "u-blox", 2.5)
-C("C6", "10uF", "F", 11.7, 16.9, 0, "+3V3")
-C("C7", "100nF", "F", 14.7, 16.9, 0, "+3V3")
+C("C6", "10uF", "F", 12.0, 16.9, 0, "+3V3")
+C("C7", "100nF", "F", 15.0, 16.9, 0, "+3V3")
 part("AE1", "DSGP.1575.12.4.A.02", "OpenCycle:DSGP.1575.12.4.A.02", "OpenCycle:Taoglas_DSGP.1575.12.4.A.02_12x12mm",
-     "F", 26.9, 9.4, -90, {"FEED": "RF_IN", "GND": "GND"},
+     "F", 27.2, 9.4, -90, {"FEED": "RF_IN", "GND": "GND"},
      "12 mm ceramic patch, feed toward the receiver. RF_IN is a short hand-placed 0.2 mm trace over the In1 ground plane.",
      "DSGP.1575.12.4.A.02", "Taoglas", 4.0)
 
@@ -206,7 +206,7 @@ part("LS1", "CMS-151125-078L100", "Device:Speaker", "OpenCycle:SpeakerPads_2.6mm
      {"1": "SPK+", "2": "SPK-"}, "Pads for the speaker's 32 AWG leads (red = +).", "CMS-151125-078L100", "Same Sky", 0.1)
 
 # ============================================================ sensors (back, right edge near the case vent)
-part("U8", "BMP581", "OpenCycle:BMP581", "OpenCycle:Bosch_LGA-10_2x2mm_P0.5mm_BMP581", "B", 45.6, 48.4, 0, {
+part("U8", "BMP581", "OpenCycle:BMP581", "OpenCycle:Bosch_LGA-10_2x2mm_P0.5mm_BMP581", "B", 45.6, 48.4, 180, {
     "VDDIO": "+3V3", "VDD": "+3V3", "CSB": "+3V3", "SDO": "GND", "SCK": "I2C_SCL", "SDI": "I2C_SDA",
     "INT": "GND", "VSS": "GND"},
     "Barometer, I2C 0x46. No vias/traces under it (Bosch). Next to the vent in the right wall.", "BMP581", "Bosch", 0.8)
@@ -215,8 +215,8 @@ C("C20", "100nF", "B", 45.6, 51.4, 0, "+3V3")
 # ============================================================ keys
 KEY_Y = 92.4 - 8.7          # cad KEY_Y = 8.7
 for ref, net, x in (("SW1", "KEY_L", 13.76), ("SW2", "KEY_C", 26.0), ("SW3", "KEY_R", 38.24)):
-    part(ref, "PTS810", "Switch:SW_Push", "Button_Switch_SMD:SW_SPST_PTS810", "F", x, KEY_Y, 0, {"1": net, "2": "GND"},
-         f"Front soft key ({net}). Top-actuated, 2.5 mm tall.", "PTS810 SJM 250 SMTR LFS", "C&K", 2.5)
+    part(ref, "PTS810", "Switch:SW_Push", "Button_Switch_SMD:SW_SPST_PTS810", "F", x, KEY_Y, 90, {"1": net, "2": "GND"},
+         f"Front soft key ({net}). Top-actuated, 2.5 mm tall. Turned 90 deg so the USB-C locating pegs clear its pads.", "PTS810 SJM 250 SMTR LFS", "C&K", 2.5)
 part("SW4", "SKRTLAE010", "Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T-MP_NO_Horizontal_Alps_SKRTLAE010", "B",
      5.45, 34.0, 90, {"1": "BTN_PWR", "2": "GND"}, "Left side: power / back", "SKRTLAE010", "Alps Alpine", 3.55)
 part("SW5", "SKRTLAE010", "Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T-MP_NO_Horizontal_Alps_SKRTLAE010", "B",
@@ -251,10 +251,10 @@ PLANE_NETS = {"GND": "In1.Cu", "+3V3": "In2.Cu"}
 # Keep-outs (board coords). "all": no copper on any layer (antennas).
 KEEPOUTS = [
     dict(name="ESP32 antenna", rect=(42.3, 10.5, 49.5, 31.0), layers="all"),
-    dict(name="BL652 antenna", rect=(2.5, 15.0, 8.9, 29.0), layers="all"),
+    dict(name="BL652 antenna", rect=(2.5, 15.0, 5.05, 29.0), layers="all")   # under the antenna end only,
 ]
-NO_TRACKS_F = [dict(name="under patch", rect=(23.1, 3.6, 32.7, 15.2))]   # no F.Cu tracks under the ceramic
-NO_TRACKS_B = [dict(name="under BMP581", rect=(44.4, 47.2, 46.8, 49.6))]
+NO_TRACKS_F = [dict(name="under patch", rect=(23.4, 3.6, 33.0, 15.2))]   # no F.Cu tracks under the ceramic
+NO_TRACKS_B = [dict(name="under BMP581", rect=(45.05, 47.85, 46.15, 48.95))]   # body interior, inside the pad ring
 
 # Height limits (side, rect, max height mm) - from the enclosure stack in cad/params.py
 HEIGHT_ZONES = [
@@ -266,3 +266,8 @@ HEIGHT_ZONES = [
 ]
 BATTERY_KEEPOUT = (9.0, 9.9, 43.0, 71.9)
 SPEAKER_KEEPOUT = (18.5, 73.4, 33.5, 84.4)
+
+# design rules (applied by build_pcb.py and again by finish.py; KiCad 7 keeps them in the project file)
+RULES = dict(track_min=0.127, clearance_min=0.127, via_min=0.45, drill_min=0.2, edge_clearance=0.3,
+             hole_clearance=0.19, hole_to_hole=0.25, silk_text_min=0.8,
+             default_clearance=0.15, default_track=0.2, via_d=0.5, via_drill=0.3)
