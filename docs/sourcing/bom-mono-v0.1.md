@@ -1,6 +1,6 @@
 # Mono build (v0.1) — Sharp memory LCD
 
-The first design, as implemented in `pcb/design.py`. Kept for reference; the current direction is the [colour build](bom-colour-v0.2.md).
+The first design, as implemented in `pcb/design.py`. Kept for reference; the current design is the [v0.2 colour build](bom-v0.2.md).
 
 ## LCSC / JLCPCB numbers (first pass, for JLC assembly)
 

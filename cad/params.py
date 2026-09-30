@@ -78,7 +78,7 @@ USB_Y0 = BODY_H - 90.28                       # receptacle mouth (KiCad y 90.28)
 
 # ------------------------------------------------ front-side (Z above PCB)
 ANT = dict(name="gnss_patch_antenna", w=12.0, h=12.0, t=4.0)   # Taoglas DSGP.1575.12.4.A.02
-ANT_X0 = 26.6 - 6.0                                            # patch centre at KiCad (26.6, 9.4)
+ANT_X0 = 27.2 - 6.0                                            # patch centre at KiCad (27.2, 9.4)
 ANT_Y0 = BODY_H - 9.4 - 6.0                                    # 77.0
 # lens-mask windows in the top band (centres, CAD coords) over the light sensor and the charge LED
 WIN_SENSOR = (40.8, BODY_H - 9.4, 1.6)

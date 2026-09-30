@@ -1,51 +1,55 @@
-# PCB
+# PCB (v0.2)
 
-> Concept board — **not for fabrication.** Status and to-do list: [`../pcb/README_NOT_FOR_FAB.md`](../pcb/README_NOT_FOR_FAB.md).
+Status: **routed, DRC clean, schematic netlist-matched, fab files exported.** Not yet built. Review checklist and what is still unverified: [`pcb/README.md`](../pcb/README.md).
 
 ## Stack-up and rules
 
-- 4 layers, 1.0 mm: F.Cu (signals, front/display side) / In1 GND plane / In2 +3V3 plane / B.Cu (signals, battery side).
-- Outline 46 × 80 mm, 4 mm corner radius, M2 plated holes at (6.5, 6.5), (45.5, 6.5), (6.5, 79.5), (45.5, 79.5).
-- Intended rules: 0.2 mm tracks, 0.15 mm clearance (router uses 0.2 for margin), vias 0.5 / 0.3 mm, 0.3 mm copper-to-edge.
-- Power nets: VBAT / VBUS / BOOST_SW 0.4 mm; +5V_DISP / RF_IN 0.3 mm; speaker 0.25 mm.
+- 4 layers, 1.0 mm FR-4: F.Cu (front, display side) / In1 GND plane / In2 +3V3 plane / B.Cu (back, battery side). Order as JLCPCB **JLC04101H-3313** (or any 1.0 mm 4-layer).
+- Outline 46 × 86.4 mm, 4 mm corner radius. M2 plated holes at (6.5, 6.5), (45.5, 6.5), (6.5, 85.9), (45.5, 85.9).
+- Rules: 0.15 mm clearance / 0.2 mm default track, vias 0.5 / 0.3 mm, 0.3 mm copper to edge, min drill 0.2 mm (only the ESP32 thermal-pad vias). Power: VBAT / BATT+ / VBUS 0.5 mm, +3V3 0.4 mm, backlight 0.4 mm, speaker 0.3 mm.
+- RF_IN (patch → GPS) is a 4 mm, 0.2 mm-wide trace on F.Cu directly over the In1 ground plane (≈ 50 Ω on a 0.1 mm prepreg; check with the JLC impedance calculator for the stack-up you order).
+- Board coordinates: KiCad x right, y down, seen from the front. Enclosure CAD: `cad_x = x`, `cad_y = 92.4 − y`.
 
-## Pipeline
+## Pipeline (all scripted; `tools/build_all.sh` runs it)
 
 ```bash
 cd pcb
-python3 build_pcb.py                       # design.py -> placed.kicad_pcb
-python3 assign_pins.py placed.kicad_pcb    # choose nRF GPIOs by geometry -> pinmap.json
-python3 build_pcb.py                       # rebuild with the new pin map
-python3 check_place.py                     # courtyards, battery/speaker keep-outs, standoffs
-python3 router.py placed.kicad_pcb routed.kicad_pcb     # ~10 passes, keeps the best
-python3 finish.py routed.kicad_pcb opencycle.kicad_pcb  # planes, pours, zone fill, drc_report.txt
-python3 export_viewer.py opencycle.kicad_pcb            # viewer/pcb.json + textures
+python3 build_pcb.py                       # design.py -> placed.kicad_pcb (+ local footprints, keep-outs, RF feed)
+python3 check_place.py                     # courtyards, enclosure height zones, keep-outs, holes vs. other side
+python3 fanout.py placed.kicad_pcb fanned.kicad_pcb      # escapes + a via for every GND / +3V3 pad
+python3 autoroute.py fanned.kicad_pcb routed.kicad_pcb 60  # Freerouting 1.9 (headless) round trip
+python3 finish.py routed.kicad_pcb opencycle.kicad_pcb   # rules, planes, pours, stitching, clean-up, DRC
+python3 gen_schematic.py && python3 check_netlist.py     # schematic from design.py; netlist == board
+python3 export_fab.py                      # Gerbers, drill, BOMs, CPL, assembly PDFs -> pcb/fab/
+python3 export_viewer.py opencycle.kicad_pcb             # viewer/pcb.json + textures
 ```
 
-## Placement concept
+| Script | What it does |
+|---|---|
+| `design.py` | Every part: symbol, footprint, side, position, rotation, pin → net, MPN, height. Keep-outs, height zones, rules. |
+| `lib/gen_symbols.py`, `lib/gen_footprints.py` | Local symbols/footprints KiCad doesn't ship: BMP581 (from Bosch's drawing), Taoglas 12 mm patch (from Taoglas's drawing), speaker pads. |
+| `check_place.py` | Fails on courtyard overlaps, parts too tall for the enclosure zone they sit in, parts in antenna keep-outs, screw/standoff clashes, through-holes under parts on the other side. |
+| `fanout.py` | Stubs + vias from every plane pad to its plane, via-in-pad for the LDO tab, escapes for boxed-in pads (BMP581 I²C, backlight anode), stitching vias under the patch. |
+| `autoroute.py` + `ses_import.py` | DSN export with net classes, Freerouting headless, SES import without the KiCad GUI. |
+| `finish.py` | Re-applies the design rules, pours, removes dangling autorouter pieces, stitches outer GND pours to In1 on a 2.5 mm grid and into every island, DRC with `rules.kicad_dru`. |
+| `gen_schematic.py`, `check_netlist.py` | Label-connected schematic from the same table; KiCad netlist export compared pin-by-pin with the board. |
+| `export_fab.py`, `sourcing.py` | Fab package and distributor BOM (prices, links, stock). |
 
-- **Back (battery side), top third:** nRF52840 module (antenna toward the top edge, keep-out honoured), GPS receiver, flash.
-- **Back, edges:** three side switches, USB-C at the bottom edge, battery connector bottom-left, speaker pads bottom-right.
-- **Back, middle:** battery pocket (no parts) and speaker pocket (no parts).
-- **Front (display side):** GPS patch antenna top-centre over solid ground; power (charger, LDO, boost) mid-lower; level shifters in a row above the display connector; sensors mid-board; speaker amp right; Tag-Connect pads top-left.
-- Front components must stay under ~1.8 mm (display sits 2.3 mm above the PCB).
+## Placement
 
-## The router (`router.py`)
+- **Front, top band (above the display):** 12 mm patch (centre-right), MAX-M10S left of it (short RF feed), charge LED and light sensor on the right under lens-mask windows.
+- **Front, under the display (≤ 2.15 mm tall; ≤ 1.3 mm under the folded FFC):** display connector J3 in the centre, LDO + caps on the left, backlight FET and ballasts on the right.
+- **Front, bottom band:** three PTS810 keys under the key caps (turned 90° so the USB-C locating pegs clear them).
+- **Back, top:** ESP32 module (antenna at the right edge) and BL652 (antenna at the left edge), each with a keep-out on every layer.
+- **Back, middle (over the battery, ≤ 3.3 mm):** passives, Tag-Connect pads, side switches at the edges, BMP581 at the right edge beside the case vent.
+- **Back, bottom:** USB-C (mouth 0.9 mm past the board edge), ESD, charger, reverse-battery FET, JST-PH socket, amp and speaker pads.
 
-A purpose-built grid maze router, because Freerouting wasn't available:
+## Verification results (committed with the board)
 
-- 0.1 mm grid, 8-direction A* (numba-compiled), vias between F.Cu and B.Cu, small turn penalty.
-- GND and +3V3 pads get a short fan-out + via to the inner planes first.
-- Module inner-row pads get "dog-bone" escapes (short track + via) before routing.
-- Nets are routed as growing trees; power nets first, then signals by length; failed nets are moved to the front and the board is re-routed (best of 10 passes).
-
-Known weaknesses: fine-pitch escapes are crowded around U1; the result still needs manual clean-up in KiCad. Swapping to Freerouting or hand-routing is a reasonable next step.
-
-## Known issues
-
-See `pcb/drc_report.txt` and `pcb/routed.unrouted.json`. Summary:
-- 12 unrouted connections (speaker leads, some display lines, I2C_SCL, BOOST_FB, USB_DP_C, GNSS_RST/TXD, SWDCLK).
-- Clearance netclass saved as 0.2 mm, not the intended 0.15, which inflates the violation count.
-- Some fan-out tracks within 0.18 mm of neighbouring pads; a few duplicate or dangling vias.
-- Switch footprint NPTH pegs sit 0.1 mm from their own pads (library footprint, per datasheet).
-- RF_IN is not impedance-controlled; the patch/nRF keep-outs were checked by eye only.
+| Check | Result | File |
+|---|---|---|
+| Placement (courtyards, heights, keep-outs, holes) | placement OK | `pcb/check_place.py` |
+| KiCad DRC | **0 errors, 0 unconnected**, 5 warnings (ESP32 footprint deliberately differs from the library: keep-out replaced; 4 × module silk clipped at the board edge) | `pcb/drc_report.txt` |
+| Schematic vs. board | **netlist match: 55 nets, 282 pin connections** | `pcb/check_netlist.py` |
+| ERC (KiCad 9 CLI) | **0 errors**; 3 explained warnings (BMP581 SDO/INT tied to GND, amp thermal pad) + library-table notices | `pcb/erc_report.txt` |
+| Real parts vs. enclosure (3D) | **board fit OK** (67 parts, all three case styles) | `cad/board_fit.py` |

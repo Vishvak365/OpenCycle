@@ -30,17 +30,16 @@ Engineering data for every part considered. Units are mm unless noted. "Verified
 - Buy: Mouser 377-MAX-M10S-00B, $9.12 (2,746 at the second check, 16,866 at the first); Digi-Key 672-MAX-M10S-00B-CT-ND $11.42, 4,987 (Verified). LCSC C4153167.
 - Size: 9.7 × 10.1 × ~2.5, LCC-18 (Verified/Library). KiCad `RF_GPS:ublox_MAX`.
 - Constellations: GPS, Galileo, BeiDou, GLONASS, QZSS, NavIC. Integrated TCXO, LNA, SAW.
-- Pins (KiCad symbol): 1 GND, 2 TXD, 3 RXD, 4 TIMEPULSE, 5 EXTINT, 6 V_BCKP, 7 VCC_IO, 8 VCC, 9 RESET_N, 10 GND, 11 RF_IN, 12 GND, 13 LNA_EN, 14 VCC_RF, 15 VIO_SEL, 16 SDA, 17 SCL, 18 SAFEBOOT_N.
+- Pins (Verified, data sheet UBX-20035208 R02 Table 9): 1 GND, 2 TXD, 3 RXD, 4 TIMEPULSE, 5 EXTINT, 6 V_BCKP, 7 V_IO (must be tied to VCC), 8 VCC, 9 RESET_N, 10 GND, 11 RF_IN, 12 GND, 13 LNA_EN, 14 VCC_RF, **15 Reserved (leave open; KiCad's symbol calls it VIO_SEL)**, 16 SDA, 17 SCL, 18 SAFEBOOT_N (leave open).
 - Power: ~25 mW continuous tracking (u-blox figure); Mouser lists "100 mA" as the maximum operating current.
 - RF: 50 Ω RF_IN; for a passive patch, leave VCC_RF and LNA_EN open.
 
-### Taoglas DSGP.1575.15.4.A.02 — GPS patch antenna (SMT)
-- Buy: Mouser 960-DSGP157515.4.A02, $7.46, 331 in stock; Digi-Key 931-DSGP.1575.15.4.A.02TR-ND $5.43, 427 (Verified).
-- Size **15 × 15 × 4**, 3.3 g, ceramic, passive. GPS L1 / Galileo E1, 1575.42 ± 1.023 MHz.
-- Gain 2.6 dBi peak, −1.76 dB average, 67 % efficiency, measured on a **50 × 50 mm ground plane**. Taoglas recommends a symmetric ground plane with the antenna centred.
-- Pins: 1 = RF feed, 2–9 = ground (SMT pads).
-- **Open:** land-pattern dimensions exist only in the datasheet figures (§8.1 copper keep-out, §8.2 paste, §8.3 solder mask, §8.4 composite). [Datasheet](https://www.taoglas.com/datasheets/DSGP.1575.15.4.A.02.pdf).
-- Alternative: Abracon APAE1575R1540AZDB2F-T, pin-fed 15 × 15 × 4, 1.2 dBic, Mouser 815-1575R1540AZDB2FT, $2.11, 1,218 in stock. Its datasheet doesn't give the pin position; a distributor listing mentions an SMA, so confirm the variant before using it.
+### Taoglas DSGP.1575.12.4.A.02 — GPS patch antenna (SMT) — used on v0.2
+- Buy: Digi-Key, $4.25, 1,474 in stock (2026-09-30, via findchips). Newark 289. Mouser did not list stock.
+- Size **12 × 12 × 4**, 3.3 g, ceramic, passive, GPS L1 / Galileo E1, 1575.42 ± 1.023 MHz, 2.73 dBi peak, 62 % efficiency, RHCP, tuned on a **50 × 50 mm** ground plane (ours is 46 × 86 but cut by the antenna keep-outs: expect less than datasheet performance).
+- Pins: 1 = RF feed, 2–9 = ground.
+- Land pattern (Verified from the §6.5 footprint drawing): eight 3.0 × 3.0 mm ground pads on a 4.5 mm grid around the centre, the feed pad 2.0 × 2.0 mm centred 4.9 mm from the centre on the feed side, 0.5 mm copper keep-out ring around the feed. Antenna underside: ground metallisation with a 2.0 × 0.8 mm feed contact at the edge (§5).
+- The earlier 15 mm part (DSGP.1575.15.4.A.02) is not used any more.
 
 ### Newhaven NHD-2.4-240320AF-CSXP — 2.4" IPS TFT
 - Buy: Mouser 763-24240320AFCSXP, **$15.86, 1,032 in stock** (Verified). Digi-Key: 0 in stock ($16.91). Newhaven direct $13.94. Touch variants: resistive -T $20.12, capacitive -CTP $32.08.
@@ -65,6 +64,9 @@ Engineering data for every part considered. Units are mm unless noted. "Verified
 - Footprint: KiCad `Connector_FFC-FPC:Hirose_FH12-40S-0.5SH_1x40-1MP_P0.50mm_Horizontal` (Library).
 - Newhaven's recommended alternative: Molex 54132-4062, Mouser 538-54132-4062, $2.42, 30,165 in stock, bottom contact (no KiCad footprint).
 
+### Diodes DMG2305UX-7 — reverse-battery P-FET (v0.2)
+- Digi-Key DMG2305UX-7DICT-ND, $0.30, 75,458 in stock (2026-09-30). P-channel 20 V 4.2 A SOT-23, pinout 1 G · 2 S · 3 D (Diodes SOT-23 standard; KiCad symbol DMG2301L used, same pinout). Gate to GND, drain to the battery, source to VBAT.
+
 ### Diodes DMG2302UK-7 — backlight switch
 - Mouser 621-DMG2302UK-7, $0.39, 238,766 (Verified). N-channel, SOT-23, 20 V, 2.8 A, 90 mΩ, Vgs(th) 0.3 V, 660 mW.
 - Circuit: LEDA from 3.3 V (or VBAT); each LEDKx through its own ballast resistor to the drain; PWM on the gate from the ESP32 (LEDC peripheral).
@@ -76,9 +78,9 @@ Engineering data for every part considered. Units are mm unless noted. "Verified
 ### Bosch BMP581 — barometer
 - Buy: **Digi-Key 828-BMP581CT-ND, $3.07, 462** (Verified). Mouser 262-BMP581: 0 in stock, 159,933 on order.
 - Package: 10-pin metal-lid LGA, 2.0 × 2.0 (1.9–2.1), height 0.75 typ (0.7–0.8) (Verified, datasheet).
-- Pins (Verified): 1 VDDIO · 2 SDI · 3 SDO (I²C address select) · 4 CSB · 5 GND · 6 VDD · 7 SCK · 8 INT · 9 GND · 10 VDDIO.
+- Pins (Verified against Table 28 of BST-BMP581-DS004-13, 2026-09-30): 1 VDDIO · 2 SCK · 3 VSS · 4 SDI · 5 SDO · 6 CSB · 7 INT · 8 VSS · 9 VSS · 10 VDD. **Correction:** an earlier version of this file listed a different (wrong) order.
 - Supply: VDD 1.71–3.6 V, VDDIO 1.08–3.6 V. I²C address 0x46 (SDO = 0) or 0x47 (SDO = 1); SPI up to 12 MHz; I3C.
-- Land pattern (from SparkFun's production BMP581 board, Eagle package "BMP581"): pads 0.275 × 0.25; side columns at x = ±0.7625 with y = −0.5 / 0 / +0.5; top/bottom rows at y = ±0.7625 with x = ±0.25 (pads rotated 0.25 × 0.275). Silk box 2.2 × 2.2. **Check SparkFun's pad numbering against Bosch's pin 1 before use.**
+- Land pattern (Verified, datasheet §8.1–8.2 drawings): package pads 0.25 × 0.275 at ±0.7625 mm, 0.5 mm pitch; land = pad + 25 µm per side (0.30 × 0.325); top view pin 1 top-left, pins 10-9-8 along the top edge. Implemented in `pcb/lib/gen_footprints.py`. I²C: CSB to VDDIO, SDO to GND (0x46), INT to GND with the interrupt disabled (Bosch §6.2).
 - Needs a vent to outside air: a hole in the case with a breathable membrane.
 
 ### Analog Devices / Maxim MAX98357AETE+T — I²S class-D amp
@@ -96,8 +98,8 @@ Engineering data for every part considered. Units are mm unless noted. "Verified
 ### Microchip MCP73831T-2ACI/OT — charger
 - Mouser 579-MCP73831T-2ACIOT, $0.76, 116,042 (Verified). LCSC C424093. SOT-23-5, 4.20 V, 15–500 mA set by R_PROG (2 kΩ → 500 mA), 3.75–6 V input.
 
-### Diodes AP7361C-33ER-13 — 3.3 V LDO
-- Mouser 621-AP7361C-33ER-13, $0.50, 14,945 (Verified). 1 A, SOT-223R-3 (~6.5 × 7 × 1.8).
+### Diodes AP7361C-33E-13 — 3.3 V LDO (v0.2 uses the SOT-223 'E' part)
+- Mouser 621-AP7361C-33E-13, $0.52, 733 in stock (2026-09-30). 1 A, SOT-223. Pinout (Verified, Diodes datasheet pin table): 1 IN, 2 GND (tab), 3 OUT — matches KiCad `AP7361C-33E`. The earlier 'ER' (SOT-223R) variant has a different pin order and is **not** used.
 - Chosen because TI TLV75733PDBVR (1 A, SOT-23-5, 25 µA Iq, $0.36) had 0 stock until Dec 2026.
 
 ### GCT USB4105-GF-A — USB-C receptacle
@@ -106,6 +108,10 @@ Engineering data for every part considered. Units are mm unless noted. "Verified
 
 ### ST USBLC6-2SC6 — USB ESD
 - Mouser 511-USBLC6-2SC6, $0.49, 81,014 (Verified). LCSC C7519. SOT-23-6, 5.25 V working, 3.5 pF, 15 kV.
+
+### C&K PTS810 SJM 250 SMTR LFS — front soft keys (v0.2)
+- Mouser $0.52, 30,244 in stock (2026-09-30). 4.2 × 3.2 mm, **2.5 mm tall**, top-actuated, 250 gf (the "SJM 250" variant), SPST-NO, −40 to +85 °C.
+- Footprint: KiCad `Button_Switch_SMD:SW_SPST_PTS810`. Mounted rotated 90° on the board so the USB-C receptacle's NPTH pegs (on the back) clear its pads.
 
 ### Alps SKRTLAE010 — side buttons
 - Mouser 688-SKRTLA, $0.34, 2,396; Digi-Key ~$0.34, 432 (Verified). LCSC C110293.
@@ -141,6 +147,6 @@ Engineering data for every part considered. Units are mm unless noted. "Verified
 | Jauch LP603048JK+PCM / LP103048JU+PCM | 6 × 30 × 48 (~850 mAh) / 10 × 30 × 48 (~1500 mAh) LiPo with protection and wires, Digi-Key. |
 
 ## Open items
-1. Taoglas land pattern: needs the §8.4 composite figure.
-2. BMP581 pad numbering vs. Bosch pin 1: confirm the SparkFun package orientation.
-3. BL652 ANT SoftDevice: confirm S212/S332 support on the BL652 (flash size 512 KB), plus licensing.
+1. ~~Taoglas land pattern~~ — done from the §6.5 footprint drawing (12 mm part).
+2. ~~BMP581 pad numbering~~ — done from Bosch's own §8.1–8.2 drawings (SparkFun's package not used).
+3. BL652 ANT SoftDevice (firmware stage): the nRF52832 has 512 KB flash / 64 KB RAM; Nordic's combined ANT+BLE SoftDevice S332 needs roughly a third of that, so it fits, but the ANT SoftDevice licence terms (free for evaluation/hobby, key required for commercial products) must be read before any public firmware release.
