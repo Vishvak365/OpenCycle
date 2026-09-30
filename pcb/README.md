@@ -26,6 +26,6 @@ Everything is generated from `design.py` — do not hand-edit the board and then
 2. **Battery polarity** of the Adafruit lead vs. J2 (pin 1 −, pin 2 +). Q2 blocks a reversed cell, but measure before plugging in.
 3. **JLCPCB rotation offsets** in `cpl_jlcpcb.csv` — JLC's preview shows each part; fix any that are rotated (common for SOT-23, QFN and connectors) in their tool before paying.
 4. **RF_IN impedance**: 0.2 mm on the 1.0 mm JLC04101H-3313 stack-up is close to 50 Ω; confirm with the JLC impedance calculator or ask for impedance control.
-5. **Backlight brightness** with 33 Ω ballasts (conservative for LED safety); drop to 22 Ω in `design.py` if the screen is too dim in sun and the panel stays cool.
+5. **Backlight brightness** with 33 Ω ballasts: ≤ 45 mA per LED in the worst case (4.2 V, Vf 2.7 V), ~21 mA typical, so full brightness is only reached on a full battery. Don't lower the ballasts unless firmware caps the PWM duty from VBAT_SENSE: at 22 Ω the worst case is 68 mA per LED, above the 50 mA per-LED limit.
 6. **Charging while running:** there is no USB power path — the system always runs from VBAT and the MCP73831 charges the cell and feeds the load in parallel (the same approach as Adafruit Feather boards). While the device is on and plugged in, the charger may not terminate (it holds 4.20 V). Fine for a few hours of charging; a power-path charger (e.g. BQ24072) is the v0.3 upgrade if this matters.
 7. **Firmware**: nothing is written yet; the pin map is in `docs/HARDWARE.md`.
