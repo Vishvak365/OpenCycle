@@ -23,3 +23,4 @@ Append new entries at the bottom. Format: date — decision — why.
 - License (likely CERN-OHL-S hardware + MIT software).
 
 - 2026-09-30 — Colour display direction (candidate v0.2): ESP32-S3-WROOM-1-N16R8 + BL652 (nRF52832) as ANT+ coprocessor + Newhaven NHD-2.4-240320AF-CSXP IPS TFT. Parts sourced from Mouser + Digi-Key only; see sourcing/bom-colour-v0.2.md. Why: colour UI, Wi-Fi, LVGL headroom; ANT+ kept via coprocessor. Cost: ~10–22 h battery vs ~100 h.
+- 2026-09-30 — Front layout: buttons on the front, under the screen; keep a 12 mm ceramic patch GPS antenna under the top band (~15 mm top border, ~52 × 92 mm body) rather than a chip antenna. Why: best GPS reception; the owner accepted the taller top band. Power button on the left side. Button arrangement still being chosen from the D1–D4 mockups.
