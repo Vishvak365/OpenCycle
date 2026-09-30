@@ -119,10 +119,11 @@ function softkeys(d, labels) {
       const ix = plus ? cx - 7 + w / 2 + 9 : cx + 7 - w / 2 - 9;
       g.beginPath(); g.moveTo(ix - 4, cy); g.lineTo(ix + 4, cy); if (plus) { g.moveTo(ix, cy - 4); g.lineTo(ix, cy + 4); } g.stroke();
     } else if (s === 'centre') {
-      g.lineWidth = 1.6; g.beginPath(); g.arc(cx - 26, cy, 4, 0, 7); g.stroke();
-      g.beginPath(); g.moveTo(cx - 26, cy - 7); g.lineTo(cx - 26, cy - 4.5); g.moveTo(cx - 26, cy + 4.5); g.lineTo(cx - 26, cy + 7);
-      g.moveTo(cx - 33, cy); g.lineTo(cx - 30.5, cy); g.moveTo(cx - 21.5, cy); g.lineTo(cx - 19, cy); g.stroke();
-      d.text('CENTRE', cx + 6, cy + 5, 14, col, { align: 'center', spacing: 1 });
+      const ix = cx - 27;
+      g.lineWidth = 1.6; g.beginPath(); g.arc(ix, cy, 3.5, 0, 7); g.stroke();
+      g.beginPath(); g.moveTo(ix, cy - 6.5); g.lineTo(ix, cy - 4); g.moveTo(ix, cy + 4); g.lineTo(ix, cy + 6.5);
+      g.moveTo(ix - 6.5, cy); g.lineTo(ix - 4, cy); g.moveTo(ix + 4, cy); g.lineTo(ix + 6.5, cy); g.stroke();
+      d.text('CENTRE', cx - 18, cy + 5, 14, col, { align: 'left', spacing: 1 });
     } else d.text(s, cx, cy + 5, 14, col, { align: 'center', spacing: 1 });
   });
 }
@@ -209,8 +210,8 @@ DRAW.map = (d, t, data) => {
   const sw = 64;
   d.rrect(6, 250, sw + 10, 34, 4, 'rgba(14,18,23,0.86)');
   const w1 = d.text(data.speed.toFixed(1), 11, 278, 28); d.label('mph', 14 + w1, 278, { size: 10 });
-  d.rrect(162, 256, 72, 28, 4, 'rgba(14,18,23,0.86)');
-  d.text('12.4', 168, 277, 20); d.label('mi left', 198, 277, { size: 10 });
+  d.rrect(146, 256, 88, 28, 4, 'rgba(14,18,23,0.86)');
+  const w2 = d.text('12.4', 152, 277, 20); d.label('mi left', 156 + w2, 277, { size: 10 });
   g.restore();
 };
 
@@ -247,7 +248,7 @@ DRAW.climb = (d, t, data) => {
 
 DRAW.workout = (d, t, data) => {
   const g = d.g;
-  statusBar(d, data, 'Sweet spot 3×10');
+  statusBar(d, data, 'Sweet spot');
   d.label('Interval 2 of 3', 8, 36); d.label('left', 232, 36, { align: 'right' });
   const rem = 402 - Math.floor(t * 4) % 402;
   d.text(`${Math.floor(rem / 60)}:${String(rem % 60).padStart(2, '0')}`, W / 2, 106, 76, C.text, { align: 'center' });

@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>OpenCycle Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=Barlow+Condensed:wght@500;600;700&family=Barlow+Semi+Condensed:wght@500;600&display=swap">
@@ -69,14 +70,14 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
 @media (min-width: 860px) { .screens { grid-template-columns: auto minmax(0, 1fr) } }
 .device { justify-self: center; background: #151619; border-radius: 26px; padding: 30px 22px 36px; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 40px -18px rgba(0,0,0,.45); width: min(100%, 330px) }
 .device.actual { width: auto; padding: 5.5mm 3.5mm 6mm; border-radius: 7mm }
-.lcd { position: relative; border-radius: 3px; overflow: hidden; background: #c4c9be; aspect-ratio: 240 / 400; width: 100% }
-.device.actual .lcd { width: 35mm }
-.lcd canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated }
-.lcd::before { content: ""; position: absolute; inset: 0; pointer-events: none;
-  background-image: linear-gradient(to right, rgba(0,0,0,.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.07) 1px, transparent 1px);
-  background-size: calc(100% / 240) calc(100% / 400) }
-.lcd::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.04) 38%, transparent 38.2%) }
-.device.actual .lcd::before { display: none }
+.lcd { position: relative; border-radius: 3px; overflow: hidden; background: #0e1217; aspect-ratio: 240 / 320; width: 100% }
+.device.actual .lcd { width: 36.72mm }
+.lcd canvas { display: block; width: 100%; height: 100% }
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); justify-items: center; margin-top: 14px }
+.keys span { width: 30px; height: 30px; border-radius: 50%; background: #2c2f35; box-shadow: inset 0 -3px 0 rgba(0,0,0,.35) }
+.keys span:last-child { background: #e0662c }
+.device.actual .keys { width: 36.72mm; margin-top: 2.3mm } .device.actual .keys span { width: 9mm; height: 9mm }
+.lcd::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.02) 38%, transparent 38.2%) }
 .scrlist { display: grid; gap: 8px }
 .scr { text-align: left; font: inherit; color: inherit; background: transparent; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: grid; gap: 2px }
 .scr b { font: 700 17px/1.2 var(--font-display) }
@@ -89,7 +90,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
 <div class="wrap">
   <header>
     <h1>OpenCycle bike computer</h1>
-    <span class="sub">86 × 52 × 16 mm · FDM-printed case · 4-layer board</span>
+    <span class="sub">v0.2 · 92.4 × 52 × 17 mm · 2.4" colour IPS · 3 front soft keys · FDM-printed case</span>
   </header>
 
   <div class="grid">
@@ -101,7 +102,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
           <button id="m-exploded" data-mode="exploded" aria-pressed="false">Exploded</button>
           <button id="m-board" data-mode="board" aria-pressed="false">Board</button>
         </div>
-        <span class="badge" id="concept" hidden>Concept board · not for fab</span>
+        <span class="badge" id="concept" hidden>v0.1 concept board shown · v0.2 board not designed yet</span>
       </div>
       <div class="hint" id="hint">Drag to orbit · pinch to zoom · tap a part</div>
     </div>
@@ -142,7 +143,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
   <section class="panel" id="screens-panel">
     <h2>On-device screens</h2>
     <div class="screens">
-      <div class="device" id="device"><div class="lcd"><canvas id="lcd" width="240" height="400" aria-label="Device screen preview"></canvas></div></div>
+      <div class="device" id="device"><div class="lcd"><canvas id="lcd" width="240" height="320" aria-label="Device screen preview"></canvas></div><div class="keys" aria-hidden="true"><span></span><span></span><span></span></div></div>
       <div style="display:grid;gap:12px;min-width:0">
         <div class="row">
           <button class="chip" id="page-btn" type="button">Page ▸</button>
@@ -150,8 +151,8 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
           <button class="chip" id="auto-btn" type="button" aria-pressed="true">Auto-cycle</button>
         </div>
         <div class="scrlist" id="scrlist"></div>
-        <div class="specs"><span>240 × 400 px, 1-bit</span><span>12 KB frame buffer</span><span>~13 ms full redraw at 8 MHz SPI</span><span>Tones = 4×4 ordered dither</span><span>Fonts: Barlow, 1-bpp via lv_font_conv</span></div>
-        <p class="note">Rendered pixel for pixel by the same drawing code the firmware will port: nothing here uses grey, blur, or anti-aliasing the panel can't show. "Actual size" uses the panel's real 35 × 59 mm active area.</p>
+        <div class="specs"><span>240 × 320 px, RGB565</span><span>150 KB frame buffer (PSRAM)</span><span>~31 ms full redraw at 40 MHz SPI</span><span>28 px soft-key bar</span><span>Fonts: Barlow, 4-bpp via lv_font_conv</span></div>
+        <p class="note">Rendered at the panel's native 240 × 320 by the reference code the LVGL firmware will follow. The three front keys have no printed labels: the bar at the bottom of each screen says what they do. "Actual size" uses the panel's real 36.72 × 48.96 mm active area.</p>
       </div>
     </div>
   </section>
@@ -170,7 +171,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-import { createDevice, SCREENS, fontsReady } from './ui/screens.js';
+import { createDevice, SCREENS, fontsReady } from './ui/screens_color.js';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage');
@@ -199,9 +200,9 @@ const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8f99, 0.55); scene.add(hemi
 const key = new THREE.DirectionalLight(0xffffff, 2.2);
 key.position.set(90, 160, 120); key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
-Object.assign(key.shadow.camera, { left: -90, right: 90, top: 140, bottom: -40, near: 10, far: 500 });
+Object.assign(key.shadow.camera, { left: -90, right: 90, top: 150, bottom: -40, near: 10, far: 500 });
 key.shadow.radius = 6; key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
-key.target.position.set(0, 40, 0); scene.add(key, key.target);
+key.target.position.set(0, 46, 0); scene.add(key, key.target);
 const rim = new THREE.DirectionalLight(0xdfe8ff, 0.8); rim.position.set(-140, 80, -120); scene.add(rim);
 
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.ShadowMaterial({ opacity: 0.22 }));
@@ -247,9 +248,10 @@ const FINISHES = [
 const M = {
   body: printed('#1d1f23', 0.62), bezel: printed('#141518', 0.62), btn: printed('#e0662c', 0.5),
   tpu: printed('#e0662c', 0.7, { sheen: 0.3 }),
+  key: printed('#2c2f35', 0.55),
   glass: new THREE.MeshPhysicalMaterial({ color: '#ffffff', metalness: 0, roughness: 0.03, transparent: true, opacity: 0.14, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2.5, depthWrite: false }),
   mask: new THREE.MeshStandardMaterial({ color: '#0b0c0e', roughness: 0.25 }),
-  panel: new THREE.MeshStandardMaterial({ color: '#6c7076', roughness: 0.5, metalness: 0.3 }),
+  panel: new THREE.MeshStandardMaterial({ color: '#0d0e10', roughness: 0.4, metalness: 0.2 }),
   foam: new THREE.MeshStandardMaterial({ color: '#141416', roughness: 0.95 }),
   pouch: new THREE.MeshPhysicalMaterial({ color: '#d4d6da', roughness: 0.32, metalness: 0.85, clearcoat: 0.3 }),
   rubber: new THREE.MeshStandardMaterial({ color: '#111214', roughness: 0.8 }),
@@ -279,7 +281,7 @@ function renderLCD(now) {
   const t = (now - show.t0) / 1000;
   const id = SCREENS[show.idx].id;
   device.render(id, t);
-  device.blit(lcdCtx, 1, { off: [196, 201, 190], on: [30, 33, 31] });
+  lcdCtx.drawImage(device.canvas, 0, 0);
   screenTex.needsUpdate = true;
   if (show.auto && now - show.since > 6000) setScreen((show.idx + 1) % SCREENS.length, false);
 }
@@ -398,16 +400,32 @@ function buildParts(data) {
   }
 }
 
-// flexible display ribbon, folded under from the display to J3
+// display FFC: leaves the panel's bottom edge, folds 180° and runs back under the panel to J3
+const DISP = { x0: 4.6, y0: 17.09, w: 42.8, h: 59.91, t: 2.55, z: 13.45, aaX: 7.64, aaY: 25.02, aaW: 36.72, aaH: 48.96 };
 function buildRibbon() {
-  // path in the (y, z) plane: along the back of the display, around a 0.9 mm fold, back under to J3
-  const pts = [[6.0, 14.15], [3.3, 14.15]];
-  for (let i = 1; i < 16; i++) { const t = Math.PI / 2 + (i / 16) * Math.PI; pts.push([3.3 + 0.9 * Math.cos(t), 13.25 + 0.9 * Math.sin(t)]); }
-  pts.push([3.3, 12.35], [12.3, 12.35]);
-  const wdt = 6.4, x0 = 26 - wdt / 2, pos = [], idx = [];
+  const zc = DISP.z + DISP.t / 2, r = 0.8, yf = DISP.y0 - 0.2;
+  const pts = [[DISP.y0 + 1.5, zc], [yf, zc]];
+  for (let i = 1; i < 16; i++) { const t = Math.PI / 2 + (i / 16) * Math.PI; pts.push([yf + r * Math.cos(t), zc - r + r * Math.sin(t)]); }
+  pts.push([yf, zc - 2 * r], [yf + 4, zc - 2 * r], [yf + 6, 12.3], [DISP.y0 + 27.8, 12.3]);
+  const wdt = 20.5, x0 = DISP.x0 + DISP.w - 11.15 - wdt, pos = [], idx = [];
   pts.forEach(([y, z], i) => { pos.push(x0, y, z, x0 + wdt, y, z); if (i) { const a = (i - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } });
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
   const m = new THREE.Mesh(g, M.kapton); m.castShadow = true; m.name = 'ribbon'; G.disp.add(m); return m;
+}
+
+// top band print: light-sensor window, wordmark, charge LED (printed on the lens underside)
+function buildTopBand() {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 128;
+  const g = c.getContext('2d');
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 70px "Barlow Condensed", sans-serif';
+  if ('letterSpacing' in g) g.letterSpacing = '22px';
+  g.fillStyle = 'rgba(242,244,246,0.82)'; g.fillText('OPENCYCLE', 512, 66);
+  g.fillStyle = '#34373c'; g.beginPath(); g.arc(150, 64, 18, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(255,255,255,0.22)'; g.lineWidth = 3; g.stroke();
+  g.fillStyle = '#6fd08c'; g.shadowColor = '#6fd08c'; g.shadowBlur = 18; g.beginPath(); g.arc(874, 64, 13, 0, 7); g.fill();
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(40, 5), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+  m.position.set(26, 92.4 - 7.7, 16.06); m.name = 'topband'; G.front.add(m); return m;
 }
 
 // ---------------------------------------------------------------- nets
@@ -517,6 +535,7 @@ function applyVisibility() {
   }
   if (meshes.ribbon) meshes.ribbon.visible = !board && state.explode < 0.05;
   if (meshes.screen) meshes.screen.visible = !board;
+  if (meshes.topband) meshes.topband.visible = !board;
   root.position.y = v === 'rugged' ? 2.88 : 0.02;   // rest the lowest point (bottom edge / bumper) on the floor
   $('finish-panel').hidden = board; $('board-panel').hidden = !board; $('concept').hidden = !board;
 }
@@ -526,8 +545,8 @@ function setMode(mode) {
   document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
   state.explodeTarget = mode === 'exploded' ? 1 : 0;
   if (mode === 'board') { state.explodeTarget = 0; setSide(state.side, true); }
-  else if (mode === 'exploded') flyTo([170, 120, 170], [0, 46, 0]);
-  else flyTo([110, 95, 190], [0, 44, 0]);
+  else if (mode === 'exploded') flyTo([175, 125, 175], [0, 48, 0]);
+  else flyTo([110, 100, 200], [0, 46, 0]);
   if (mode !== 'board') clearHighlight();
   applyVisibility();
   $('hint').textContent = mode === 'board' ? 'Tap a net to light its copper · tap a part for details' : 'Drag to orbit · pinch to zoom · tap a part';
@@ -535,7 +554,7 @@ function setMode(mode) {
 function setSide(side, fly = true) {
   state.side = side;
   document.querySelectorAll('[data-side]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === side)));
-  if (fly) flyTo(side === 'front' ? [0, 44, 205] : [0, 44, -205], [0, 44, 2.5]);
+  if (fly) flyTo(side === 'front' ? [0, 46, 215] : [0, 46, -215], [0, 46, 2.5]);
 }
 function setVariant(v) {
   state.variant = v;
@@ -588,16 +607,18 @@ Promise.all([fetch('meshes.json').then((r) => r.json()), fetch('pcb.json').then(
   add('std_back_shell', M.body, G.back); add('aero_back_shell', M.body, G.back);
   add('std_front_bezel', M.bezel, G.front); add('aero_front_bezel', M.bezel, G.front);
   add('rugged_bumper', M.tpu, G.back); add('rugged_button_covers', M.tpu, G.back);
-  add('buttons', M.btn, G.back); add('usb_flap', M.rubber, G.back); add('oring', M.rubber, G.back);
+  add('buttons', M.key, G.back); add('front_keys', M.key, G.front); add('key_primary', M.btn, G.front); add('usb_flap', M.rubber, G.back); add('oring', M.rubber, G.back);
   add('battery', M.pouch, G.batt); add('speaker', M.speaker, G.batt); add('speaker_membrane', M.membrane, G.batt);
   add('display', M.panel, G.disp); add('foam_gasket', M.foam, G.disp);
   add('lens_mask', M.mask, G.front, false); add('cover_lens', M.glass, G.front);
   if (meshes.cover_lens) meshes.cover_lens.castShadow = false;
   // live screen on the display's active area
-  const scr = new THREE.Mesh(new THREE.PlaneGeometry(35, 59), new THREE.MeshStandardMaterial({ map: drawScreen(), roughness: 0.62, metalness: 0 }));
-  scr.position.set(26, 4 + 62.8 / 2, 15.01);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(DISP.aaW, DISP.aaH),
+    new THREE.MeshStandardMaterial({ color: '#000000', emissive: '#ffffff', emissiveMap: drawScreen(), emissiveIntensity: 1, roughness: 0.35, metalness: 0, toneMapped: false }));
+  scr.position.set(DISP.aaX + DISP.aaW / 2, DISP.aaY + DISP.aaH / 2, DISP.z + DISP.t + 0.006);
   scr.receiveShadow = true; G.disp.add(scr); meshes.screen = scr;
   meshes.ribbon = buildRibbon();
+  meshes.topband = buildTopBand();
   buildBoard(pcb, { front: { color: fc, orm: fo }, back: { color: bc, orm: bo } });
   buildParts(pcb);
   buildNetList();
