@@ -1,0 +1,45 @@
+Vendor,Vendor part number,Manufacturer,MPN,Description,Qty per board,Qty to order (5 boards),Unit price USD,Line total (1 board),Price checked,Stock seen,Designators,Link,Datasheet
+Mouser,485-258,,,"Adafruit 258 LiPo 1200 mAh 34 x 62 x 5 mm, protected, JST-PH",1,5,9.95,9.95,2026-09-30,,"checked 2026-09-30, 388 in stock",,
+Mouser,621-AP7361C-33E-13,Diodes,AP7361C-33E-13,"3.3 V 1 A LDO, SOT-223",1,5,0.52,0.52,2026-09-30,733,U5,https://www.mouser.com/c/?q=621-AP7361C-33E-13,https://www.diodes.com/assets/Datasheets/AP7361C.pdf
+Mouser,239-BL652-SA-01-T/R,Ezurio,BL652-SA-01-T/R,"Ezurio (Laird) BL652, nRF52832 module, integrated antenna",1,5,10.40,10.40,2026-09-30,5583,U2,https://www.mouser.com/c/?q=239-BL652-SA-01-T/R,https://www.ezurio.com/wireless-modules/bluetooth-modules/bluetooth-5-modules/bl652-series-bluetooth-v5-nfc-module
+Mouser,187-CL05A105KO5NNNC,Samsung,CL05A105KO5NNNC,1 uF 16 V X5R 0402,1,7,0.10,0.10,typical,,C3,https://www.mouser.com/c/?q=187-CL05A105KO5NNNC,
+Mouser,187-CL05B104KO5NNNC,Samsung,CL05B104KO5NNNC,100 nF 16 V X7R 0402,9,47,0.10,0.90,typical,,C2 C5 C7 C8 C10 C13 C17 C19 C20,https://www.mouser.com/c/?q=187-CL05B104KO5NNNC,
+Mouser,187-CL10A106KP8NNNC,Samsung,CL10A106KP8NNNC,10 uF 10 V X5R 0603,5,27,0.12,0.60,typical,,C4 C6 C9 C11 C18,https://www.mouser.com/c/?q=187-CL10A106KP8NNNC,
+Mouser,187-CL10A475KO8NNNC,Samsung,CL10A475KO8NNNC,4.7 uF 16 V X5R 0603,3,17,0.10,0.30,typical,,C14 C15 C16,https://www.mouser.com/c/?q=187-CL10A475KO8NNNC,
+Mouser,187-CL21A226MAQNNNE,Samsung,CL21A226MAQNNNE,22 uF 25 V X5R 0805,2,12,0.22,0.44,typical,,C1 C12,https://www.mouser.com/c/?q=187-CL21A226MAQNNNE,
+Mouser,490-CMS151125078L100,Same Sky,CMS-151125-078L100,"Same Sky 15 x 11 x 2.5 mm speaker, 8 ohm 0.7 W, IP67, wire leads",1,5,2.96,2.96,2026-09-30,597,LS1,https://www.mouser.com/c/?q=490-CMS151125078L100,https://www.mouser.com/datasheet/3/6118/1/cms-151125-078x-67.pdf
+Mouser,621-DMG2302UK-7,Diodes,DMG2302UK-7,N-MOSFET 20 V SOT-23 (backlight PWM),1,7,0.39,0.39,2026-09-30,238766,Q1,https://www.mouser.com/c/?q=621-DMG2302UK-7,https://www.diodes.com/assets/Datasheets/DMG2302UK.pdf
+Mouser,356-ESP32S3WRM1N16R8,Espressif,ESP32-S3-WROOM-1-N16R8,"ESP32-S3 module, 16 MB flash, 8 MB octal PSRAM, PCB antenna",1,5,6.72,6.72,2026-09-30,47727,U1,https://www.mouser.com/c/?q=356-ESP32S3WRM1N16R8,https://www.espressif.com/sites/default/files/documentation/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf
+Mouser,798-FH12-40S-0.5SH55,Hirose,FH12-40S-0.5SH(55),Hirose 40-pin 0.5 mm bottom-contact FFC connector,1,5,2.50,2.50,2026-09-30,25967,J3,https://www.mouser.com/c/?q=798-FH12-40S-0.5SH55,https://www.hirose.com/product/series/FH12
+Mouser,859-LTR-303ALS-01,Lite-On,LTR-303ALS-01,"Lite-On ambient light sensor, I2C",1,5,0.68,0.68,2026-09-30,29622,U4,https://www.mouser.com/c/?q=859-LTR-303ALS-01,https://optoelectronics.liteon.com/upload/download/DS86-2013-0004/LTR-303ALS-01_DS_V1.pdf
+Mouser,859-LTST-C191KGKT,Lite-On,LTST-C191KGKT,Green LED 0603,1,7,0.15,0.15,2026-09-30,1190000,D1,https://www.mouser.com/c/?q=859-LTST-C191KGKT,https://optoelectronics.liteon.com/upload/download/DS22-2000-229/LTST-C191KGKT.pdf
+Mouser,377-MAX-M10S-00B,u-blox,MAX-M10S-00B,"u-blox M10 GNSS module, LCC-18",1,5,9.12,9.12,2026-09-30,2746,U3,https://www.mouser.com/c/?q=377-MAX-M10S-00B,https://content.u-blox.com/sites/default/files/MAX-M10S_DataSheet_UBX-20035208.pdf
+Mouser,700-MAX98357AETE+T,Analog Devices,MAX98357AETE+T,"I2S class-D amplifier, TQFN-16",1,5,4.08,4.08,2026-09-30,10971,U7,https://www.mouser.com/c/?q=700-MAX98357AETE+T,https://www.analog.com/media/en/technical-documentation/data-sheets/MAX98357A-MAX98357B.pdf
+Mouser,579-MCP73831T-2ACIOT,Microchip,MCP73831T-2ACI/OT,"Li-ion charger 4.20 V, SOT-23-5",1,5,0.76,0.76,2026-09-30,116042,U6,https://www.mouser.com/c/?q=579-MCP73831T-2ACIOT,https://ww1.microchip.com/downloads/en/DeviceDoc/MCP73831-Family-Data-Sheet-DS20001984H.pdf
+Mouser,763-24240320AFCSXP,Newhaven Display,NHD-2.4-240320AF-CSXP,"Newhaven 2.4 in IPS TFT 240 x 320, ST7789, 1200 nit, 40-pin FFC",1,5,15.86,15.86,2026-09-30,1032,"(display, plugs into J3)",https://www.mouser.com/c/?q=763-24240320AFCSXP,https://newhavendisplay.com/content/specs/NHD-2.4-240320AF-CSXP.pdf
+Mouser,611-PTS810SJM250SMTR,C&K,PTS810 SJM 250 SMTR LFS,C&K top-actuated tact switch 4.2 x 3.2 x 2.5 mm,3,15,0.52,1.56,2026-09-30,30244,SW1 SW2 SW3,https://www.mouser.com/c/?q=611-PTS810SJM250SMTR,https://www.ckswitches.com/media/1476/pts810.pdf
+Mouser,603-RC0402FR-07100KL,Yageo,RC0402FR-07100KL,Yageo resistor 100k 0402,4,22,0.10,0.40,typical,,R10 R18 R19 R20,https://www.mouser.com/c/?q=603-RC0402FR-07100KL,
+Mouser,603-RC0402FR-07100RL,Yageo,RC0402FR-07100RL,Yageo resistor 100R 0402,1,7,0.10,0.10,typical,,R9,https://www.mouser.com/c/?q=603-RC0402FR-07100RL,
+Mouser,603-RC0402FR-0710KL,Yageo,RC0402FR-0710KL,Yageo resistor 10k 0402,6,32,0.10,0.60,typical,,R1 R21 R22 R23 R24 R25,https://www.mouser.com/c/?q=603-RC0402FR-0710KL,
+Mouser,603-RC0402FR-071KL,Yageo,RC0402FR-071KL,Yageo resistor 1k 0402,1,7,0.10,0.10,typical,,R2,https://www.mouser.com/c/?q=603-RC0402FR-071KL,
+Mouser,603-RC0402FR-071ML,Yageo,RC0402FR-071ML,Yageo resistor 1M 0402,2,12,0.10,0.20,typical,,R16 R17,https://www.mouser.com/c/?q=603-RC0402FR-071ML,
+Mouser,603-RC0402FR-072KL,Yageo,RC0402FR-072KL,Yageo resistor 2k 0402,1,7,0.10,0.10,typical,,R15,https://www.mouser.com/c/?q=603-RC0402FR-072KL,
+Mouser,603-RC0402FR-074K7L,Yageo,RC0402FR-074K7L,Yageo resistor 4.7k 0402,2,12,0.10,0.20,typical,,R3 R4,https://www.mouser.com/c/?q=603-RC0402FR-074K7L,
+Mouser,603-RC0402FR-075K1L,Yageo,RC0402FR-075K1L,Yageo resistor 5.1k 0402,2,12,0.10,0.20,typical,,R11 R12,https://www.mouser.com/c/?q=603-RC0402FR-075K1L,
+Mouser,603-RC0402JR-070RL,Yageo,RC0402JR-070RL,Yageo resistor 0R 0402,2,12,0.10,0.20,typical,,R13 R14,https://www.mouser.com/c/?q=603-RC0402JR-070RL,
+Mouser,603-RC0603FR-0733RL,Yageo,RC0603FR-0733RL,Yageo resistor 33R 0603,4,22,0.10,0.40,typical,,R5 R6 R7 R8,https://www.mouser.com/c/?q=603-RC0603FR-0733RL,
+Mouser,306-S2BPHSM4TBLFSN,JST,S2B-PH-SM4-TB(LF)(SN),JST PH 2-pin side-entry SMT header,1,7,0.49,0.49,2026-09-30,269,J2,https://www.mouser.com/c/?q=306-S2BPHSM4TBLFSN,https://www.jst-mfg.com/product/pdf/eng/ePH.pdf
+Mouser,688-SKRTLA,Alps Alpine,SKRTLAE010,Alps side-actuated tact switch,2,12,0.34,0.68,2026-09-30,2396,SW4 SW5,https://www.mouser.com/c/?q=688-SKRTLA,https://tech.alpsalpine.com/e/products/detail/SKRTLAE010/
+Mouser,640-USB4105-GF-A,GCT,USB4105-GF-A,"GCT USB-C receptacle, USB 2.0, top mount",1,5,0.80,0.80,2026-09-30,420427,J1,https://www.mouser.com/c/?q=640-USB4105-GF-A,https://gct.co/files/drawings/usb4105.pdf
+Mouser,511-USBLC6-2SC6,ST,USBLC6-2SC6,"USB ESD protection, SOT-23-6",1,7,0.49,0.49,2026-09-30,81014,D2,https://www.mouser.com/c/?q=511-USBLC6-2SC6,https://www.st.com/resource/en/datasheet/usblc6-2.pdf
+Digi-Key,828-BMP581CT-ND,Bosch,BMP581,"Bosch barometric pressure sensor, LGA-10 2 x 2 mm",1,5,3.07,3.07,2026-09-30,462,U8,https://www.digikey.com/en/products/result?keywords=828-BMP581CT-ND,https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp581-ds004.pdf
+Digi-Key,DMG2305UX-7DICT-ND,Diodes,DMG2305UX-7,P-MOSFET 20 V 4.2 A SOT-23 (reverse battery),1,7,0.30,0.30,2026-09-30,75458,Q2,https://www.digikey.com/en/products/result?keywords=DMG2305UX-7DICT-ND,https://www.diodes.com/assets/Datasheets/DMG2305UX.pdf
+Digi-Key,DSGP.1575.12.4.A.02,Taoglas,DSGP.1575.12.4.A.02,"Taoglas 12 x 12 x 4 mm GPS L1 / Galileo E1 ceramic patch, SMT",1,5,4.25,4.25,2026-09-30,1474,AE1,https://www.digikey.com/en/products/result?keywords=DSGP.1575.12.4.A.02,https://www.taoglas.com/datasheets/DSGP.1575.12.4.A.02.pdf
+SendCutSend / Ponoko,cad/out/stl/cover_lens.step,,,"1.0 mm clear acrylic or polycarbonate cover lens, 48.0 x 75.9 mm, 5 mm corner radius",1,5,3.00,3.00,estimate,,"black mask: vinyl or paint on the inside, window per cad/out/stl/lens_mask.stl",,
+any,e.g. McMaster 92000A017,,,M2 x 5 mm pan-head screws (stainless),4,20,0.10,0.40,estimate,,PCB to back shell,,
+any,,,,M2 x 6 mm pan-head screws (stainless),4,20,0.10,0.40,estimate,,front bezel to back shell (through the corner posts),,
+any,,,,"Closed-cell foam tape 0.5 mm, 2 mm strips",1,5,1.00,1.00,estimate,,display gasket,,
+any,,,,Nitrile O-ring cord 1.2 mm,1,5,1.00,1.00,estimate,,"case seal, ~280 mm length, ends glued",,
+any,e.g. Amazon 'ePTFE vent patch',,,"Breathable PTFE vent sticker, 3-5 mm",1,5,0.50,0.50,estimate,,over the 0.8 mm barometer vent,,
+any,,,,Acoustic mesh / speaker membrane 12 x 9 mm,1,5,0.50,0.50,estimate,,under the speaker grille,,
+any,,,,PLA / PETG / TPU filament,1,5,2.00,2.00,estimate,,~35 g for a standard case,,
