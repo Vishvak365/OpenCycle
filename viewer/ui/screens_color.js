@@ -1,70 +1,94 @@
-// OpenCycle device UI — "MERIDIAN" design language, reference renderer for the v0.2 colour display
-// (Newhaven NHD-2.4-240320AF-CSXP, 2.4" IPS TFT, ST7789, 240 x 320 portrait, RGB565).
+// OpenCycle device UI — "LUCENT" design language, reference renderer for the v0.2 colour display
+// (2.4" IPS TFT, ST7789, 240 x 320 portrait, RGB565, ~166 ppi).
 //
-// This file is the spec the firmware (LVGL 9 on the ESP32-S3) ports 1:1. It is organised like the
-// firmware theme will be:
+// Lucent: frosted-glass panels floating over a deep, softly lit backdrop. Calm and modern, with
+// colour only where it means something (effort zones, gradient, route, alerts).
 //
-//   C        palette      every colour is RGB565-exact, so the preview equals the panel
-//   TYPE     type scale   two OFL families, a fixed set of sizes (each becomes one lv_font_conv font)
-//   S        spacing      4 px grid, 8 px screen margin, 4 px gutter, 8 px chamfer ("notch")
-//   components            statusBar, softkeys, panel (notched rect), field, rail (the Meridian tick
-//                         scale), ring (round tick bezel + arc), chip, icons
-//   DRAW.<id>             one function per screen, using only the components + primitives
+// This file is the spec that the firmware (LVGL 9 on the ESP32-S3) ports 1:1. It is organised the
+// way the firmware theme will be:
 //
-// Only primitives LVGL 9 draws natively are used: filled rects, the 45-degree corner notch (rect +
-// corner triangle), 1-3 px lines, arcs, 2-stop horizontal/vertical gradients, flat text, opacity.
-// "Glows" are 2-3 stacked translucent strokes, never blur. See docs/UI.md.
+//   C        palette      every colour is snapped to RGB565, so the preview shows what the panel shows
+//   TYPE     type scale   Inter + Inter Display (one OFL family), a fixed set of sizes = lv_font_conv fonts
+//   S, R     spacing, radii  4 px grid
+//   GLASS    glass recipes  fill gradient + hairline border + top highlight, as LVGL style values
+//   components            backdrop, glass, statusBar, keys (glass pills), field, gauge, ring, chip, icons
+//   DRAW.<id>             one function per screen, built only from the components
 //
-// API (used by viewer/index.html — keep it stable)
+// Honesty rules for the preview (see docs/UI.md, "Glass in LVGL"):
+//   - no blur anywhere at runtime. The backdrop is a pre-rendered, already-soft bitmap (baked with an
+//     ordered dither, as the firmware asset will be); glass is a translucent fill over it.
+//   - the zone "light" is a soft A8 bitmap recoloured at runtime (LVGL image_recolor), not a blur.
+//   - every frame is quantised to RGB565 at the end, like the panel.
+//   - only rounded rects, 1 px borders, 2-stop vertical gradients with per-stop opacity, arcs with
+//     round caps, lines, images and text. Corner radii are circular (LVGL has no squircle).
+//
+// API (used by viewer/index.html and docs/ui/harness.html — keep it stable)
 //   const dev = createDevice();      // offscreen 240x320 canvas
-//   dev.render(screenId, t)          // draw one full frame; t = seconds, every animation is a pure fn of t
+//   dev.render(screenId, t)          // one full frame; t = seconds, every animation is a pure fn of t
 //   dev.canvas                       // the canvas, for textures and previews
-//   SOFTKEYS[screenId]               // the three key labels for that screen
+//   SOFTKEYS[screenId]               // the three key labels for that screen, PRIMARY[screenId] = accent key
 //   await fontsReady()               // loads the bundled OFL fonts with the FontFace API
 
 export const W = 240, H = 320, BAR = 28;
 
 export const SCREENS = [
-  { id: 'ride', name: 'Ride', desc: 'Speed hero over the Meridian rail: the needle reads power against your seven zones, and the whole hero glows in the current zone colour.' },
-  { id: 'hr', name: 'Heart', desc: 'Heart rate hero with a live pulse, the five-zone rail, and time spent in each zone this ride.' },
-  { id: 'climb', name: 'Climb', desc: 'Upcoming climb profile coloured by gradient, your position on it, and what is left to the top.' },
-  { id: 'map', name: 'Navigation', desc: 'Dark heading-up map with the route as a light trace and the next turn in a notched cue card. Keys: zoom out, re-centre, zoom in.' },
-  { id: 'workout', name: 'Workout', desc: 'Interval countdown inside a chronograph bezel, a target power window on the rail, and the whole session below.' },
-  { id: 'status', name: 'Sensors', desc: 'Paired sensors with signal strength, GPS fix, phone link and battery.' },
-  { id: 'lap', name: 'Lap alert', desc: 'Press LAP: a notched summary card drops over the ride page with deltas to the last lap, then retracts on a visible timer.' },
+  { id: 'ride', name: 'Ride', desc: 'Speed on a glass card, power with its zone gauge, then heart rate, cadence, distance and time. The backdrop glows softly in your power-zone colour.' },
+  { id: 'hr', name: 'Heart', desc: 'Heart rate with a live pulse and the five-zone gauge, time spent in each zone, and ride averages.' },
+  { id: 'climb', name: 'Climb', desc: 'The climb ahead coloured by gradient, where you are on it, and what is left to the top.' },
+  { id: 'map', name: 'Navigation', desc: 'Heading-up dark map with the route in blue and the next turn on a translucent card. Keys: zoom out, re-centre, zoom in.' },
+  { id: 'workout', name: 'Workout', desc: 'Interval countdown in a progress ring, your power against the target window, and the whole session below.' },
+  { id: 'status', name: 'Sensors', desc: 'Paired sensors with signal strength, GPS fix, phone link and battery, as one grouped glass list.' },
+  { id: 'lap', name: 'Lap alert', desc: 'Press LAP: a glass sheet slides over the ride page with deltas to the last lap, then slides away on a visible timer.' },
   { id: 'summary', name: 'Ride summary', desc: 'End-of-ride card: distance, the elevation trace, key averages and PRs. Save is the primary key.' },
-  { id: 'menu', name: 'Menu', desc: 'Right side button opens it. Notched selection bar, left/right keys move, centre opens.' },
-  { id: 'boot', name: 'Boot', desc: 'Power-on: the bezel ticks sweep in, the wordmark lands, sensors and GPS report in on the rail.' },
+  { id: 'menu', name: 'Menu', desc: 'Right side button opens it. Glass rows; left/right keys move the selection, centre opens.' },
+  { id: 'boot', name: 'Boot', desc: 'Power-on: the backdrop fades up, the wordmark settles, a slim progress bar reports GPS and sensors.' },
 ];
 
-// Three labels per screen, left / centre / right key. PRIMARY marks which key is the accent (filled) key.
+// Three labels per screen, left / centre / right key. PRIMARY is the index of the prominent (filled) key, -1 = none.
 export const SOFTKEYS = {
   ride: ['LAP', 'PAGE', 'PAUSE'], lap: ['LAP', 'PAGE', 'PAUSE'], climb: ['LAP', 'PAGE', 'PAUSE'], hr: ['LAP', 'PAGE', 'PAUSE'],
-  map: ['ZOOM −', 'CENTRE', 'ZOOM +'], workout: ['SKIP', 'PAGE', 'PAUSE'], status: ['SCAN', 'PAGE', 'PAIR'],
+  map: ['ZOOM OUT', 'CENTRE', 'ZOOM IN'], workout: ['SKIP', 'PAGE', 'PAUSE'], status: ['SCAN', 'PAGE', 'PAIR'],
   summary: ['DISCARD', 'PAGE', 'SAVE'], menu: ['PREV', 'OPEN', 'NEXT'], boot: ['', '', ''],
 };
 export const PRIMARY = { ride: 2, lap: 2, climb: 2, hr: 2, workout: 2, status: 2, summary: 2, map: -1, menu: 1, boot: -1 };
 // the PAGE key cycles these data pages (page dots in the status bar)
 export const PAGES = ['ride', 'hr', 'climb', 'map', 'workout', 'status'];
 
-// ---------------------------------------------------------------- palette (RGB565-exact; hex = what the panel shows)
-export const C = {
-  bg: '#080808',      // 0x0841  ink: screen background
-  s1: '#101821',      // 0x10C4  surface: panels, cards
-  s2: '#182029',      // 0x1905  raised: keycaps, overlays
-  s3: '#212C39',      // 0x2167  track: empty gauge / rail track
-  line: '#293039',    // 0x2987  hairlines, dividers
-  dim: '#4A5563',     // 0x4AAC  minor ticks, inactive glyphs
-  mute: '#8C96A5',    // 0x8CB4  labels, units
-  text: '#EFF7F7',    // 0xEFBE  primary text and needles
-  ion: '#39E7EF',     // 0x3F3D  signature accent: primary key, route, focus, rider
-  ionDim: '#105963',  // 0x12CC  accent at rest: travelled route, key locator
-  pause: '#FFB221',   // 0xFD84  paused / warning state
-  // effort spectrum — seven power zones; HR uses z1..z5, gradient uses z3..z7
-  z1: '#7B8E9C', z2: '#427DFF', z3: '#21D79C', z4: '#F7D329', z5: '#FF8A21', z6: '#FF3C52', z7: '#C64DFF',
-  // map
-  mapBg: '#081018', road: '#212831', roadMajor: '#293842', water: '#082031', park: '#102418',
+// ---------------------------------------------------------------- palette
+// Snap a colour to RGB565 the way lv_color_to_16 does (truncate), then expand back to 8 bit for display.
+export function to565(hex) {
+  const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+}
+function q(hex) {
+  const v = to565(hex), r5 = v >> 11, g6 = (v >> 5) & 63, b5 = v & 31;
+  const r = (r5 << 3) | (r5 >> 2), g = (g6 << 2) | (g6 >> 4), b = (b5 << 3) | (b5 >> 2);
+  return '#' + [r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+const RAW = {
+  // backdrop (baked into the wallpaper bitmap)
+  deep: '#060910',     // bottom of the backdrop
+  night: '#0F1628',    // top of the backdrop
+  glowA: '#2B3F86',    // cool light, top left
+  glowB: '#0E4A57',    // teal light, bottom right
+  // ink and text
+  ink: '#0A0D14',      // text on light (prominent key, chips)
+  text: '#F4F6FA',     // primary text and numerals
+  text2: '#A9B2C0',    // labels, secondary text
+  text3: '#6B7485',    // units, captions, tertiary
+  glass: '#FFFFFF',    // glass is white at low opacity (see GLASS)
+  mapGlass: '#141821', // translucent card over the live map
+  // one accent
+  accent: '#0A84FF',   // route, selection, progress
+  // status
+  good: '#30D158', warn: '#FF9F0A', bad: '#FF453A',
+  // effort spectrum: seven power zones; HR uses z1 z2 z3 z5 z6; gradient uses z3..z7
+  z1: '#8E96A3', z2: '#0A84FF', z3: '#30D158', z4: '#FFD60A', z5: '#FF9F0A', z6: '#FF453A', z7: '#BF5AF2',
+  // map (Apple-Maps-dark-like, low chroma so the route and the glass carry the screen)
+  mapBg: '#181B22', block: '#1D2129', road: '#2A2F39', roadMajor: '#3A404C', water: '#132338', park: '#172A21',
+  routeDone: '#586070', routeEdge: '#0B3D80',
 };
+export const C = Object.fromEntries(Object.entries(RAW).map(([k, v]) => [k, q(v)]));
 const ZONES = [C.z1, C.z2, C.z3, C.z4, C.z5, C.z6, C.z7];
 export const POWER_ZONES = [ // Coggan, fraction of FTP
   { n: 'Z1', name: 'Recovery', lo: 0, hi: 0.55 }, { n: 'Z2', name: 'Endurance', lo: 0.55, hi: 0.75 },
@@ -83,33 +107,47 @@ const powerZone = (w, ftp) => Math.max(0, POWER_ZONES.findIndex((z) => w / ftp <
 const hrZone = (b, max) => Math.max(0, Math.min(4, HR_ZONES.findIndex((z) => b / max < z.hi)));
 
 // ---------------------------------------------------------------- type scale
-// NUM = Saira Condensed (numerals), UI = Chakra Petch (labels/text). [family, weight, px, letter-space]
-const NUM = '"Saira Condensed", "Arial Narrow", sans-serif';
-const UI = '"Chakra Petch", "Arial", sans-serif';
+// One OFL family: Inter (text, opsz 14) and Inter Display (numerals, opsz 32), both with tabular
+// figures frozen in (docs/ui/make_fonts.py). [family, weight, px, letter-space px]
+const DISP = '"Inter Display", "Inter", system-ui, sans-serif';
+const TEXT = '"Inter", system-ui, sans-serif';
 export const TYPE = {
-  hero: [NUM, 700, 112, 0],   // ride speed, HR hero
-  dec: [NUM, 700, 56, 0],     // the decimal part of a hero value (".3"), baseline-aligned
-  xl: [NUM, 700, 60, 0],      // lap time, summary distance
-  timer: [NUM, 700, 50, 0],   // workout countdown inside the bezel
-  lg: [NUM, 700, 38, 0],      // grid fields
-  md: [NUM, 700, 30, 0],      // turn distance, secondary values
-  sm: [NUM, 600, 22, 0],      // footer values, chips, list values
-  xs: [NUM, 600, 17, 0],      // tiny values (status bar battery %, axis)
-  title: [UI, 700, 16, 0],    // screen/section titles, list items
-  body: [UI, 600, 13, 0],     // secondary text
-  label: [UI, 600, 11, 1],    // UPPERCASE micro labels
-  key: [UI, 700, 12, 1],      // soft-key labels
-  axis: [UI, 600, 10, 0],     // tick numbers only
+  hero: [DISP, 600, 80, -2],    // ride speed, heart rate
+  heroDec: [DISP, 600, 44, -1], // decimal part of a hero value (".7"), same baseline
+  xl: [DISP, 600, 52, -1.5],    // lap time, summary distance
+  timer: [DISP, 600, 34, -0.8],   // workout countdown in the ring
+  lg: [DISP, 600, 30, -0.5],    // power value, turn distance
+  md: [DISP, 600, 24, -0.5],    // field values
+  sm: [TEXT, 600, 17, 0],       // compact values (lists, chips, grids)
+  title: [TEXT, 600, 15, 0],    // titles, list items
+  body: [TEXT, 500, 13, 0],     // secondary text, units after big numbers
+  label: [TEXT, 600, 11, 0.3],  // UPPERCASE field labels
+  key: [TEXT, 600, 12, 0],      // soft-key labels
+  caption: [TEXT, 500, 10, 0],  // axis numbers, tiny notes
 };
-// ---------------------------------------------------------------- spacing
-export const S = { unit: 4, margin: 8, gutter: 4, notch: 8, statusH: 18, radius: 0, hair: 1 };
+
+// ---------------------------------------------------------------- spacing and radii
+export const S = { unit: 4, margin: 8, gutter: 6, pad: 12, statusH: 22, keyY: H - BAR, keyH: 22, keyW: 70 };
+export const R = { card: 18, field: 14, row: 14, pill: 11, chip: 8, tile: 9 };
+
+// ---------------------------------------------------------------- glass recipes
+// Each maps 1:1 to one LVGL style (+ a second object for the top highlight, see docs/UI.md).
+//   top/bot: fill colour opacity at the top and bottom stop (bg_grad, VER, per-stop opa)
+//   edge:    1 px border, all sides (border_opa)        hi: 1 px top highlight (border_side TOP)
+export const GLASS = {
+  card: { col: C.glass, top: 0.15, bot: 0.07, edge: 0.10, hi: 0.34 },      // default panel over the backdrop
+  field: { col: C.glass, top: 0.12, bot: 0.06, edge: 0.09, hi: 0.28 },     // smaller tiles
+  raised: { col: C.glass, top: 0.26, bot: 0.16, edge: 0.14, hi: 0.50 },    // selection, focused row
+  key: { col: C.glass, top: 0.18, bot: 0.10, edge: 0.12, hi: 0.40 },       // soft-key pills
+  prominent: { col: C.text, top: 0.96, bot: 0.90, edge: 0, hi: 0 },        // primary key: near-white, dark label
+  map: { col: C.mapGlass, top: 0.84, bot: 0.78, edge: 0.10, hi: 0.26, edgeCol: C.glass }, // over the live map
+  sheet: { col: C.night, top: 1, bot: 1, edge: 0.14, hi: 0.45, edgeCol: C.glass },  // lap sheet
+};
 
 // ---------------------------------------------------------------- fonts
 const FONT_FILES = [
-  ['Saira Condensed', 'SairaCondensed-Medium.ttf', '500'], ['Saira Condensed', 'SairaCondensed-SemiBold.ttf', '600'],
-  ['Saira Condensed', 'SairaCondensed-Bold.ttf', '700'],
-  ['Chakra Petch', 'ChakraPetch-Medium.ttf', '500'], ['Chakra Petch', 'ChakraPetch-SemiBold.ttf', '600'],
-  ['Chakra Petch', 'ChakraPetch-Bold.ttf', '700'],
+  ['Inter', 'Inter-Medium.ttf', '500'], ['Inter', 'Inter-SemiBold.ttf', '600'],
+  ['Inter Display', 'InterDisplay-Medium.ttf', '500'], ['Inter Display', 'InterDisplay-SemiBold.ttf', '600'],
 ];
 let fontsPromise = null;
 export function fontsReady() {
@@ -128,60 +166,92 @@ const lerp = (a, b, k) => a + (b - a) * k;
 export const EASE = {
   out: (k) => 1 - Math.pow(1 - clamp(k, 0, 1), 3),                         // lv_anim_path_ease_out
   inOut: (k) => { k = clamp(k, 0, 1); return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; },
-  overshoot: (k) => { k = clamp(k, 0, 1); const c = 1.4; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); },
+  // critically-damped settle (no bounce) — lv_anim_path_custom_bezier3(0.2, 0.9, 0.3, 1.0) is close
+  settle: (k) => { k = clamp(k, 0, 1); return 1 - Math.pow(1 - k, 4); },
 };
 function rgba(hex, a) {
   const n = parseInt(hex.slice(1), 16);
   return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`;
 }
 const fmtTime = (s) => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60; return h ? `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}` : `${m}:${String(x).padStart(2, '0')}`; };
+const titleCase = (s) => s.toLowerCase().replace(/(^|\s)\S/g, (m) => m.toUpperCase());
+
+// ---------------------------------------------------------------- backdrop (pre-rendered wallpaper)
+// Firmware asset: one 240 x 320 RGB565 bitmap in flash (150 KB), generated offline with a 4x4 ordered
+// dither so the soft gradients do not band. Here it is generated once, identically.
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+function bakeWallpaper(draw) {
+  const cv = (typeof OffscreenCanvas !== 'undefined') ? new OffscreenCanvas(W, H) : Object.assign(document.createElement('canvas'), { width: W, height: H });
+  const g = cv.getContext('2d', { willReadFrequently: true });
+  draw(g);
+  const im = g.getImageData(0, 0, W, H), p = im.data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = (y * W + x) * 4, th = (BAYER[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
+    const r5 = Math.min(31, Math.floor(p[i] / 255 * 31 + th)), g6 = Math.min(63, Math.floor(p[i + 1] / 255 * 63 + th)), b5 = Math.min(31, Math.floor(p[i + 2] / 255 * 31 + th));
+    p[i] = (r5 << 3) | (r5 >> 2); p[i + 1] = (g6 << 2) | (g6 >> 4); p[i + 2] = (b5 << 3) | (b5 >> 2); p[i + 3] = 255;
+  }
+  return im;
+}
+function blob(g, x, y, r, col, a) { // soft light: radial falloff (firmware: A8 bitmap with this profile)
+  const gr = g.createRadialGradient(x, y, 0, x, y, r);
+  gr.addColorStop(0, rgba(col, a)); gr.addColorStop(0.45, rgba(col, a * 0.55)); gr.addColorStop(1, rgba(col, 0));
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+}
+const WALLPAPERS = {
+  deep: (g) => {
+    const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, C.night); gr.addColorStop(1, C.deep);
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    blob(g, 30, 20, 230, C.glowA, 0.55);
+    blob(g, 230, 300, 210, C.glowB, 0.45);
+  },
+};
 
 // ---------------------------------------------------------------- device
 export function createDevice() {
   const canvas = (typeof OffscreenCanvas !== 'undefined') ? new OffscreenCanvas(W, H) : Object.assign(document.createElement('canvas'), { width: W, height: H });
-  const g = canvas.getContext('2d');
+  const g = canvas.getContext('2d', { willReadFrequently: true });
+  let wall = null;
   const d = {
     g, canvas, W, H,
     rect(x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); },
-    // notched rect: 45-degree corner cuts of size n on the corners listed ('tl','tr','br','bl')
-    notch(x, y, w, h, c, n = S.notch, corners = 'tr') {
-      g.fillStyle = c; g.beginPath();
-      const has = (k) => corners.includes(k);
-      g.moveTo(x + (has('tl') ? n : 0), y);
-      g.lineTo(x + w - (has('tr') ? n : 0), y); if (has('tr')) g.lineTo(x + w, y + n);
-      g.lineTo(x + w, y + h - (has('br') ? n : 0)); if (has('br')) g.lineTo(x + w - n, y + h);
-      g.lineTo(x + (has('bl') ? n : 0), y + h); if (has('bl')) g.lineTo(x, y + h - n);
-      g.lineTo(x, y + (has('tl') ? n : 0)); g.closePath(); g.fill();
-    },
+    rrect(x, y, w, h, r, c) { g.fillStyle = c; g.beginPath(); g.roundRect(x, y, w, h, Math.min(r, h / 2, w / 2)); g.fill(); },
     text(s, x, y, type, c = C.text, align = 'left', alpha = 1) {
       const [fam, wt, px, ls] = type;
       g.fillStyle = c; g.font = `${wt} ${px}px ${fam}`; g.textAlign = align; g.textBaseline = 'alphabetic';
       if ('letterSpacing' in g) g.letterSpacing = `${ls}px`;
       const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha;
-      // letter-spacing adds a trailing gap; compensate so centred/right text sits true
       const w = g.measureText(s).width;
-      const off = align === 'center' ? ls / 2 : align === 'right' ? ls : 0;
+      const off = align === 'center' ? ls / 2 : align === 'right' ? ls : 0; // trailing letter-space compensation
       g.fillText(s, Math.round(x + off), Math.round(y));
       g.globalAlpha = a0;
       if ('letterSpacing' in g) g.letterSpacing = '0px';
       return w - ls;
     },
     measure(s, type) { const [fam, wt, px, ls] = type; g.font = `${wt} ${px}px ${fam}`; if ('letterSpacing' in g) g.letterSpacing = `${ls}px`; const w = g.measureText(s).width; if ('letterSpacing' in g) g.letterSpacing = '0px'; return w - ls; },
-    label(s, x, y, c = C.mute, align = 'left') { return d.text(s.toUpperCase(), x, y, TYPE.label, c, align); },
+    label(s, x, y, c = C.text2, align = 'left') { return d.text(s.toUpperCase(), x, y, TYPE.label, c, align); },
     line(pts, w, c, alpha = 1) { const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha; g.strokeStyle = c; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke(); g.globalAlpha = a0; },
     dot(x, y, r, c, alpha = 1) { const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha; g.fillStyle = c; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); g.globalAlpha = a0; },
-    vgrad(x, y, w, h, c0, c1) { const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, c0); gr.addColorStop(1, c1); g.fillStyle = gr; g.fillRect(x, y, w, h); },
-    hgrad(x, y, w, h, c0, c1) { const gr = g.createLinearGradient(x, 0, x + w, 0); gr.addColorStop(0, c0); gr.addColorStop(1, c1); g.fillStyle = gr; g.fillRect(x, y, w, h); },
+    backdrop(name = 'deep') { if (!wall) wall = bakeWallpaper(WALLPAPERS[name]); g.putImageData(wall, 0, 0); },
     render(id, t, data = demoData(t)) {
       g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.setLineDash([]);
-      d.rect(0, 0, W, H, C.bg);
+      d.backdrop();
       (DRAW[id] || DRAW.ride)(d, t, data, id);
       if (id === 'lap') DRAW.lapOverlay(d, t, data);
-      softkeys(d, SOFTKEYS[id] || SOFTKEYS.ride, PRIMARY[id] ?? 2, t);
+      softkeys(d, SOFTKEYS[id] || SOFTKEYS.ride, PRIMARY[id] ?? 2, t, id === 'map' ? 'map' : 'key');
+      quantise565(g);
       return canvas;
     },
   };
   return d;
+}
+// the panel is RGB565: truncate every pixel like the LVGL blender does (no dither at runtime)
+function quantise565(g) {
+  const im = g.getImageData(0, 0, W, H), p = im.data;
+  for (let i = 0; i < p.length; i += 4) {
+    const r = p[i] & 0xF8, gg = p[i + 1] & 0xFC, b = p[i + 2] & 0xF8;
+    p[i] = r | (r >> 5); p[i + 1] = gg | (gg >> 6); p[i + 2] = b | (b >> 5); p[i + 3] = 255;
+  }
+  g.putImageData(im, 0, 0);
 }
 
 // ---------------------------------------------------------------- demo ride data (deterministic)
@@ -198,302 +268,271 @@ export function demoData(t) {
   };
 }
 
-// ---------------------------------------------------------------- icons (firmware: 1-bit/A8 bitmaps, recoloured)
+// ---------------------------------------------------------------- icons (firmware: A8 bitmaps, recoloured)
 function icon(d, kind, x, y, s, col) {
   const g = d.g; g.save(); g.translate(x, y); g.scale(s / 20, s / 20);
-  g.fillStyle = g.strokeStyle = col; g.lineWidth = 2.4; g.lineCap = 'round'; g.lineJoin = 'round';
+  g.fillStyle = g.strokeStyle = col; g.lineWidth = 2.2; g.lineCap = 'round'; g.lineJoin = 'round';
   const P = (pts, fill = true) => { g.beginPath(); pts.forEach(([a, b], i) => i ? g.lineTo(a, b) : g.moveTo(a, b)); g.closePath(); fill ? g.fill() : g.stroke(); };
   if (kind === 'heart') { g.beginPath(); g.moveTo(10, 18); g.bezierCurveTo(-3, 9, 1, -1, 10, 5); g.bezierCurveTo(19, -1, 23, 9, 10, 18); g.fill(); }
-  if (kind === 'bolt') P([[12, 0], [3, 11], [9, 11], [7, 20], [17, 8], [11, 8], [13, 0]]);
+  if (kind === 'bolt') { g.lineWidth = 1.2; P([[12, 0], [3, 11], [9, 11], [7, 20], [17, 8], [11, 8], [13, 0]]); P([[12, 0], [3, 11], [9, 11], [7, 20], [17, 8], [11, 8], [13, 0]], false); }
   if (kind === 'crank') { g.beginPath(); g.arc(10, 10, 7.5, 0, 7); g.stroke(); g.beginPath(); g.moveTo(10, 10); g.lineTo(15, 16); g.stroke(); g.beginPath(); g.arc(10, 10, 2.5, 0, 7); g.fill(); }
   if (kind === 'sat') { g.beginPath(); g.arc(10, 12, 3, 0, 7); g.fill(); for (const r of [7, 11]) { g.beginPath(); g.arc(10, 12, r, -2.5, -0.64); g.stroke(); } }
-  if (kind === 'phone') { g.lineWidth = 2; g.strokeRect(5, 1, 10, 18); g.fillRect(8, 15, 4, 2); }
-  if (kind === 'batt') { g.lineWidth = 2; g.strokeRect(1, 5, 16, 10); g.fillRect(17, 8, 2.5, 4); g.fillRect(3.5, 7.5, 9, 5); }
-  if (kind === 'radar') { g.beginPath(); g.arc(10, 18, 3, 0, 7); g.fill(); for (const r of [8, 14]) { g.beginPath(); g.arc(10, 18, r, -2.2, -0.94); g.stroke(); } }
-  if (kind === 'light') { P([[3, 6], [12, 3], [12, 17], [3, 14]]); g.beginPath(); g.moveTo(15, 5); g.lineTo(19, 3); g.moveTo(15, 10); g.lineTo(20, 10); g.moveTo(15, 15); g.lineTo(19, 17); g.stroke(); }
-  if (kind === 'route') { g.beginPath(); g.moveTo(4, 17); g.bezierCurveTo(4, 8, 16, 12, 16, 3); g.stroke(); g.beginPath(); g.arc(4, 17, 2.6, 0, 7); g.arc(16, 3, 2.6, 0, 7); g.fill(); }
-  if (kind === 'bike') { g.lineWidth = 2; g.beginPath(); g.arc(4.5, 13, 4, 0, 7); g.stroke(); g.beginPath(); g.arc(15.5, 13, 4, 0, 7); g.stroke(); g.beginPath(); g.moveTo(4.5, 13); g.lineTo(8, 6); g.lineTo(14, 6); g.lineTo(15.5, 13); g.moveTo(8, 6); g.lineTo(10, 13); g.lineTo(14, 6); g.stroke(); }
-  if (kind === 'chart') { g.fillRect(2, 11, 4, 7); g.fillRect(8, 6, 4, 12); g.fillRect(14, 2, 4, 16); }
-  if (kind === 'gear') { g.lineWidth = 2.6; g.beginPath(); g.arc(10, 10, 5, 0, 7); g.stroke(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.beginPath(); g.moveTo(10 + Math.cos(a) * 7, 10 + Math.sin(a) * 7); g.lineTo(10 + Math.cos(a) * 9.5, 10 + Math.sin(a) * 9.5); g.stroke(); } }
-  if (kind === 'sun') { g.beginPath(); g.arc(10, 10, 4, 0, 7); g.fill(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.beginPath(); g.moveTo(10 + Math.cos(a) * 7, 10 + Math.sin(a) * 7); g.lineTo(10 + Math.cos(a) * 9.5, 10 + Math.sin(a) * 9.5); g.stroke(); } }
-  if (kind === 'sliders') { for (const [yy, xx] of [[4, 13], [10, 6], [16, 11]]) { g.lineWidth = 2; g.beginPath(); g.moveTo(1, yy); g.lineTo(19, yy); g.stroke(); g.beginPath(); g.arc(xx, yy, 3.2, 0, 7); g.fill(); } }
-  if (kind === 'flag') { g.fillRect(3, 1, 2.4, 18); P([[5, 2], [18, 2], [14, 7], [18, 12], [5, 12]]); }
+  if (kind === 'phone') { g.lineWidth = 2; g.beginPath(); g.roundRect(5, 1, 10, 18, 2.5); g.stroke(); g.fillRect(8.5, 15, 3, 1.6); }
+  if (kind === 'batt') { g.lineWidth = 1.8; g.beginPath(); g.roundRect(1, 5, 16, 10, 2.5); g.stroke(); g.beginPath(); g.roundRect(17.5, 8, 2, 4, 1); g.fill(); g.beginPath(); g.roundRect(3.5, 7.5, 9, 5, 1); g.fill(); }
+  if (kind === 'radar') { g.beginPath(); g.arc(10, 17, 2.6, 0, 7); g.fill(); for (const r of [7.5, 13]) { g.beginPath(); g.arc(10, 17, r, -2.3, -0.84); g.stroke(); } }
+  if (kind === 'route') { g.beginPath(); g.moveTo(4, 17); g.bezierCurveTo(4, 8, 16, 12, 16, 3); g.stroke(); g.beginPath(); g.arc(4, 17, 2.6, 0, 7); g.fill(); g.beginPath(); g.arc(16, 3, 2.6, 0, 7); g.fill(); }
+  if (kind === 'bike') { g.lineWidth = 1.9; g.beginPath(); g.arc(4.5, 13, 4, 0, 7); g.stroke(); g.beginPath(); g.arc(15.5, 13, 4, 0, 7); g.stroke(); g.beginPath(); g.moveTo(4.5, 13); g.lineTo(8, 6); g.lineTo(14, 6); g.lineTo(15.5, 13); g.moveTo(8, 6); g.lineTo(10, 13); g.lineTo(14, 6); g.stroke(); }
+  if (kind === 'chart') { for (const [a, b] of [[2, 11], [8, 6], [14, 2]]) { g.beginPath(); g.roundRect(a, b, 4, 18 - b, 1.5); g.fill(); } }
+  if (kind === 'sun') { g.beginPath(); g.arc(10, 10, 4, 0, 7); g.fill(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.beginPath(); g.moveTo(10 + Math.cos(a) * 7, 10 + Math.sin(a) * 7); g.lineTo(10 + Math.cos(a) * 9, 10 + Math.sin(a) * 9); g.stroke(); } }
+  if (kind === 'sliders') { for (const [yy, xx] of [[4, 13], [10, 6], [16, 11]]) { g.lineWidth = 1.8; g.beginPath(); g.moveTo(1, yy); g.lineTo(19, yy); g.stroke(); g.beginPath(); g.arc(xx, yy, 3, 0, 7); g.fill(); } }
+  if (kind === 'flag') { g.beginPath(); g.roundRect(3, 1, 2.2, 18, 1); g.fill(); P([[5, 2], [17, 2], [14, 6.5], [17, 11], [5, 11]]); }
+  if (kind === 'loc') { P([[18, 2], [2, 9], [10, 10], [11, 18]]); }
   if (kind === 'mountain') P([[0, 18], [7, 5], [11, 11], [14, 7], [20, 18]]);
   g.restore();
 }
 
 // ---------------------------------------------------------------- components
 
-// Status bar, 18 px: clock | page dashes (or title) | GPS + battery
-function statusBar(d, data, id, title = '') {
-  d.text(data.clock, S.margin, 13, TYPE.xs, C.mute);
-  const pi = PAGES.indexOf(id);
-  if (title) d.label(title, W / 2, 13, C.text, 'center');
-  else if (pi >= 0) {
-    // page dashes: current = 14 px ion, others 5 px dim, 3 px gap
-    const ws = PAGES.map((_, i) => i === pi ? 14 : 5), tot = ws.reduce((a, b) => a + b, 0) + 3 * (ws.length - 1);
-    let x = Math.round(W / 2 - tot / 2);
-    ws.forEach((w, i) => { d.rect(x, 7, w, 3, i === pi ? C.ion : C.dim); x += w + 3; });
+// Glass panel. LVGL: lv_obj, radius r, bg_color/bg_grad_color = recipe col, bg_grad_dir VER,
+// stop opa top→bot, border 1 px (edge), plus a child with border_side TOP (hi). No blur, no shadow.
+export function glass(d, x, y, w, h, r, kind = 'card', tint) {
+  const k = GLASS[kind] || GLASS.card, g = d.g, col = tint || k.col;
+  r = Math.min(r, h / 2, w / 2);
+  const gr = g.createLinearGradient(0, y, 0, y + h);
+  gr.addColorStop(0, rgba(col, k.top)); gr.addColorStop(1, rgba(col, k.bot));
+  g.fillStyle = gr; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill();
+  if (k.edge) { g.strokeStyle = rgba(k.edgeCol || col, k.edge); g.lineWidth = 1; g.beginPath(); g.roundRect(x + 0.5, y + 0.5, w - 1, h - 1, r - 0.5); g.stroke(); }
+  if (k.hi) { // top highlight: top edge and the upper half of both corner arcs
+    const rr = r - 0.5, x0 = x + 0.5, x1 = x + w - 0.5, y0 = y + 0.5;
+    g.strokeStyle = rgba(k.edgeCol || col, k.hi); g.lineWidth = 1; g.beginPath();
+    g.arc(x0 + rr, y0 + rr, rr, Math.PI * 1.25, Math.PI * 1.5); g.lineTo(x1 - rr, y0);
+    g.arc(x1 - rr, y0 + rr, rr, Math.PI * 1.5, Math.PI * 1.75); g.stroke();
   }
-  // GPS: three rising bars
-  for (let i = 0; i < 3; i++) d.rect(180 + i * 4, 11 - i * 3, 3, 3 + i * 3, i < 3 ? C.mute : C.dim);
-  // battery: 17 x 8 body, 2 px cap, fill in text colour (pause colour under 20 %)
-  const bx = 194, by = 5;
-  d.g.strokeStyle = C.mute; d.g.lineWidth = 1; d.g.strokeRect(bx + 0.5, by + 0.5, 16, 8); d.rect(bx + 17, by + 3, 2, 3, C.mute);
-  d.rect(bx + 2, by + 2, Math.round(13 * data.battery / 100), 5, data.battery > 20 ? C.text : C.pause);
-  d.text(`${data.battery}`, W - S.margin, 13, TYPE.xs, C.mute, 'right');
 }
 
-// Soft-key bar, 28 px at y 292: three keycaps, each centred over its physical key.
-// Keycap: 72 x 20 at (cell+4, 296), bottom corners notched 6 px ("pointing" at the key);
-// a 16 x 2 locator tick at y 318 sits exactly above the key. Primary key = filled ion, dark label.
-export function softkeys(d, labels, primary = 2, t = 0) {
-  const y = H - BAR, cw = W / 3;
-  d.rect(0, y, W, BAR, C.bg);
-  d.rect(0, y, W, 1, C.line);
+// Zone light: soft coloured light behind the glass, telling the zone without a word.
+// Firmware: one 240 x 200 A8 bitmap (radial falloff, 47 KB) drawn with image_recolor = zone colour, image_opa.
+function zoneLight(d, col, a = 0.24, x = 70, y = 40, r = 190) { blob(d.g, x, y, r, col, a); }
+
+// Status bar, 22 px: clock | page dots or title | location + battery
+function statusBar(d, data, id, title = '') {
+  d.text(data.clock, 14, 15, [TEXT, 600, 13, 0], C.text);
+  const pi = PAGES.indexOf(id === 'lap' ? 'ride' : id);
+  if (title) d.text(title, W / 2, 15, [TEXT, 600, 12, 0], C.text, 'center');
+  else if (pi >= 0) { // page control: 5 px dots, 5 px gap, current = 14 px capsule
+    const ws = PAGES.map((_, i) => i === pi ? 14 : 5), tot = ws.reduce((a, b) => a + b, 0) + 5 * (ws.length - 1);
+    let x = Math.round(W / 2 - tot / 2);
+    ws.forEach((w, i) => { d.rrect(x, 8, w, 5, 2.5, i === pi ? C.text : rgba(C.text, 0.3)); x += w + 5; });
+  }
+  // battery: 21 x 10 rounded outline, 2 px cap, fill = level
+  const bx = W - 14 - 23, by = 6;
+  d.g.strokeStyle = rgba(C.text, 0.45); d.g.lineWidth = 1; d.g.beginPath(); d.g.roundRect(bx + 0.5, by + 0.5, 20, 10, 3); d.g.stroke();
+  d.rrect(bx + 21.5, by + 3.5, 1.5, 4, 0.75, rgba(C.text, 0.45));
+  d.rrect(bx + 2, by + 2, Math.round(17 * data.battery / 100), 7, 1.5, data.battery > 20 ? C.text : C.warn);
+  d.text(`${data.battery}`, bx - 5, 15, [TEXT, 600, 11, 0], C.text2, 'right');
+  const tw = d.measure(`${data.battery}`, [TEXT, 600, 11, 0]);
+  icon(d, 'loc', bx - 5 - tw - 15, 5, 11, C.text);
+}
+
+// Soft keys: three glass pills (70 x 22, radius 11) centred over the physical keys (thirds of 240 px)
+// at y 295. Primary = prominent near-white pill with an ink label.
+export function softkeys(d, labels, primary = 2, t = 0, kind = 'key') {
+  const y = S.keyY + 3, cw = W / 3;
   labels.forEach((s, i) => {
-    const x0 = Math.round(cw * i), cx = x0 + cw / 2;
-    const prim = i === primary && s;
-    if (s) d.notch(x0 + 4, y + 4, cw - 8, 20, prim ? C.ion : C.s2, 6, 'bl br');
-    d.rect(cx - 8, H - 2, 16, 2, prim ? C.ion : s ? C.dim : C.line);
     if (!s) return;
-    const col = prim ? C.bg : C.text;
-    const glyph = s === 'PAUSE' ? 'pause' : s === 'START' ? 'play' : s === 'PAGE' ? 'chev' : s === 'LAP' ? 'lap' : s.startsWith('ZOOM') ? (s.endsWith('+') ? 'plus' : 'minus') : s === 'CENTRE' ? 'target' : '';
-    const txt = s.startsWith('ZOOM') ? 'ZOOM' : s;
-    const tw = d.measure(txt, TYPE.key), gw = glyph ? 12 : 0, tot = tw + gw;
-    const tx = cx - tot / 2 + (glyph && glyph !== 'chev' && glyph !== 'plus' && glyph !== 'minus' ? gw : 0);
-    const gx = glyph === 'chev' || glyph === 'plus' || glyph === 'minus' ? tx + tw + 5 : cx - tot / 2;
-    const cy = y + 14;
-    d.text(txt, tx, cy + 4.5, TYPE.key, col);
-    const g = d.g; g.fillStyle = g.strokeStyle = col; g.lineWidth = 2; g.lineCap = 'butt';
-    if (glyph === 'pause') { d.rect(gx, cy - 5, 3, 10, col); d.rect(gx + 5, cy - 5, 3, 10, col); }
-    if (glyph === 'play') { g.beginPath(); g.moveTo(gx, cy - 5); g.lineTo(gx + 8, cy); g.lineTo(gx, cy + 5); g.closePath(); g.fill(); }
-    if (glyph === 'chev') { g.beginPath(); g.moveTo(gx, cy - 4); g.lineTo(gx + 4, cy); g.lineTo(gx, cy + 4); g.stroke(); }
-    if (glyph === 'plus' || glyph === 'minus') { d.rect(gx, cy - 1, 8, 2, col); if (glyph === 'plus') d.rect(gx + 3, cy - 4, 2, 8, col); }
-    if (glyph === 'lap') { d.rect(gx, cy - 5, 2, 10, col); g.beginPath(); g.moveTo(gx + 2, cy - 5); g.lineTo(gx + 9, cy - 5); g.lineTo(gx + 7, cy - 2.5); g.lineTo(gx + 9, cy); g.lineTo(gx + 2, cy); g.closePath(); g.fill(); }
-    if (glyph === 'target') { g.lineWidth = 1.6; g.beginPath(); g.arc(gx + 4, cy, 3, 0, 7); g.stroke(); d.rect(gx + 3, cy - 6, 2, 2, col); d.rect(gx + 3, cy + 4, 2, 2, col); d.rect(gx - 2, cy - 1, 2, 2, col); d.rect(gx + 8, cy - 1, 2, 2, col); }
+    const cx = Math.round(cw * i + cw / 2), x = cx - S.keyW / 2, prim = i === primary;
+    glass(d, x, y, S.keyW, S.keyH, R.pill, prim ? 'prominent' : kind);
+    const col = prim ? C.ink : C.text;
+    const glyph = s === 'PAUSE' ? 'pause' : s === 'START' ? 'play' : s === 'ZOOM OUT' ? 'minus' : s === 'ZOOM IN' ? 'plus' : s === 'CENTRE' ? 'target' : '';
+    const txt = glyph === 'minus' || glyph === 'plus' ? 'Zoom' : titleCase(s);
+    const tw = d.measure(txt, TYPE.key), gw = glyph ? 13 : 0, x0 = Math.round(cx - (tw + gw) / 2), cy = y + 11;
+    d.text(txt, x0 + gw, cy + 4.5, TYPE.key, col);
+    const g = d.g; g.fillStyle = g.strokeStyle = col; g.lineCap = 'round';
+    if (glyph === 'pause') { d.rrect(x0, cy - 5, 3, 10, 1, col); d.rrect(x0 + 5, cy - 5, 3, 10, 1, col); }
+    if (glyph === 'play') { g.beginPath(); g.moveTo(x0, cy - 5); g.lineTo(x0 + 8, cy); g.lineTo(x0, cy + 5); g.closePath(); g.fill(); }
+    if (glyph === 'minus' || glyph === 'plus') { d.rrect(x0, cy - 1, 9, 2, 1, col); if (glyph === 'plus') d.rrect(x0 + 3.5, cy - 4.5, 2, 9, 1, col); }
+    if (glyph === 'target') { g.lineWidth = 1.6; g.beginPath(); g.arc(x0 + 4.5, cy, 4, 0, 7); g.stroke(); d.dot(x0 + 4.5, cy, 1.6, col); }
   });
 }
 
-// Field: notched panel, 2 px colour spine, UPPERCASE label top-left, big value bottom-left.
-// unitPos 'after' puts the unit after the value (body font), 'label' puts it top-right in the label row.
-function field(d, x, y, w, h, label, value, unit, col, { type = TYPE.lg, spine = col, extra, unitPos = 'after' } = {}) {
-  d.notch(x, y, w, h, C.s1);
-  d.rect(x, y, 2, h, spine);
-  d.label(label, x + 10, y + 14);
-  const by = y + h - 6;
-  const vw = d.text(value, x + 9, by, type, col);
-  if (unit && unitPos === 'after') d.text(unit, x + 13 + vw, by, TYPE.body, C.mute);
-  if (unit && unitPos === 'label') d.label(unit, x + w - 10, y + 14, C.mute, 'right');
+// Field: glass tile, UPPERCASE label top-left, value bottom-left in TYPE.md (unit after in body/text3).
+// An optional colour dot before the label carries meaning (zone), the value itself stays white.
+function field(d, x, y, w, h, label, value, unit, { dot, type = TYPE.md, valueCol = C.text, extra, kind = 'field' } = {}) {
+  glass(d, x, y, w, h, R.field, kind);
+  let lx = x + S.pad;
+  if (dot) { d.dot(lx + 3, y + 10, 3, dot); lx += 10; }
+  d.label(label, lx, y + 14);
+  const by = y + h - 8;
+  const vw = d.text(value, x + S.pad - 1, by, type, valueCol);
+  if (unit) d.text(unit, x + S.pad + vw + 3, by, TYPE.body, C.text3);
   if (extra) extra(x, y, w, h);
 }
 
-// Hero value: integer part in TYPE.hero, decimal part in TYPE.dec on the same baseline, centred as a unit.
-function hero(d, v, decimals, cx, by, col) {
-  const s = v.toFixed(decimals), [ip, dp] = s.split('.');
-  const wi = d.measure(ip, TYPE.hero), wd = dp ? d.measure('.' + dp, TYPE.dec) + 2 : 0;
-  const x = Math.round(cx - (wi + wd) / 2);
-  d.text(ip, x, by, TYPE.hero, col);
-  if (dp) d.text('.' + dp, x + wi + 2, by, TYPE.dec, col);
-  return { x, w: wi + wd };
+// Zone chip: coloured dot + "Z4 Threshold" in the zone colour, right- or left-aligned
+function zoneChip(d, x, y, n, name, col, align = 'right') {
+  const s = `${n} ${name}`, w = d.measure(s, TYPE.label.map((v, i) => i === 3 ? 0.2 : v));
+  const x0 = align === 'right' ? x - w : x + 10;
+  d.dot(x0 - 7, y - 4, 3, col);
+  d.text(s, x0, y, [TEXT, 600, 11, 0.2], col);
 }
 
-// Footer row, 28 px at y 262: equal cells, label left, value right-aligned, 1 px dividers.
-function footer(d, items, y = 263) {
-  const cw = (W - 12) / items.length;
-  d.rect(6, y - 1, W - 12, 1, C.line);
-  items.forEach(([l, v, u], i) => {
-    const x = 6 + i * cw;
-    if (i) d.rect(Math.round(x), y + 5, 1, 19, C.line);
-    d.label(l, x + (i ? 8 : 2), y + 20);
-    const uw = u ? d.measure(u, TYPE.body) + 3 : 0;
-    d.text(v, x + cw - (i === items.length - 1 ? 2 : 8) - uw, y + 22, TYPE.sm, C.text, 'right');
-    if (u) d.text(u, x + cw - (i === items.length - 1 ? 2 : 8), y + 22, TYPE.body, C.mute, 'right');
-  });
-}
-
-// The Meridian rail — the signature component. A tick scale with a segmented colour band and a needle.
-//   ticks: minor 1x3 px (dim), major 1x6 px (mute) above the band; band h px, segments 1 px apart,
-//   active segment at full opacity, others at 28 %; needle 2 px text-colour with a 7x5 cap and a
-//   two-layer glow (10 px @ 18 %, 6 px @ 35 %) in the active colour.
-function rail(d, x, y, w, { min, max, value, bands, minor, major, h = 6, needle = true, window }) {
+// Gauge: a row of capsule segments (one lv_obj each, radius = h/2, 2 px apart). The active segment is
+// at full opacity, the others at 40 %. The marker is a white knob with a 2 px ink ring (lv_obj, circle).
+function gauge(d, x, y, w, { min, max, value, bands, h = 6, window, knob = true }) {
   const X = (v) => x + (w * (clamp(v, min, max) - min)) / (max - min);
-  // ticks
-  for (let v = Math.ceil(min / minor) * minor; v <= max + 1e-6; v += minor) {
-    const isMaj = Math.abs(v / major - Math.round(v / major)) < 1e-6;
-    d.rect(Math.round(X(v)) - (v >= max ? 1 : 0), y + (isMaj ? 0 : 3), 1, isMaj ? 6 : 3, isMaj ? C.mute : C.dim);
-  }
-  const by = y + 9;
-  d.rect(x, by, w, h, C.s3);
   let active = -1;
   bands.forEach(([a, b, col], i) => {
-    const on = value >= a && value < b;
-    if (on) active = i;
-    const x0 = Math.round(X(a)) + (i ? 1 : 0), x1 = Math.round(X(b));
-    d.g.globalAlpha = on ? 1 : 0.28; d.rect(x0, by, x1 - x0, h, col); d.g.globalAlpha = 1;
+    const on = value >= a && value < b; if (on) active = i;
+    const x0 = Math.round(X(a)) + (i ? 1 : 0), x1 = Math.round(X(b)) - (i < bands.length - 1 ? 1 : 0);
+    d.rrect(x0, y, Math.max(h, x1 - x0), h, h / 2, rgba(col, on || (window && col === window[2]) ? 1 : 0.4));
   });
-  if (window) { // target window: the band inside is always lit, bracketed 3 px above and below
-    const [a, b, col] = window, x0 = Math.round(X(a)), x1 = Math.round(X(b));
-    d.rect(x0, by - 3, x1 - x0, h + 6, col);
-    d.rect(x0, by - 3, 2, h + 6, col); d.rect(x1 - 2, by - 3, 2, h + 6, col);
+  if (window) { // target window: 1.5 px white outline capsule around the range
+    const x0 = Math.round(X(window[0])) - 2, x1 = Math.round(X(window[1])) + 2, g = d.g;
+    g.strokeStyle = rgba(C.text, 0.85); g.lineWidth = 1.5; g.beginPath(); g.roundRect(x0 + 0.5, y - 2.5, x1 - x0 - 1, h + 5, (h + 5) / 2); g.stroke();
   }
-  if (!needle) return active;
-  // needle: 2 px text colour, cut out of the band by a 1 px ink gap each side, 7x5 cap on top
-  const nx = Math.round(X(value));
-  d.rect(nx - 2, by - 1, 4, h + 2, C.bg);
-  d.rect(nx - 1, y - 1, 2, h + 13, C.text);
-  const g = d.g; g.fillStyle = C.text; g.beginPath(); g.moveTo(nx - 4, y - 6); g.lineTo(nx + 4, y - 6); g.lineTo(nx, y - 1); g.closePath(); g.fill();
+  if (knob) { const nx = X(value); d.dot(nx, y + h / 2, h / 2 + 4, rgba(C.ink, 0.7)); d.dot(nx, y + h / 2, h / 2 + 2.5, C.text); }
   return active;
 }
 
-// Round bezel: 60 ticks (every 5th major) between r0 and r1, then a progress arc. (lv_scale round + lv_arc)
-function bezel(d, cx, cy, r, frac, col, { sweep = 1, ticks = 60, lit, track = true } = {}) {
-  const g = d.g;
-  for (let i = 0; i < ticks * sweep; i++) {
-    const a = -Math.PI / 2 + (i / ticks) * Math.PI * 2, maj = i % 5 === 0;
-    const r0 = r + 5, r1 = r + (maj ? 12 : 9);
-    const on = lit !== undefined ? i / ticks < lit : false;
-    g.strokeStyle = on ? col : maj ? C.mute : C.dim; g.lineWidth = maj ? 2 : 1; g.lineCap = 'butt';
-    g.beginPath(); g.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); g.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); g.stroke();
-  }
+// Ring: lv_arc, round caps, neutral track (white at 12 %: a tinted track goes muddy over the dark backdrop)
+function ring(d, cx, cy, r, wdt, frac, col) {
+  const g = d.g; g.lineCap = 'round'; g.lineWidth = wdt;
+  g.strokeStyle = rgba(C.text, 0.12); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke();
+  if (frac > 0.002) { g.strokeStyle = col; g.beginPath(); g.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac); g.stroke(); }
   g.lineCap = 'butt';
-  if (track) { g.strokeStyle = C.s3; g.lineWidth = 8; g.beginPath(); g.arc(cx, cy, r - 2, 0, Math.PI * 2); g.stroke(); }
-  if (frac > 0) {
-    const a0 = -Math.PI / 2, a1 = a0 + Math.PI * 2 * frac;
-    g.strokeStyle = rgba(col, 0.25); g.lineWidth = 14; g.beginPath(); g.arc(cx, cy, r - 2, a0, a1); g.stroke();
-    g.strokeStyle = col; g.lineWidth = 8; g.beginPath(); g.arc(cx, cy, r - 2, a0, a1); g.stroke();
-    // end cap: 3 px text-colour mark
-    g.strokeStyle = C.text; g.lineWidth = 8; g.beginPath(); g.arc(cx, cy, r - 2, a1 - 0.03, a1); g.stroke();
-  }
 }
 
-// Chip: small notched pill with label and value (used over the map)
-function chip(d, x, y, w, h, c = C.s1) { d.notch(x, y, w, h, rgba(c, 0.92), 6, 'tr bl'); }
-
-// Zone badge: "Z4" block in zone colour with dark text + name
-function zoneBadge(d, x, y, n, name, col) {
-  const bw = d.measure(n, TYPE.label) + 8;
-  d.notch(x, y - 10, bw, 13, col, 4, 'tr');
-  d.text(n, x + 4, y, TYPE.label, C.bg);
-  d.label(name, x + bw + 5, y, col);
+// Chip: small capsule with a tinted fill (colour at 22 %) and a coloured label — PRs, category, deltas
+function chip(d, x, y, s, col, { align = 'left', ic, h = 18 } = {}) {
+  const tw = d.measure(s, [TEXT, 600, 11, 0]), iw = ic ? 14 : 0, w = tw + iw + 16;
+  const x0 = align === 'right' ? x - w : x;
+  d.rrect(x0, y, w, h, h / 2, rgba(col, 0.22));
+  if (ic) icon(d, ic, x0 + 8, y + h / 2 - 5.5, 11, col);
+  d.text(s, x0 + 8 + iw, y + h / 2 + 4, [TEXT, 600, 11, 0], col);
+  return w;
 }
 
-// Halo: zone light rising to the rail and falling off below it — two stacked 2-stop vertical
-// gradients (lv style bg_grad VER, colour → colour with opa 0 → a → 0).
-function halo(d, y0, ym, y1, col, a = 0.2) {
-  d.vgrad(0, y0, W, ym - y0, rgba(col, 0), rgba(col, a));
-  d.vgrad(0, ym, W, y1 - ym, rgba(col, a), rgba(col, 0));
+// Hero value: integer part in TYPE.hero, decimal part in TYPE.heroDec on the same baseline.
+function hero(d, v, decimals, x, by, col = C.text) {
+  const s = v.toFixed(decimals), [ip, dp] = s.split('.');
+  const wi = d.text(ip, x, by, TYPE.hero, col);
+  let w = wi;
+  if (dp) w += 1 + d.text('.' + dp, x + wi + 1, by, TYPE.heroDec, col);
+  return w;
+}
+
+function beat(d, x, y, t, bpm, col, s = 12) {
+  const ph = (t * bpm / 60) % 1, k = Math.exp(-ph * 7);
+  const sz = s * (1 + 0.14 * k);
+  d.g.globalAlpha = 0.6 + 0.4 * k; icon(d, 'heart', x + (s - sz) / 2, y + (s - sz) / 2, sz, col); d.g.globalAlpha = 1;
 }
 
 // ---------------------------------------------------------------- screens
 const DRAW = {};
+const M = S.margin, CW = W - 2 * M;                  // content x 8..232
+const HALF = (CW - S.gutter) / 2;                    // 109 px two-up tile
 
 DRAW.ride = (d, t, data, id = 'ride') => {
   const pz = powerZone(data.power, data.ftp), zc = ZONES[pz];
-  halo(d, 20, 150, 176, zc, 0.2);
+  zoneLight(d, zc);
   statusBar(d, data, id);
-  // hero: speed (layout: label row y 31, hero baseline 114)
-  d.label('Speed', S.margin, 31);
-  const up = data.speed >= data.avgSpeed, g = d.g;
-  g.fillStyle = up ? C.z3 : C.z5; g.beginPath();
-  if (up) { g.moveTo(58, 31); g.lineTo(62, 24); g.lineTo(66, 31); } else { g.moveTo(58, 24); g.lineTo(62, 31); g.lineTo(66, 24); }
-  g.fill();
-  d.label(`avg ${data.avgSpeed}`, 70, 31);
-  d.label('mph', W - S.margin, 31, C.mute, 'right');
-  hero(d, data.speed, 1, W / 2, 114, C.text);
-  // Meridian rail: power against the seven zones
+  // speed card 8,26 224x98
+  glass(d, M, 26, CW, 92, R.card);
+  d.label('Speed', M + S.pad, 43);
+  const up = data.speed >= data.avgSpeed;
+  const avg = `avg ${data.avgSpeed}`, aw = d.measure(avg, TYPE.body);
+  d.text(avg, W - M - S.pad, 43, TYPE.body, C.text2, 'right');
+  d.text(up ? '↑' : '↓', W - M - S.pad - aw - 3, 43, TYPE.body, up ? C.good : C.warn, 'right');
+  const hw = hero(d, data.speed, 1, M + S.pad - 3, 107);
+  d.text('mph', M + S.pad + hw + 2, 107, TYPE.body, C.text3);
+  // power card 8,124 224x62: label + zone, value + %FTP, 7-zone gauge
   const f = data.ftp;
-  zoneBadge(d, S.margin, 130, POWER_ZONES[pz].n, POWER_ZONES[pz].name, zc);
-  d.label(`${Math.round(data.power / f * 100)}% FTP`, W - S.margin, 130, C.mute, 'right');
-  rail(d, S.margin, 139, W - 2 * S.margin, { min: 0, max: f * 1.6, value: data.power, minor: 25, major: 100,
+  glass(d, M, 124, CW, 62, R.card);
+  d.label('Power 3s', M + S.pad, 140);
+  zoneChip(d, W - M - S.pad, 140, POWER_ZONES[pz].n, POWER_ZONES[pz].name, zc);
+  const pw = d.text(String(data.power), M + S.pad - 1, 167, TYPE.lg);
+  d.text('W', M + S.pad + pw + 3, 167, TYPE.body, C.text3);
+  d.text(`${Math.round(data.power / f * 100)}% FTP`, W - M - S.pad, 167, TYPE.body, C.text2, 'right');
+  gauge(d, M + S.pad, 174, CW - 2 * S.pad, { min: 0, max: f * 1.6, value: data.power, h: 5,
     bands: POWER_ZONES.map((z, i) => [z.lo * f, Math.min(z.hi, 1.6) * f + (i === 6 ? 1 : 0), ZONES[i]]) });
-  // 2 x 2 grid: 112 x 48 fields, 4 px gutter
-  const gx0 = 6, gw = 112, gy0 = 160, gh = 48;
-  const hz = hrZone(data.hr, data.hrMax);
-  field(d, gx0, gy0, gw, gh, 'Power 3s', String(data.power), 'W', zc);
-  field(d, gx0 + gw + 4, gy0, gw, gh, 'Heart', String(data.hr), 'bpm', HR_COL[hz], { extra: (x, y) => beat(d, x + gw - 24, y + 22, t, data.hr, HR_COL[hz], 14) });
-  field(d, gx0, gy0 + gh + 4, gw, gh, 'Cadence', String(data.cad), 'rpm', C.text, { spine: C.dim });
-  field(d, gx0 + gw + 4, gy0 + gh + 4, gw, gh, 'Grade', data.grade.toFixed(1), '%', gradeColor(data.grade));
-  footer(d, [['Dist', data.dist.toFixed(1), 'mi'], ['Time', fmtTime(data.elapsed), '']]);
+  // 2 x 2 fields, 109 x 46, 6 px gutter: y 192 and 242 (bottom 288, 7 px above the keys)
+  const hz = hrZone(data.hr, data.hrMax), x2 = M + HALF + S.gutter;
+  field(d, M, 192, HALF, 46, 'Heart', String(data.hr), 'bpm', { dot: HR_COL[hz] });
+  field(d, x2, 192, HALF, 46, 'Cadence', String(data.cad), 'rpm');
+  field(d, M, 242, HALF, 46, 'Distance', data.dist.toFixed(1), 'mi');
+  field(d, x2, 242, HALF, 46, 'Time', fmtTime(data.elapsed), '');
 };
-function beat(d, x, y, t, bpm, col, s = 12) {
-  const ph = (t * bpm / 60) % 1, k = Math.exp(-ph * 7);
-  const sz = s * (1 + 0.18 * k);
-  d.g.globalAlpha = 0.55 + 0.45 * k; icon(d, 'heart', x + (s - sz) / 2, y + (s - sz) / 2, sz, col); d.g.globalAlpha = 1;
-}
 
 DRAW.hr = (d, t, data) => {
   const hz = hrZone(data.hr, data.hrMax), col = HR_COL[hz];
-  halo(d, 20, 150, 176, col, 0.2);
+  zoneLight(d, col);
   statusBar(d, data, 'hr');
-  d.label('Heart rate', S.margin, 31); d.label('bpm', W - S.margin, 31, C.mute, 'right');
-  const hv = hero(d, data.hr, 0, W / 2 - 10, 114, col);
-  beat(d, hv.x + hv.w + 6, 44, t, data.hr, col, 22);
-  zoneBadge(d, S.margin, 130, HR_ZONES[hz].n, HR_ZONES[hz].name, col);
-  d.label(`${Math.round(data.hr / data.hrMax * 100)}% max`, W - S.margin, 130, C.mute, 'right');
+  glass(d, M, 26, CW, 112, R.card);
+  d.label('Heart rate', M + S.pad, 44);
+  zoneChip(d, W - M - S.pad, 44, HR_ZONES[hz].n, HR_ZONES[hz].name, col);
+  const hw = hero(d, data.hr, 0, M + S.pad - 3, 112);
+  d.text('bpm', M + S.pad + hw + 2, 112, TYPE.body, C.text3);
+  beat(d, W - M - S.pad - 24, 66, t, data.hr, col, 24);
   const m = data.hrMax;
-  rail(d, S.margin, 139, W - 2 * S.margin, { min: 0.5 * m, max: m, value: data.hr, minor: 5, major: 20,
+  gauge(d, M + S.pad, 122, CW - 2 * S.pad, { min: 0.5 * m, max: m, value: data.hr, h: 5,
     bands: HR_ZONES.map((z, i) => [z.lo * m, z.hi * m + (i === 4 ? 1 : 0), HR_COL[i]]) });
-  // time in zone: 5 rows x 18 px from y 176
-  d.label('Time in zone', S.margin, 174); d.label('of ride', W - S.margin, 174, C.dim, 'right');
+  // time in zone: 5 rows x 16 px
+  glass(d, M, 144, CW, 94, R.card);
+  d.label('Time in zone', M + S.pad, 161);
   const tiz = [412, 2210, 2485, 1175, 214 + Math.floor(t)], tot = tiz.reduce((a, b) => a + b, 0), mx = Math.max(...tiz);
   tiz.forEach((s, i) => {
-    const y = 182 + i * 16, cur = i === hz;
-    d.text(HR_ZONES[i].n, S.margin, y + 10, TYPE.label, cur ? col : C.mute);
-    d.rect(30, y + 2, 118, 9, C.s1);
-    d.g.globalAlpha = cur ? 1 : 0.55; d.rect(30, y + 2, Math.max(2, Math.round(118 * s / mx)), 9, HR_COL[i]); d.g.globalAlpha = 1;
-    d.text(fmtTime(s), 196, y + 11, TYPE.xs, cur ? C.text : C.mute, 'right');
-    d.text(`${Math.round(s / tot * 100)}%`, W - S.margin, y + 11, TYPE.xs, C.dim, 'right');
+    const y = 168 + i * 14, cur = i === hz, bw = 110;
+    d.text(HR_ZONES[i].n, M + S.pad, y + 9, [TEXT, 600, 10, 0], cur ? C.text : C.text3);
+    d.rrect(42, y + 3, bw, 6, 3, rgba(C.text, 0.08));
+    d.rrect(42, y + 3, Math.max(6, Math.round(bw * s / mx)), 6, 3, rgba(HR_COL[i], cur ? 1 : 0.55));
+    d.text(fmtTime(s), 196, y + 9, [TEXT, 600, 10, 0], cur ? C.text : C.text2, 'right');
+    d.text(`${Math.round(s / tot * 100)}%`, W - M - S.pad, y + 9, [TEXT, 500, 10, 0], C.text3, 'right');
   });
-  footer(d, [['Avg', '141', 'bpm'], ['Max', '171', 'bpm']]);
+  field(d, M, 244, HALF, 44, 'Avg', '141', 'bpm');
+  field(d, M + HALF + S.gutter, 244, HALF, 44, 'Max', '171', 'bpm');
 };
 
 DRAW.climb = (d, t, data) => {
   const g = d.g;
-  statusBar(d, data, 'climb');
   const prog = 0.18 + (t * 0.02) % 0.7;
   const n = 30, grades = Array.from({ length: n }, (_, i) => 3.2 + 4.8 * Math.abs(Math.sin(i * 0.33 + 0.6)) + (i > 19 ? 3.2 : 0) + (i > 26 ? 2 : 0));
   const fi = prog * n, i0 = Math.floor(fi);
   const gr = grades[Math.min(n - 1, i0)];
+  zoneLight(d, gradeColor(gr), 0.22);
+  statusBar(d, data, 'climb');
   // title row
-  d.text('HAWK HILL', S.margin, 40, TYPE.title, C.text);
-  const cat = 'CAT 3', cw = d.measure(cat, TYPE.label) + 10;
-  d.notch(W - S.margin - cw, 28, cw, 15, C.s2, 4, 'tr'); d.text(cat, W - S.margin - cw / 2, 39, TYPE.label, C.z5, 'center');
-  d.label('2 of 3', W - S.margin - cw - 6, 40, C.mute, 'right');
-  // stats: three notched fields
-  const fy = 48, fh = 54, fw = 74;
-  field(d, 6, fy, fw, fh, 'Grade', gr.toFixed(1), '%', gradeColor(gr));
-  field(d, 6 + fw + 4, fy, fw, fh, 'To top', (1.62 * (1 - prog)).toFixed(2), 'mi', C.text, { spine: C.dim, type: TYPE.md });
-  field(d, 6 + 2 * (fw + 4), fy, fw + 4, fh, 'Gain left', String(Math.round(612 * (1 - prog))), 'ft', C.text, { spine: C.dim, type: TYPE.md });
-  // profile
-  const px0 = 8, px1 = 232, base = 228, top = 122;
-  let e = 0; const el = [0]; grades.forEach((q) => { e += q; el.push(e); });
+  d.text('Hawk Hill', M + 4, 45, [TEXT, 600, 17, 0], C.text);
+  chip(d, W - M, 31, 'Cat 3', C.z5, { align: 'right' });
+  d.text('Climb 2 of 3', W - M - 60, 44, TYPE.body, C.text2, 'right');
+  // three tiles 70/71/71 x 52
+  const fy = 54, fh = 52, fw = [70, 71, 71];
+  const tt = [DISP, 600, 21, -0.3];
+  field(d, M, fy, fw[0], fh, 'Grade', gr.toFixed(1), '%', { dot: gradeColor(gr), type: tt });
+  field(d, M + 76, fy, fw[1], fh, 'To top', (1.62 * (1 - prog)).toFixed(2), 'mi', { type: tt });
+  field(d, M + 153, fy, fw[2], fh, 'Gain', String(Math.round(612 * (1 - prog))), 'ft', { type: tt });
+  // profile card 8,112 224x176
+  glass(d, M, 112, CW, 176, R.card);
+  d.label('Profile', M + S.pad, 129);
+  d.text(`${Math.round(612 * (1 - prog))} ft to go`, W - M - S.pad, 129, TYPE.body, C.text2, 'right');
+  const px0 = 20, px1 = 220, base = 256, top = 162;
+  let e = 0; const el = [0]; grades.forEach((q2) => { e += q2; el.push(e); });
   const X = (i) => px0 + (px1 - px0) * i / n, Y = (v) => base - (base - top) * v / e;
-  // horizontal guide lines every 25 % of height
-  for (let k = 1; k <= 3; k++) d.rect(px0, Math.round(base - (base - top) * k / 4), px1 - px0, 1, rgba(C.line, 0.7));
+  for (let k = 1; k <= 3; k++) d.rect(px0, Math.round(base - (base - top) * k / 4), px1 - px0, 1, rgba(C.text, 0.06));
   for (let i = 0; i < n; i++) {
     const c = gradeColor(grades[i]), done = i < i0;
     const yA = Y(el[i]), yB = Y(el[i + 1]);
     const gd = g.createLinearGradient(0, Math.min(yA, yB), 0, base);
-    gd.addColorStop(0, rgba(c, done ? 0.35 : 0.95)); gd.addColorStop(1, rgba(c, done ? 0.06 : 0.22));
+    gd.addColorStop(0, rgba(done ? C.text3 : c, done ? 0.45 : 0.85)); gd.addColorStop(1, rgba(done ? C.text3 : c, done ? 0.08 : 0.18));
     g.fillStyle = gd; g.beginPath(); g.moveTo(X(i), base); g.lineTo(X(i), yA); g.lineTo(X(i + 1), yB); g.lineTo(X(i + 1), base); g.closePath(); g.fill();
-    d.line([[X(i), yA], [X(i + 1), yB]], 2, done ? C.dim : c);
-    if (i) d.rect(Math.round(X(i)), Math.round(Math.max(yA, yB)), 1, base - Math.max(yA, yB), C.bg);
+    d.line([[X(i), yA], [X(i + 1), yB]], 2, done ? C.text3 : c);
   }
-  // summit flag
-  icon(d, 'flag', px1 - 14, top - 18, 14, C.text);
-  // distance axis (rail ticks)
-  d.rect(px0, base, px1 - px0, 1, C.mute);
-  for (let k = 0; k <= 16; k++) { const x = Math.round(px0 + (px1 - px0) * k / 16); d.rect(Math.min(x, px1 - 1), base + 1, 1, k % 4 ? 3 : 6, k % 4 ? C.dim : C.mute); }
-  ['0', '0.4', '0.8', '1.2', '1.6 mi'].forEach((s, k) => d.text(s, px0 + (px1 - px0) * k / 4, base + 17, TYPE.axis, C.mute, k === 0 ? 'left' : k === 4 ? 'right' : 'center'));
-  // rider
+  icon(d, 'flag', px1 - 8, top - 22, 14, C.text);
+  d.rect(px0, base, px1 - px0, 1, rgba(C.text, 0.25));
+  ['0', '0.4', '0.8', '1.2', '1.6 mi'].forEach((s, k) => d.text(s, px0 + (px1 - px0) * k / 4, base + 16, TYPE.caption, C.text3, k === 0 ? 'left' : k === 4 ? 'right' : 'center'));
+  // rider: white dot with an accent ring and a hairline drop to the axis
   const mx = X(fi), my = Y(el[i0] + (el[Math.min(n, i0 + 1)] - el[i0]) * (fi - i0));
-  g.setLineDash([2, 3]); d.line([[mx, my], [mx, base]], 1, C.ion); g.setLineDash([]);
-  d.dot(mx, my, 11, C.ion, 0.18); d.dot(mx, my, 7, C.ion, 0.35); d.dot(mx, my, 4.5, C.ion); d.dot(mx, my, 1.8, C.bg);
-  const pw = 30, pxl = clamp(mx - pw / 2, px0, px1 - pw);
-  d.notch(pxl, my - 27, pw, 13, C.ion, 4, 'tr'); d.text('YOU', pxl + pw / 2, my - 17, TYPE.label, C.bg, 'center');
-  // bottom row
-  footer(d, [['Speed', data.speed.toFixed(1), ''], ['VAM', '1120', 'm/h']]);
+  d.rect(Math.round(mx), my, 1, base - my, rgba(C.text, 0.5));
+  d.dot(mx, my, 7.5, C.accent); d.dot(mx, my, 4.5, C.text);
 };
 
 // ---- map
@@ -516,16 +555,15 @@ DRAW.map = (d, t, data) => {
   const s = 830 + ((t * 38) % 190);
   const p = routePos(s);
   const zoom = 1 + 0.15 * Math.sin(t * 0.35);
-  const k = 0.5 * zoom, cx = W / 2, cy = 196;
+  const k = 0.5 * zoom, cx = W / 2, cy = 200;
   const tf = (x, y) => { const dx = x - p.x, dy = y - p.y; const c = Math.cos(p.h), sn = Math.sin(p.h); return [cx + (dx * c - dy * sn) * k, cy - (dx * sn + dy * c) * k]; };
   const poly = (pts, col) => { g.fillStyle = col; g.beginPath(); pts.forEach(([x, y], i) => { const [u, v] = tf(x, y); i ? g.lineTo(u, v) : g.moveTo(u, v); }); g.closePath(); g.fill(); };
   const path = (pts, wdt, col, a = 1, cap = 'round') => { g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = wdt; g.lineCap = cap; g.lineJoin = 'round'; g.beginPath(); pts.forEach(([x, y], i) => { const [u, v] = tf(x, y); i ? g.lineTo(u, v) : g.moveTo(u, v); }); g.stroke(); g.globalAlpha = 1; };
-  g.save(); g.beginPath(); g.rect(0, 0, W, H - BAR); g.clip();
   d.rect(0, 0, W, H, C.mapBg);
   poly(RIVER, C.water); for (const pk of PARKS) poly(pk, C.park);
   for (const st of STREETS) path(st, 6 * zoom, C.road, 1, 'butt');
   for (const st of MAJOR) path(st, 10 * zoom, C.roadMajor, 1, 'butt');
-  // route: travelled part dim, ahead part = ion with two-layer glow
+  // route: travelled part grey; ahead = accent with a darker 2 px edge (two stroked lines, no glow)
   const done = [], ahead = []; let acc = 0;
   for (let i = 0; i < ROUTE.length - 1; i++) {
     const [ax, ay] = ROUTE[i], [bx, by] = ROUTE[i + 1], L = Math.hypot(bx - ax, by - ay);
@@ -533,263 +571,243 @@ DRAW.map = (d, t, data) => {
     acc += L;
   }
   ahead.push(ROUTE[ROUTE.length - 1]);
-  path(done, 5, C.ionDim);
-  path(ahead, 16, C.ion, 0.12); path(ahead, 10, C.ion, 0.25); path(ahead, 5, C.ion);
-  // turn point marker
+  path(done, 6, C.routeDone);
+  path(ahead, 10, C.routeEdge); path(ahead, 6, C.accent);
+  // turn point
   const turn = p.seg === 0 ? ROUTE[1] : ROUTE[2];
   const [tx, ty] = tf(turn[0], turn[1]);
-  d.dot(tx, ty, 6, C.bg); d.dot(tx, ty, 4, C.text);
-  // rider: halo + chevron (text fill, bg outline)
-  d.dot(cx, cy, 18, C.ion, 0.12); d.dot(cx, cy, 11, C.ion, 0.22);
-  g.fillStyle = C.text; g.strokeStyle = C.bg; g.lineWidth = 2.5; g.lineJoin = 'round';
-  g.beginPath(); g.moveTo(cx, cy - 12); g.lineTo(cx + 9, cy + 9); g.lineTo(cx, cy + 4); g.lineTo(cx - 9, cy + 9); g.closePath(); g.stroke(); g.fill();
-  // north pointer (heading-up map): chip with N and a needle rotated by -heading
-  const nx = 220, ny = 84;
-  d.dot(nx, ny, 13, C.s1, 0.92); g.strokeStyle = C.line; g.lineWidth = 1; g.beginPath(); g.arc(nx, ny, 13, 0, 7); g.stroke();
-  g.save(); g.translate(nx, ny); g.rotate(-p.h); g.fillStyle = C.z6; g.beginPath(); g.moveTo(0, -11); g.lineTo(3.5, -6); g.lineTo(-3.5, -6); g.closePath(); g.fill(); g.restore();
-  d.text('N', nx, ny + 5, TYPE.label, C.text, 'center');
-  // scale bar
-  const sb = 34; chip(d, 6, 72, 82, 20);
-  d.rect(12, 85, sb, 2, C.text); d.rect(12, 80, 2, 7, C.text); d.rect(12 + sb - 2, 80, 2, 7, C.text);
-  d.text(`${Math.round(240 / zoom / 10) * 10} ft`, 12 + sb + 4, 87, TYPE.axis, C.text);
-  // turn cue card
+  d.dot(tx, ty, 6, C.text); d.dot(tx, ty, 3.5, C.accent);
+  // rider: heading cone + white-ringed accent dot (Apple-style location puck)
+  const cone = g.createLinearGradient(0, cy - 34, 0, cy);
+  cone.addColorStop(0, rgba(C.accent, 0)); cone.addColorStop(1, rgba(C.accent, 0.45));
+  g.fillStyle = cone; g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, 34, -Math.PI / 2 - 0.45, -Math.PI / 2 + 0.45); g.closePath(); g.fill();
+  d.dot(cx, cy, 10, rgba(C.ink, 0.35)); d.dot(cx, cy, 9, C.text); d.dot(cx, cy, 6.5, C.accent);
+  // turn card 8,8 224x70 (map glass: translucent fill, no blur)
   const next = p.seg === 0 ? { dist: p.left, dir: 'right', road: 'Grand St' } : p.seg === 1 ? { dist: p.left, dir: 'left', road: 'Jersey Ave' } : { dist: 0, dir: 'straight', road: 'Jersey Ave' };
   const feet = Math.max(0, Math.round(next.dist * 3.28 / 10) * 10);
-  d.notch(0, 0, W, 64, C.s1, 12, 'br');
-  d.notch(6, 6, 52, 52, C.ion, 8, 'tr');
-  g.strokeStyle = g.fillStyle = C.bg; g.lineWidth = 5; g.lineCap = 'butt'; g.lineJoin = 'miter';
-  const ax = 28, ay = 50;
-  g.beginPath(); g.moveTo(ax, ay); g.lineTo(ax, 28);
-  if (next.dir === 'right') { g.lineTo(40, 28); g.stroke(); g.beginPath(); g.moveTo(39, 19); g.lineTo(50, 28); g.lineTo(39, 37); g.closePath(); g.fill(); }
-  else if (next.dir === 'left') { g.moveTo(ax + 2.5, 28); g.lineTo(16, 28); g.stroke(); g.beginPath(); g.moveTo(17, 19); g.lineTo(6 + 8, 28); g.lineTo(17, 37); g.closePath(); g.fill(); }
-  else { g.lineTo(ax, 24); g.stroke(); g.beginPath(); g.moveTo(ax - 9, 26); g.lineTo(ax, 14); g.lineTo(ax + 9, 26); g.closePath(); g.fill(); }
+  glass(d, M, M, CW, 70, 20, 'map');
+  d.rrect(M + 8, M + 8, 54, 54, 14, C.accent);
+  g.strokeStyle = g.fillStyle = C.text; g.lineWidth = 5; g.lineCap = 'round'; g.lineJoin = 'round';
+  const ax = M + 35, ay = M + 52;
+  g.beginPath(); g.moveTo(ax, ay); g.lineTo(ax, 38);
+  if (next.dir === 'right') { g.arcTo(ax, 30, ax + 8, 30, 8); g.lineTo(ax + 11, 30); g.stroke(); g.beginPath(); g.moveTo(ax + 10, 22); g.lineTo(ax + 19, 30); g.lineTo(ax + 10, 38); g.closePath(); g.fill(); }
+  else if (next.dir === 'left') { g.arcTo(ax, 30, ax - 8, 30, 8); g.lineTo(ax - 11, 30); g.stroke(); g.beginPath(); g.moveTo(ax - 10, 22); g.lineTo(ax - 19, 30); g.lineTo(ax - 10, 38); g.closePath(); g.fill(); }
+  else { g.lineTo(ax, 28); g.stroke(); g.beginPath(); g.moveTo(ax - 8, 30); g.lineTo(ax, 20); g.lineTo(ax + 8, 30); g.closePath(); g.fill(); }
+  g.lineCap = 'butt'; g.lineJoin = 'miter';
   const big = feet >= 1000;
-  const fw = d.text(big ? (feet / 5280).toFixed(1) : String(feet), 68, 38, TYPE.lg, C.text);
-  d.text(big ? 'mi' : 'ft', 72 + fw, 38, TYPE.body, C.mute);
-  d.text(`${next.dir === 'straight' ? 'Continue on' : next.dir === 'right' ? 'Right onto' : 'Left onto'} ${next.road}`, 68, 55, TYPE.body, C.text);
-  d.text(data.clock, W - S.margin, 18, TYPE.xs, C.mute, 'right');
-  // countdown bar to the turn along the card's bottom edge
-  const frac = clamp(1 - next.dist / 400, 0, 1);
-  d.rect(0, 62, Math.round((W - 12) * frac), 2, C.ion);
-  // bottom chips
-  chip(d, 6, 244, 84, 42);
-  d.label('mph', 14, 258);
-  d.text(data.speed.toFixed(1), 13, 283, TYPE.md, C.text);
-  chip(d, 150, 244, 84, 42);
-  d.label('ETA 8:21', 226, 258, C.ion, 'right');
-  const w2 = d.measure('mi', TYPE.body);
-  d.text('mi', 226, 283, TYPE.body, C.mute, 'right'); d.text('12.4', 223 - w2, 283, TYPE.md, C.text, 'right');
-  g.restore();
+  const fw = d.text(big ? (feet / 5280).toFixed(1) : String(feet), M + 72, M + 36, TYPE.lg, C.text);
+  d.text(big ? 'mi' : 'ft', M + 75 + fw, M + 36, TYPE.body, C.text2);
+  d.text(data.clock, W - M - 12, M + 20, [TEXT, 600, 11, 0], C.text3, 'right');
+  const turnTxt = `${next.dir === 'straight' ? 'Continue on' : next.dir === 'right' ? 'Right onto' : 'Left onto'} `;
+  const t1 = d.text(turnTxt, M + 72, M + 56, TYPE.body, C.text2);
+  d.text(next.road, M + 72 + t1 + 1, M + 56, [TEXT, 600, 13, 0], C.text);
+  // compass 212,100 (heading-up map: red N needle rotated by -heading)
+  const nx = W - M - 16, ny = 102;
+  glass(d, nx - 16, ny - 16, 32, 32, 16, 'map');
+  g.save(); g.translate(nx, ny); g.rotate(-p.h); g.fillStyle = C.bad; g.beginPath(); g.moveTo(0, -13); g.lineTo(3.5, -8); g.lineTo(-3.5, -8); g.closePath(); g.fill(); g.restore();
+  d.text('N', nx, ny + 4, [TEXT, 600, 11, 0], C.text, 'center');
+  // bottom tiles 8,242 and 124,242 (108 x 46)
+  const by = 242;
+  glass(d, M, by, 108, 46, R.field, 'map');
+  d.label('Speed', M + S.pad, by + 15);
+  const sw = d.text(data.speed.toFixed(1), M + S.pad - 1, by + 37, TYPE.md, C.text);
+  d.text('mph', M + S.pad + sw + 3, by + 37, TYPE.body, C.text3);
+  glass(d, W - M - 108, by, 108, 46, R.field, 'map');
+  d.label('Arrive 8:21', W - M - 108 + S.pad, by + 15, C.accent);
+  const dw = d.text('12.4', W - M - 108 + S.pad - 1, by + 37, TYPE.md, C.text);
+  d.text('mi', W - M - 108 + S.pad + dw + 3, by + 37, TYPE.body, C.text3);
+  // scale bar, top-left under the turn card
+  const sb = 30;
+  d.rrect(M + 6, 100, sb, 2, 1, rgba(C.text, 0.8)); d.rrect(M + 6, 96, 2, 6, 1, rgba(C.text, 0.8)); d.rrect(M + 4 + sb, 96, 2, 6, 1, rgba(C.text, 0.8));
+  d.text(`${Math.round(240 / zoom / 10) * 10} ft`, M + 12 + sb, 104, TYPE.caption, C.text, 'left');
 };
 
 DRAW.workout = (d, t, data) => {
-  const g = d.g;
-  statusBar(d, data, 'workout');
   const len = 600, rem = len - ((t * 4 + 198) % len);
   const lo = 240, hi = 262, pw = Math.round(data.power - 2);
   const on = pw >= lo && pw <= hi, tc = C.z4;
-  // corners
-  d.label('Step 4/7', S.margin, 31); d.text('Sweet', S.margin, 47, TYPE.body, C.text); d.text('spot', S.margin, 62, TYPE.body, C.text);
-  d.label('Next', W - S.margin, 31, C.mute, 'right'); d.text('Rest', W - S.margin, 47, TYPE.body, C.text, 'right'); d.text('5:00', W - S.margin, 62, TYPE.body, C.mute, 'right');
-  // bezel ring: lv_scale (round) + lv_arc
-  const cx = 120, cy = 110, r = 52;
-  bezel(d, cx, cy, r, 1 - rem / len, tc, { lit: 1 - rem / len });
-  d.label('Int 2/3', cx, cy - 23, C.mute, 'center');
-  d.text(fmtTime(rem), cx, cy + 16, TYPE.timer, C.text, 'center');
-  d.label(`of ${fmtTime(len)}`, cx, cy + 32, C.mute, 'center');
-  // target rail
-  const ry = 186;
-  d.label(`Target ${lo}–${hi} W`, S.margin, ry);
-  d.label(on ? 'On target' : pw < lo ? 'Push +' + (lo - pw) : 'Ease −' + (pw - hi), W - S.margin, ry, on ? C.z3 : C.pause, 'right');
-  rail(d, S.margin, ry + 10, W - 2 * S.margin, { min: 150, max: 350, value: pw, minor: 10, major: 50,
-    bands: [[150, lo, C.dim], [lo, hi, tc], [hi, 351, C.z5]], window: [lo, hi, tc] });
-  // fields
-  const fy = 216, fh = 44;
-  field(d, 6, fy, 112, fh, 'Power 3s', String(pw), 'W', on ? tc : C.pause, { type: TYPE.md });
-  const hz = hrZone(data.hr + 4, data.hrMax);
-  field(d, 122, fy, 112, fh, 'Heart', String(data.hr + 4), 'bpm', HR_COL[hz], { type: TYPE.md, extra: (x, y) => beat(d, x + 94, y + 7, t, data.hr + 4, HR_COL[hz], 12) });
-  // session chart
+  zoneLight(d, tc, 0.12, 120, 110, 170);
+  statusBar(d, data, 'workout');
+  // header: step and next
+  d.label('Step 4 of 7', M + 4, 40);
+  d.text('Sweet spot', M + 4, 57, TYPE.title, C.text);
+  d.label('Next', W - M - 4, 40, C.text2, 'right');
+  d.text('Rest 5:00', W - M - 4, 57, TYPE.title, C.text2, 'right');
+  // ring: interval progress
+  const cx = 120, cy = 116, r = 50;
+  ring(d, cx, cy, r, 10, 1 - rem / len, tc);
+  d.text('Interval 2/3', cx, cy - 19, [TEXT, 600, 10, 0], C.text2, 'center');
+  d.text(fmtTime(rem), cx, cy + 12, TYPE.timer, C.text, 'center');
+  d.text(`of ${fmtTime(len)}`, cx, cy + 28, [TEXT, 500, 10, 0], C.text3, 'center');
+  // target card 8,176 224x70: label + status chip, power + heart, target gauge
+  glass(d, M, 176, CW, 70, R.card);
+  d.label(`Target ${lo}–${hi} W`, M + S.pad, 193);
+  chip(d, W - M - S.pad + 4, 181, on ? 'On target' : pw < lo ? `Push +${lo - pw}` : `Ease −${pw - hi}`, on ? C.good : C.warn, { align: 'right' });
+  const vw = d.text(String(pw), M + S.pad - 1, 222, TYPE.lg);
+  d.text('W', M + S.pad + vw + 3, 222, TYPE.body, C.text3);
+  const hr = data.hr + 4, hz = hrZone(hr, data.hrMax);
+  const bw2 = d.measure('bpm', [TEXT, 500, 11, 0]);
+  d.text('bpm', W - M - S.pad, 222, [TEXT, 500, 11, 0], C.text3, 'right');
+  const hw2 = d.text(String(hr), W - M - S.pad - bw2 - 3, 222, TYPE.md, C.text, 'right');
+  beat(d, W - M - S.pad - bw2 - hw2 - 20, 205, t, hr, HR_COL[hz], 14);
+  gauge(d, M + S.pad, 231, CW - 2 * S.pad, { min: 180, max: 320, value: pw, h: 5, window: [lo, hi, tc],
+    bands: [[180, lo, C.text3], [lo, hi, tc], [hi, 321, C.text3]] });
+  // session card 8,252 224x36: step blocks, height = intensity
+  glass(d, M, 252, CW, 36, R.field);
   const steps = [[300, 0.45, C.z2], [600, 0.92, C.z4], [300, 0.5, C.z2], [600, 0.92, C.z4], [300, 0.5, C.z2], [600, 0.92, C.z4], [300, 0.4, C.z1]];
-  const tot = steps.reduce((a, [s]) => a + s, 0), cx0 = 6, cw = 228, cb = 289, ch = 22;
+  const tot = steps.reduce((a, [s2]) => a + s2, 0), cx0 = M + 10, cw = CW - 20, cb = 281, ch = 20;
   const at = 300 + 600 + 300 + (len - rem);
   let x = cx0, acc = 0;
-  steps.forEach(([s, h, c]) => {
-    const w = cw * s / tot, hh = Math.round(ch * h);
-    const past = acc + s <= at, cur = acc <= at && at < acc + s;
-    d.g.globalAlpha = past ? 0.3 : cur ? 1 : 0.6; d.rect(Math.round(x), cb - hh, Math.round(w) - 1, hh, c); d.g.globalAlpha = 1;
-    x += w; acc += s;
+  steps.forEach(([s2, h, c]) => {
+    const w = cw * s2 / tot, hh = Math.round(ch * h);
+    const past = acc + s2 <= at, cur = acc <= at && at < acc + s2;
+    d.rrect(Math.round(x), cb - hh, Math.round(w) - 2, hh, 3, past ? rgba(C.text, 0.16) : rgba(c, cur ? 1 : 0.7));
+    x += w; acc += s2;
   });
   const mx = Math.round(cx0 + cw * at / tot);
-  d.rect(mx - 1, cb - ch - 4, 2, ch + 4, C.text);
-  g.fillStyle = C.text; g.beginPath(); g.moveTo(mx - 4, cb - ch - 8); g.lineTo(mx + 4, cb - ch - 8); g.lineTo(mx, cb - ch - 3); g.closePath(); g.fill();
+  d.rrect(mx - 1, cb - ch - 3, 2, ch + 3, 1, C.text);
 };
 
 DRAW.status = (d, t, data) => {
   statusBar(d, data, 'status');
   const rows = [
     ['heart', C.z6, 'Heart rate', 'Polar H10 · ANT+', `${data.hr}`, 4],
-    ['bolt', C.z4, 'Power', 'Assioma Duo · ANT+', `${data.power}`, 3],
-    ['radar', C.z5, 'Radar', 'Varia RTL515 · ANT+', 'clear', 4],
-    ['sat', C.z3, 'GNSS', '3D fix · 3 systems', `${data.sats}`, 4],
-    ['phone', C.ion, 'Phone', 'OpenCycle app · BLE', 'linked', 2],
-    ['batt', C.text, 'Battery', `~${Math.round(data.battery / 100 * 20)} h left`, `${data.battery}%`, -1],
+    ['bolt', C.z4, 'Power', 'Assioma Duo · ANT+', `${data.power} W`, 3],
+    ['radar', C.z5, 'Radar', 'Varia RTL515 · ANT+', 'Clear', 4],
+    ['sat', C.z3, 'GPS', '3D fix · 3 systems', `${data.sats}`, 4],
+    ['phone', C.accent, 'Phone', 'OpenCycle app · BLE', 'Linked', 2],
+    ['batt', C.good, 'Battery', `About ${Math.round(data.battery / 100 * 20)} h left`, `${data.battery}%`, -1],
   ];
-  const y0 = 24, rh = 42;
+  // one grouped glass list 8,28 224x260, rows 43 px, hairlines inset to the text column
+  const y0 = 28, rh = 43;
+  glass(d, M, y0, CW, rh * rows.length + 2, R.card);
   rows.forEach(([ic, col, name, sub, val, bars], i) => {
-    const y = y0 + i * (rh + 2);
-    d.notch(6, y, 228, rh, C.s1);
-    d.rect(6, y, 2, rh, col);
-    d.notch(14, y + 7, 28, 28, rgba(col, 0.16), 5, 'tr');
-    icon(d, ic, 18, y + 11, 20, col);
-    d.text(name, 50, y + 19, TYPE.title, C.text);
-    d.text(sub, 50, y + 34, TYPE.body, C.mute);
-    d.text(val, 203, y + 21, TYPE.sm, C.text, 'right');
-    if (bars >= 0) for (let b = 0; b < 4; b++) d.rect(210 + b * 5, y + 21 - 4 - b * 3, 3, 4 + b * 3, b < bars ? col : C.s3);
-    else { d.rect(210, y + 8, 18, 13, C.s3); d.rect(210, Math.round(y + 8 + 13 * (1 - data.battery / 100)), 18, Math.round(13 * data.battery / 100), C.text); }
+    const y = y0 + 1 + i * rh;
+    if (i) d.rect(52, y, W - M - 52, 1, rgba(C.text, 0.08));
+    d.rrect(M + 10, y + 8, 28, 28, R.tile, col);
+    icon(d, ic, M + 16, y + 14, 16, ic === 'bolt' || ic === 'batt' ? C.ink : C.text);
+    d.text(name, 52, y + 20, TYPE.title, C.text);
+    d.text(sub, 52, y + 35, [TEXT, 500, 11, 0], C.text2);
+    d.text(val, 202, y + 21, [TEXT, 600, 13, 0], C.text, 'right');
+    if (bars >= 0) for (let b = 0; b < 4; b++) d.rrect(208 + b * 5, y + 21 - 4 - b * 3, 3, 4 + b * 3, 1, b < bars ? C.text : rgba(C.text, 0.2));
+    else { d.rrect(208, y + 12, 18, 9, 2, rgba(C.text, 0.2)); d.rrect(208, y + 12, Math.round(18 * data.battery / 100), 9, 2, C.good); }
   });
 };
 
 DRAW.lap = (d, t, data) => DRAW.ride(d, t, data, 'ride');
 DRAW.lapOverlay = (d, t) => {
-  // timeline (s): 0 → 0.4 drop in (overshoot), hold, 4.4 → 4.8 retract (ease in); loops every 6 s
-  const ph = t % 6;
-  const hgt = 176;
-  let k = ph < 0.4 ? EASE.overshoot(ph / 0.4) : ph < 4.4 ? 1 : 1 - EASE.out((ph - 4.4) / 0.4);
+  // timeline (s): 0 → 0.35 slide in (settle, no bounce), hold, 4.4 → 4.75 slide out; loops every 6 s
+  const ph = t % 6, hgt = 184;
+  const k = ph < 0.35 ? EASE.settle(ph / 0.35) : ph < 4.4 ? 1 : 1 - EASE.inOut((ph - 4.4) / 0.35);
   if (k <= 0.001) return;
-  const y = Math.round(-hgt + hgt * k);
-  const g = d.g;
-  // scrim over the ride page
-  d.rect(0, 0, W, H - BAR, rgba(C.bg, 0.55 * clamp(k, 0, 1)));
-  d.notch(0, Math.min(0, y), W, hgt + Math.max(0, y), C.s2, 14, 'br');   // overshoot grows the card, never uncovers the top
-  d.rect(0, y + hgt - 3, W - 14, 3, C.ion);
-  // flash on arrival: ion outline fading 0.4 → 1.0 s
-  const fl = clamp(1 - (ph - 0.4) / 0.6, 0, 1);
-  if (fl > 0 && ph < 1.2) { d.rect(0, y, W, hgt - 3, rgba(C.ion, 0.12 * fl)); }
+  const y = Math.round(lerp(-hgt - 10, 26, k)), g = d.g;
+  // dim the ride page (lv_obj full-screen, bg ink, opa 45 %) — not blur
+  d.rect(0, 0, W, H - BAR, rgba(C.deep, 0.5 * k));
+  // sheet: dark glass (opaque enough to read over anything) with a soft pre-rendered shadow
+  g.save(); g.shadowColor = rgba('#000000', 0.45); g.shadowBlur = 18; g.shadowOffsetY = 6;
+  d.rrect(M, y, CW, hgt, 22, rgba(C.night, 0.01)); g.restore();
+  glass(d, M, y, CW, hgt, 22, 'sheet');
+  glass(d, M, y, CW, hgt, 22, 'card');
   // header
-  d.notch(S.margin, y + 24, 48, 16, C.ion, 5, 'tr');
-  d.text('LAP 4', S.margin + 24, y + 36, TYPE.label, C.bg, 'center');
-  d.label('vs lap 3', W - S.margin, y + 36, C.mute, 'right');
+  chip(d, M + S.pad, y + 12, 'Lap 4', C.accent, { ic: 'flag' });
+  d.text('vs lap 3', W - M - S.pad, y + 25, TYPE.body, C.text2, 'right');
   // lap time + delta
-  d.text('8:12', S.margin, y + 102, TYPE.xl, C.text);
-  const tw = d.measure('8:12', TYPE.xl);
-  d.text('.4', S.margin + tw + 2, y + 102, TYPE.md, C.mute);
-  d.label('faster', W - S.margin, y + 72, C.z3, 'right');
-  d.text('−0:14', W - S.margin, y + 100, TYPE.md, C.z3, 'right');
-  // stats row (lap averages)
-  const stats = [['Speed', '20.8', '+0.6', C.z3], ['Power', '247', '+9', C.z3], ['Heart', '151', '+4', C.z5]];
+  const tw = d.text('8:12', M + S.pad - 2, y + 86, TYPE.xl, C.text);
+  d.text('.4', M + S.pad + tw, y + 86, TYPE.lg, C.text2);
+  d.text('faster', W - M - S.pad, y + 64, [TEXT, 600, 11, 0], C.good, 'right');
+  d.text('−0:14', W - M - S.pad, y + 84, TYPE.sm, C.good, 'right');
+  // stats row: three columns, hairline dividers
+  d.rect(M + S.pad, y + 100, CW - 2 * S.pad, 1, rgba(C.text, 0.1));
+  const stats = [['Speed', '20.8', '+0.6', C.good], ['Power', '247', '+9', C.good], ['Heart', '151', '+4', C.warn]];
   stats.forEach(([l, v, dl, c], i) => {
-    const x = S.margin + i * 78;
-    if (i) d.rect(x - 8, y + 116, 1, 38, C.line);
-    d.label(l, x, y + 126);
-    const vw = d.text(v, x, y + 152, TYPE.sm, C.text);
-    d.text(dl, x + vw + 4, y + 152, TYPE.body, c);
+    const x = M + S.pad + i * 72;
+    if (i) d.rect(x - 7, y + 110, 1, 40, rgba(C.text, 0.1));
+    d.label(l, x, y + 122);
+    const vw = d.text(v, x, y + 146, TYPE.sm, C.text);
+    d.text(dl, x + vw + 3, y + 146, [TEXT, 600, 10, 0], c);
   });
-  // auto-dismiss timer: hairline shrinking under the card over the hold
-  const hold = clamp((ph - 0.4) / 4.0, 0, 1);
-  d.rect(0, y + hgt, Math.round((W - 14) * (1 - hold)), 2, C.text);
+  // auto-dismiss timer: capsule shrinking over the hold
+  const hold = clamp((ph - 0.35) / 4.05, 0, 1), bw = CW - 2 * S.pad;
+  d.rrect(M + S.pad, y + hgt - 16, bw, 4, 2, rgba(C.text, 0.12));
+  d.rrect(M + S.pad, y + hgt - 16, Math.max(4, Math.round(bw * (1 - hold))), 4, 2, rgba(C.text, 0.7));
 };
 
 DRAW.summary = (d, t, data) => {
   const g = d.g;
   statusBar(d, data, 'summary', 'Ride complete');
-  d.label('Sat 27 Sep · Hudson loop', S.margin, 36);
+  d.text('Sat 27 Sep · Hudson loop', M + 4, 42, TYPE.body, C.text2);
   // hero distance
-  const dw = d.text('48.2', S.margin - 2, 92, TYPE.xl, C.text);
-  d.text('mi', S.margin + dw + 2, 92, TYPE.title, C.mute);
-  // PR chip
-  const pr = '3 PRs'; const pw = d.measure(pr, TYPE.label) + 30;
-  d.notch(W - S.margin - pw, 56, pw, 20, C.z4, 6, 'tr');
-  icon(d, 'flag', W - S.margin - pw + 6, 59, 13, C.bg);
-  d.text(pr, W - S.margin - pw + 22, 70, TYPE.label, C.bg);
-  d.text('4:12:08 moving', W - S.margin, 92, TYPE.body, C.mute, 'right');
-  // elevation trace with ion fill; drawn left→right over the first 1.5 s of each 6 s loop
-  const ex0 = 6, ew = 228, eb = 150, eh = 44;
-  const pts = Array.from({ length: 61 }, (_, i) => { const u = i / 60; return [ex0 + ew * u, eb - eh * (0.15 + 0.35 * Math.sin(u * 5.2 + 0.4) ** 2 + 0.45 * Math.exp(-((u - 0.62) ** 2) / 0.006) + 0.05 * Math.sin(u * 40))]; });
-  const rev = clamp(EASE.inOut(((t % 6)) / 1.5), 0, 1);
-  const upto = ex0 + ew * rev;
-  d.notch(ex0, 102, ew, 58, C.s1);
-  g.save(); g.beginPath(); g.rect(ex0, 100, upto - ex0, 62); g.clip();
-  const gd = g.createLinearGradient(0, eb - eh, 0, eb); gd.addColorStop(0, rgba(C.ion, 0.45)); gd.addColorStop(1, rgba(C.ion, 0.02));
-  g.fillStyle = gd; g.beginPath(); g.moveTo(ex0, eb); pts.forEach(([x, y]) => g.lineTo(x, y)); g.lineTo(ex0 + ew, eb); g.closePath(); g.fill();
-  d.line(pts, 2, C.ion);
+  const dw = d.text('48.2', M + 2, 94, TYPE.xl, C.text);
+  d.text('mi', M + 6 + dw, 94, TYPE.title, C.text3);
+  chip(d, W - M - 4, 62, '3 PRs', C.z4, { align: 'right', ic: 'flag' });
+  // elevation card 8,106 224x70; trace draws left→right over the first 1.5 s of each 6 s loop
+  const ex0 = M, ew = CW, ey = 106, eh = 70;
+  glass(d, ex0, ey, ew, eh, R.card);
+  d.label('Elevation', ex0 + S.pad, ey + 17);
+  d.text('3,412 ft', ex0 + ew - S.pad, ey + 17, [TEXT, 600, 11, 0], C.text, 'right');
+  const px0 = ex0 + S.pad, pw = ew - 2 * S.pad, pb = ey + eh - 8, ph = 36;
+  const pts = Array.from({ length: 61 }, (_, i) => { const u = i / 60; return [px0 + pw * u, pb - ph * (0.12 + 0.35 * Math.sin(u * 5.2 + 0.4) ** 2 + 0.45 * Math.exp(-((u - 0.62) ** 2) / 0.006) + 0.05 * Math.sin(u * 40))]; });
+  const rev = clamp(EASE.inOut((t % 6) / 1.5), 0, 1);
+  g.save(); g.beginPath(); g.rect(px0 - 2, ey, pw * rev + 4, eh); g.clip();
+  const gd = g.createLinearGradient(0, pb - ph, 0, pb); gd.addColorStop(0, rgba(C.accent, 0.6)); gd.addColorStop(1, rgba(C.accent, 0.04));
+  g.fillStyle = gd; g.beginPath(); g.moveTo(px0, pb); pts.forEach(([x, y]) => g.lineTo(x, y)); g.lineTo(px0 + pw, pb); g.closePath(); g.fill();
+  d.line(pts, 2, C.accent);
   g.restore();
-  d.label('Climbed', ex0 + 10, 117); d.text('3,412 ft', ex0 + 72, 117, TYPE.body, C.text);
-  d.label('max 612', ex0 + ew - 12, 116, C.mute, 'right');
-  // 3 x 2 stat grid
-  // spec sheet: 2 x 3 rows of 112 x 38, label left, value right (TYPE.sm + unit in TYPE.axis)
-  const cells = [['Speed', '17.9', '', C.text], ['Power', '198', 'W', C.z3], ['NP', '231', 'W', C.z4],
-    ['Avg HR', '141', '', C.z3], ['kJ', '2904', '', C.text], ['TSS', '212', '', C.z5]];
-  cells.forEach(([l, v, u, c], i) => {
-    const x = 6 + (i % 2) * 116, y = 168 + Math.floor(i / 2) * 41;
-    d.notch(x, y, 112, 38, C.s1);
-    d.rect(x, y, 2, 38, c === C.text ? C.dim : c);
-    d.label(l, x + 10, y + 23);
-    const uw = u ? d.measure(u, TYPE.axis) + 3 : 0;
-    d.text(v, x + 104 - uw, y + 27, TYPE.sm, c, 'right');
-    if (u) d.text(u, x + 104, y + 27, TYPE.axis, C.mute, 'right');
+  // 3 x 2 stat grid: 70/71/71 x 50 tiles (field component, 20 px values)
+  // units live in the labels: a 71 px tile cannot take "17.9 mph" at 20 px
+  const cells = [['Moving', '4:12', ''], ['Avg mph', '17.9', ''], ['Avg W', '198', ''],
+    ['NP W', '231', ''], ['Avg bpm', '141', ''], ['TSS', '212', '']];
+  cells.forEach(([l, v, u], i) => {
+    const x = M + (i % 3) * 76 + (i % 3 ? 1 : 0), y = 182 + Math.floor(i / 3) * 56;
+    field(d, x, y, i % 3 ? 71 : 70, 50, l, v, u, { type: [DISP, 600, 20, -0.3] });
   });
 };
 
 DRAW.menu = (d, t, data) => {
   statusBar(d, data, 'menu', 'Menu');
   const items = [['bike', 'Ride profiles', 'Road · 6 pages'], ['route', 'Navigate', 'Hudson loop · 48 mi'], ['chart', 'Workouts', 'Sweet spot 3×10'],
-    ['radar', 'Sensors', '5 paired'], ['sun', 'Display', 'Auto · 80 %'], ['sliders', 'Settings', 'v0.2 · units mph']];
-  // selection steps every 1.5 s, slides 180 ms
+    ['radar', 'Sensors', '5 paired'], ['sun', 'Display', 'Auto · 80%'], ['sliders', 'Settings', 'v0.2 · mph']];
+  // selection steps every 1.5 s and glides 220 ms
   const step = Math.floor(t / 1.5), ph = (t / 1.5) % 1;
   const cur = step % items.length, prev = (step + items.length - 1) % items.length;
-  const k = EASE.out(ph * 1.5 / 0.18);
-  const y0 = 26, rh = 43;
+  const k = EASE.out(ph * 1.5 / 0.22);
+  const y0 = 28, rh = 43;
   const selY = y0 + lerp(prev === items.length - 1 && cur === 0 ? cur : prev, cur, k) * rh;
-  items.forEach(([ic, name, sub], i) => { const y = y0 + i * rh; d.notch(6, y, 228, rh - 3, C.s1); });
-  d.notch(6, selY, 228, rh - 3, C.ion, S.notch, 'tr');
+  items.forEach((_, i) => glass(d, M, y0 + i * rh, CW, rh - 5, R.row, 'field'));
+  glass(d, M, selY, CW, rh - 5, R.row, 'raised');
   items.forEach(([ic, name, sub], i) => {
     const y = y0 + i * rh, sel = i === cur && k > 0.5;
-    const fg = sel ? C.bg : C.text;
-    icon(d, ic, 16, y + 10, 20, sel ? C.bg : C.ion);
-    d.text(name, 46, y + 18, TYPE.title, fg);
-    d.text(sub, 46, y + 33, TYPE.body, sel ? C.bg : C.mute, 'left', sel ? 0.75 : 1);
-    const g = d.g; g.strokeStyle = sel ? C.bg : C.dim; g.lineWidth = 2; g.lineCap = 'butt';
-    g.beginPath(); g.moveTo(218, y + 14); g.lineTo(223, y + 20); g.lineTo(218, y + 26); g.stroke();
+    d.rrect(M + 8, y + 6, 26, 26, R.tile, sel ? C.accent : rgba(C.text, 0.12));
+    icon(d, ic, M + 13, y + 11, 16, C.text);
+    d.text(name, 46, y + 17, TYPE.title, C.text);
+    d.text(sub, 46, y + 31, [TEXT, 500, 11, 0], C.text2);
+    const g = d.g; g.strokeStyle = sel ? C.text : C.text3; g.lineWidth = 2; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(217, y + 14); g.lineTo(221, y + 19); g.lineTo(217, y + 24); g.stroke(); g.lineCap = 'butt';
   });
 };
 
 DRAW.boot = (d, t) => {
   const g = d.g, ph = t % 6;
-  const cx = 120, cy = 118, r = 62;
-  // 0–1.2 s: bezel ticks sweep in; 0.9–1.5 s: wordmark; 1.5–4.5 s: checks; 4.5–5.2 s hold; 5.2–6 fade
-  const out = clamp((ph - 5.2) / 0.8, 0, 1);
-  g.globalAlpha = 1 - out;
-  const sweep = EASE.out(ph / 1.2);
-  bezel(d, cx, cy, r, 0, C.ion, { sweep, lit: clamp((ph - 1.5) / 3, 0, 1), track: false });
-  g.globalAlpha = 1 - out;
-  // mark: notched square "O" with an ion needle (the logo)
-  const mk = EASE.overshoot((ph - 0.6) / 0.5);
-  if (mk > 0) {
-    g.save(); g.translate(cx, cy - 4); g.scale(mk, mk);
-    // the mark: a notched square ring (stroked, so it fades cleanly) — firmware: one A8 bitmap
-    g.strokeStyle = C.text; g.lineWidth = 9; g.lineJoin = 'miter';
-    g.beginPath(); g.moveTo(-17.5, -17.5); g.lineTo(8, -17.5); g.lineTo(17.5, -8); g.lineTo(17.5, 17.5); g.lineTo(-8, 17.5); g.lineTo(-17.5, 8); g.closePath(); g.stroke();
-    g.restore();
-    g.globalAlpha = (1 - out) * clamp(mk, 0, 1);
-    d.rect(cx - 1, cy - 44, 2, 22, C.ion);
-    g.fillStyle = C.ion; g.beginPath(); g.moveTo(cx - 5, cy - 48); g.lineTo(cx + 5, cy - 48); g.lineTo(cx, cy - 42); g.closePath(); g.fill();
-    g.globalAlpha = 1 - out;
-  }
-  const wa = clamp((ph - 0.9) / 0.6, 0, 1);
-  g.globalAlpha = (1 - out) * wa;
-  d.text('OPENCYCLE', cx, 222 + Math.round(8 * (1 - EASE.out(wa))), [UI, 700, 24, 4], C.text, 'center');
-  d.label('Meridian UI · v0.2', cx, 240, C.mute, 'center');
-  g.globalAlpha = 1 - out;
-  // checks along a rail
-  const checks = [['GNSS', 1.8], ['Sensors', 2.6], ['Phone', 3.4], ['Ready', 4.2]];
-  const ry = 264, rx = 20, rw = 200;
-  d.rect(rx, ry, rw, 2, C.s3);
-  const prog = clamp((ph - 1.5) / 2.7, 0, 1);
-  d.rect(rx, ry, Math.round(rw * prog), 2, C.ion);
-  checks.forEach(([s, at], i) => {
-    const x = rx + rw * (i + 1) / checks.length, done = ph >= at;
-    d.rect(Math.round(x) - 1, ry - 3, 2, 8, done ? C.ion : C.dim);
-    d.text(s.toUpperCase(), x - rw / checks.length / 2, ry + 18, TYPE.axis, done ? C.text : C.dim, 'center');
-  });
+  // 0–0.8 s backdrop fades up from black; 0.5–1.3 s mark + wordmark settle; 1.2–4.6 s progress; 5.2–6 fade out
+  const inA = EASE.out(ph / 0.8), out = clamp((ph - 5.2) / 0.8, 0, 1);
+  d.rect(0, 0, W, H, rgba('#000000', 1 - inA * (1 - out)));
+  const a = clamp((ph - 0.5) / 0.8, 0, 1) * (1 - out), rise = Math.round(10 * (1 - EASE.settle((ph - 0.5) / 0.8)));
+  const cy = 132 + rise;
+  g.globalAlpha = a;
+  // mark: a glass disc with a white ring and one accent dot — "the cycle"
+  glass(d, 120 - 34, cy - 34, 68, 68, 34, 'card');
+  g.strokeStyle = C.text; g.lineWidth = 5; g.lineCap = 'round';
+  g.beginPath(); g.arc(120, cy, 17, -Math.PI / 2 + 0.55, Math.PI * 1.5 - 0.1); g.stroke(); g.lineCap = 'butt';
+  d.dot(120, cy - 17, 4, C.accent);
+  d.text('OpenCycle', 120, cy + 70, [DISP, 600, 28, -0.5], C.text, 'center');
+  g.globalAlpha = 1;
+  // progress
+  const pa = clamp((ph - 1.2) / 0.3, 0, 1) * (1 - out);
+  const prog = EASE.inOut(clamp((ph - 1.2) / 3.4, 0, 1));
+  g.globalAlpha = pa;
+  d.rrect(80, 236, 80, 4, 2, rgba(C.text, 0.16));
+  d.rrect(80, 236, Math.max(4, Math.round(80 * prog)), 4, 2, C.text);
+  const msg = ph < 2.2 ? 'Finding satellites' : ph < 3.2 ? 'Connecting sensors' : ph < 4.4 ? 'Linking phone' : 'Ready';
+  d.text(msg, 120, 260, [TEXT, 500, 11, 0], C.text2, 'center');
   g.globalAlpha = 1;
 };

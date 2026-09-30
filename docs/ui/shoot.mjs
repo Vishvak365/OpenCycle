@@ -1,4 +1,4 @@
-// Render every Meridian screen to docs/ui/*.png with Playwright (Chromium).
+// Render every Lucent screen to docs/ui/*.png with Playwright (Chromium).
 //   python3 -m http.server 8765          (from the repo root)
 //   NODE_PATH=$(npm root -g) node docs/ui/shoot.mjs [http://localhost:8765]
 // Optional: SHOOT_FRAMES="map:0,map:5" also writes those frames (3x) to docs/ui/frames/ for checking motion.
