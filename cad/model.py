@@ -87,7 +87,7 @@ def internal_parts():
     # top-actuated switches under the three front keys
     fsw = None
     for x in KEY_X:
-        f = block(4.2, 3.2, KEY_SW_T, x - 2.1, KEY_Y - 1.6, PCB_Z + PCB_T)
+        f = block(3.2, 4.2, KEY_SW_T, x - 1.6, KEY_Y - 2.1, PCB_Z + PCB_T)     # PTS810 turned 90 deg on the board
         fsw = f if fsw is None else fsw.union(f)
     p["front_switches"] = fsw
 

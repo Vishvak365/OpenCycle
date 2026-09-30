@@ -271,3 +271,7 @@ SPEAKER_KEEPOUT = (18.5, 73.4, 33.5, 84.4)
 RULES = dict(track_min=0.127, clearance_min=0.127, via_min=0.45, drill_min=0.2, edge_clearance=0.3,
              hole_clearance=0.19, hole_to_hole=0.25, silk_text_min=0.8,
              default_clearance=0.15, default_track=0.2, via_d=0.5, via_drill=0.3)
+
+# signal pads that get a short escape stub + via before the plane fan-out (tight LGA ring)
+ESCAPES = [("U8", "2", 0.15, None), ("U8", "4", 0.15, None),
+           ("J3", "38", 0.25, (0, -1))]        # backlight LEDA: VBAT class is 0.5 mm, the FFC pitch is 0.5 mm

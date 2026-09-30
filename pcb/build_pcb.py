@@ -116,6 +116,7 @@ def build():
 
     for p in D.PARTS:
         fp = load_fp(p["flib"], p["fp"])
+        fp.SetFPID(pcbnew.LIB_ID(p["flib"], p["fp"]))
         fp.SetReference(p["ref"])
         fp.SetValue(p["value"])
         fp.SetPosition(V(p["x"], p["y"]))
@@ -150,12 +151,16 @@ def build():
             fp.Flip(fp.GetPosition(), True)
         fp.Reference().SetTextSize(pcbnew.VECTOR2I(MM(0.8), MM(0.8)))
         fp.Reference().SetTextThickness(MM(0.15))
+        # reference designators live on the fab layer (assembly drawing), not the silkscreen:
+        # a 46 mm board this dense has no room for legible silk labels next to 0402 parts
+        fp.Reference().SetLayer(pcbnew.F_Fab if p["side"] == "F" else pcbnew.B_Fab)
         fp.Value().SetVisible(False)
         if p["ref"].startswith(("FID", "J4", "J5")):
             fp.Reference().SetVisible(False)
 
     for i, (hx, hy) in enumerate(D.HOLES, 1):
         fp = load_fp("MountingHole", "MountingHole_2.2mm_M2_Pad_Via")
+        fp.SetFPID(pcbnew.LIB_ID("MountingHole", "MountingHole_2.2mm_M2_Pad_Via"))
         fp.SetReference(f"H{i}")
         fp.SetPosition(V(hx, hy))
         for pad in fp.Pads():

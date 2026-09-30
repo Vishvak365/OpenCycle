@@ -9,10 +9,13 @@ python finish.py routed.kicad_pcb opencycle.kicad_pcb
 5. refills and writes drc_report.txt
 """
 import math
+import os
 import sys
 from pathlib import Path
 
-import pcbnew
+os.environ.setdefault("KICAD7_FOOTPRINT_DIR", "/usr/share/kicad/footprints")
+os.environ.setdefault("KICAD7_SYMBOL_DIR", "/usr/share/kicad/symbols")
+import pcbnew  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).parent))
 import design as D  # noqa: E402

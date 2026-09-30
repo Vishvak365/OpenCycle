@@ -54,6 +54,29 @@ def main(src, dst):
                t.GetLayer()) for t in b.GetTracks() if t.GetClass() != "PCB_VIA"]
     added = failed = 0
     fails = []
+    # escapes for boxed-in signal pads: straight out, away from the part centre, then a via
+    for ref, num, sw, direction in D.ESCAPES:
+        f = b.FindFootprintByReference(ref)
+        p = next(q for q in f.Pads() if q.GetNumber() == num)
+        c, fc = p.GetPosition(), f.GetPosition()
+        dx, dy = TM(c.x - fc.x), TM(c.y - fc.y)
+        if direction:
+            ux, uy = direction
+        elif abs(dx) >= abs(dy):
+            ux, uy = (1 if dx > 0 else -1), 0
+        else:
+            ux, uy = 0, (1 if dy > 0 else -1)
+        L = 1.25
+        vx, vy = TM(c.x) + ux * L, TM(c.y) + uy * L
+        layer = pcbnew.F_Cu if p.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
+        t = pcbnew.PCB_TRACK(b)
+        t.SetStart(c); t.SetEnd(pcbnew.VECTOR2I(MM(vx), MM(vy))); t.SetWidth(MM(sw)); t.SetLayer(layer)
+        t.SetNet(p.GetNet()); t.SetLocked(True); b.Add(t)
+        v = pcbnew.PCB_VIA(b)
+        v.SetPosition(pcbnew.VECTOR2I(MM(vx), MM(vy))); v.SetWidth(MM(0.45)); v.SetDrill(MM(0.25))
+        v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu); v.SetNet(p.GetNet()); v.SetLocked(True); b.Add(v)
+        vias.append((vx, vy, p.GetNetname()))
+        tracks.append((TM(c.x), TM(c.y), vx, vy, sw, p.GetNetname(), layer))
     for f in b.GetFootprints():
         if f.GetReference() in SKIP_REFS:
             continue

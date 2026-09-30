@@ -17,3 +17,5 @@ pcb/*.ses
 pcb/freerouting*
 pcb/work.*
 pcb/logs/
+pcb/fanned.*
+pcb/route*.out
