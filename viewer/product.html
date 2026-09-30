@@ -1,0 +1,799 @@
+<meta charset="utf-8">
+<title>OpenCycle v0.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a studio "tour" — the real CAD device sits in a sticky stage on the left while chapters scroll on the
+   right and move the camera; then the live Lucent screen, the spec sheet and the build steps. One column on phones. */
+:root {
+  --bg: #eceff2;            /* studio sweep, cool fog */
+  --bg-2: #f7f8fa;
+  --ink: #101418;
+  --ink-2: #56606b;
+  --line: rgba(16, 20, 24, .10);
+  --glass: rgba(255, 255, 255, .58);
+  --glass-edge: rgba(255, 255, 255, .85);
+  --shadow: 0 1px 1px rgba(16, 20, 24, .04), 0 12px 32px -12px rgba(16, 20, 24, .18);
+  --accent: #d9602a;        /* the signal-orange centre key */
+  --accent-ink: #ffffff;
+  --ok: #2c8a52;
+  --warn: #a8581c;
+  --floor: rgba(16, 20, 24, .07);
+  --font-display: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --font-data: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --nav-h: 56px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0c0f13; --bg-2: #13171c; --ink: #eef1f4; --ink-2: #97a1ad; --line: rgba(238, 241, 244, .10);
+  --glass: rgba(30, 35, 42, .55); --glass-edge: rgba(255, 255, 255, .10);
+  --shadow: 0 1px 1px rgba(0, 0, 0, .3), 0 16px 40px -16px rgba(0, 0, 0, .7);
+  --accent: #f07a41; --accent-ink: #160a04; --ok: #5cc98a; --warn: #f0a266; --floor: rgba(255, 255, 255, .05); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0c0f13; --bg-2: #13171c; --ink: #eef1f4; --ink-2: #97a1ad; --line: rgba(238, 241, 244, .10);
+  --glass: rgba(30, 35, 42, .55); --glass-edge: rgba(255, 255, 255, .10);
+  --shadow: 0 1px 1px rgba(0, 0, 0, .3), 0 16px 40px -16px rgba(0, 0, 0, .7);
+  --accent: #f07a41; --accent-ink: #160a04; --ok: #5cc98a; --warn: #f0a266; --floor: rgba(255, 255, 255, .05); color-scheme: dark }
+
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 12px) }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--font-body); -webkit-font-smoothing: antialiased; overflow-x: hidden }
+a { color: inherit }
+.wrap { width: 100%; max-width: 1240px; margin-inline: auto; padding-inline: 20px }
+.mono { font-family: var(--font-data); font-variant-numeric: tabular-nums }
+.eyebrow { font: 500 12px/1.2 var(--font-data); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2) }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0 }
+h1 { font-weight: 600; font-size: clamp(38px, 6.2vw, 76px); line-height: .98; letter-spacing: -.035em }
+h2 { font-weight: 600; font-size: clamp(28px, 3.6vw, 44px); line-height: 1.04; letter-spacing: -.028em }
+h3 { font-weight: 600; font-size: 19px; line-height: 1.2; letter-spacing: -.01em }
+p { margin: 0; max-width: 62ch }
+.lede { font-size: clamp(17px, 1.5vw, 20px); color: var(--ink-2); line-height: 1.5 }
+button { font: inherit; color: inherit }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px }
+
+/* glass: the page borrows the device UI's material, used only on things you touch or that float */
+.glass { background: var(--glass); border: 1px solid var(--glass-edge); box-shadow: var(--shadow); -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5) }
+
+/* nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; padding-block: 10px }
+.nav .bar { display: flex; align-items: center; gap: 18px; height: calc(var(--nav-h) - 20px + 16px); padding-inline: 8px 8px 8px 16px; border-radius: 999px }
+.brand { font: 600 15px var(--font-display); letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; text-decoration: none; white-space: nowrap }
+.brand i { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent) }
+.nav ul { list-style: none; display: flex; gap: 2px; margin: 0 0 0 auto; padding: 0; overflow-x: auto; scrollbar-width: none }
+.nav ul::-webkit-scrollbar { display: none }
+.nav a.l { display: block; text-decoration: none; font-size: 14px; color: var(--ink-2); padding: 7px 12px; border-radius: 999px; white-space: nowrap }
+.nav a.l:hover { color: var(--ink); background: var(--floor) }
+.nav a.gh { text-decoration: none; font-size: 14px; font-weight: 500; background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 999px; white-space: nowrap }
+@media (max-width: 720px) { .nav ul { display: none } .nav a.gh { margin-left: auto } }
+
+/* tour */
+.tour { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; align-items: start }
+.stage-col { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--nav-h) + 8px); height: calc(100vh - var(--nav-h) - 24px); min-height: 480px; max-height: 900px }
+.stage { position: relative; width: 100%; height: 100%; border-radius: 28px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 18%, var(--bg-2) 0%, var(--bg) 62%) }
+.stage canvas { display: block; width: 100%; height: 100%; outline: none }
+.stage .status { position: absolute; inset: 0; display: grid; place-items: center; font: 13px var(--font-data); color: var(--ink-2); text-align: center; padding: 20px }
+.stage .caption { position: absolute; left: 16px; right: 16px; bottom: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: end; pointer-events: none }
+.stage .caption .mono { font-size: 11px; color: var(--ink-2); letter-spacing: .02em }
+@media (max-width: 560px) { .stage .caption .mono { display: none } .stage .caption { justify-content: center } }
+.progress { display: flex; gap: 6px; pointer-events: auto }
+.progress button { width: 22px; height: 22px; border: 0; background: none; padding: 0; cursor: pointer; display: grid; place-items: center }
+.progress button::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink-2); opacity: .35; transition: all .3s }
+.progress button[aria-current="true"]::before { width: 18px; border-radius: 3px; background: var(--accent); opacity: 1 }
+
+.chapters { display: flex; flex-direction: column }
+.chapter { min-height: 88vh; display: flex; flex-direction: column; justify-content: center; gap: 18px; padding-block: 48px }
+.chapter:first-child { min-height: calc(100vh - var(--nav-h) - 24px); justify-content: center; padding-block: 8px 48px }
+.chapter .eyebrow { color: var(--accent) }
+.chapter p { color: var(--ink-2) }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border-radius: 18px; overflow: hidden; border: 1px solid var(--line); max-width: 460px }
+.stats div { background: var(--bg); padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 0 }
+.stats b { font: 600 22px/1.1 var(--font-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums }
+.stats span { font-size: 13px; color: var(--ink-2) }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.pill { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 6px 14px 6px 8px; border-radius: 999px; border: 1px solid var(--line); background: transparent; cursor: pointer; font-size: 14px; transition: background .2s, border-color .2s }
+.pill:hover { background: var(--floor) }
+.pill[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink) }
+.pill.plain { padding-left: 14px }
+.pill .sw { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), inset 0 6px 8px rgba(255,255,255,.28) }
+.layers { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; max-width: 460px; font-size: 14px }
+.layers li { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 12px; padding: 9px 0; border-top: 1px solid var(--line) }
+.layers li span:first-child { font-family: var(--font-data); font-size: 12px; color: var(--ink-2); padding-top: 2px; font-variant-numeric: tabular-nums }
+.check { display: inline-flex; gap: 8px; align-items: center; font: 500 13px var(--font-data); padding: 6px 12px; border-radius: 999px; background: color-mix(in srgb, var(--ok) 12%, transparent); color: var(--ok) }
+.check::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor }
+.check.warn { background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--warn) }
+
+@media (max-width: 900px) {
+  .tour { grid-template-columns: minmax(0, 1fr); gap: 0 }
+  .stage-col { top: calc(env(safe-area-inset-top, 0px) + var(--nav-h)); height: 50vh; min-height: 300px; z-index: 5; padding-bottom: 8px; background: var(--bg) }
+  .stage { border-radius: 22px }
+  .chapter, .chapter:first-child { min-height: 0; padding-block: 28px 56px }
+}
+
+/* sections after the tour */
+section.block { padding-block: 96px 24px; display: flex; flex-direction: column; gap: 36px }
+.head { display: flex; flex-direction: column; gap: 14px }
+.rule { height: 1px; background: var(--line); border: 0; margin: 0 }
+
+/* interface */
+.ui { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 48px; align-items: center }
+@media (max-width: 900px) { .ui { grid-template-columns: minmax(0, 1fr); justify-items: center } }
+.unit { width: min(100%, 372px); aspect-ratio: 52 / 92.4; border-radius: 38px; padding: 7.5% 6% 0; position: relative;
+  background: linear-gradient(160deg, #2a2d33 0%, #16181b 55%, #101113 100%);
+  box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 -2px 6px rgba(0,0,0,.5) inset, 0 40px 60px -30px rgba(0,0,0,.55), 0 18px 30px -18px rgba(0,0,0,.4) }
+.unit .band { display: flex; justify-content: space-between; align-items: center; padding: 0 8% 5.5%; font: 600 9px var(--font-display); letter-spacing: .32em; color: rgba(242,244,246,.72) }
+.unit .band i { display: flex; gap: 9px }
+.unit .band i::before, .unit .band i::after { content: ""; width: 6px; height: 6px; border-radius: 50% }
+.unit .band i::before { background: #6fd08c; box-shadow: 0 0 8px #6fd08c }
+.unit .band i::after { background: #2f3237; box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); width: 8px; height: 8px; margin-top: -1px }
+.lcd { position: relative; aspect-ratio: 240 / 320; width: 86%; margin-inline: auto; border-radius: 3px; overflow: hidden; background: #0e1217; box-shadow: 0 0 0 5px #08090a }
+.lcd canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated }
+.lcd::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.02) 40%, transparent 40.2%) }
+.hw-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7%; padding: 7.5% 9% 0 }
+.hw-keys button { aspect-ratio: 1; border-radius: 50%; border: 0; cursor: pointer; background: radial-gradient(circle at 50% 35%, #3a3e45, #25282d 70%); box-shadow: 0 2px 0 #0a0b0c, 0 1px 0 rgba(255,255,255,.08) inset; transition: transform .08s, box-shadow .08s }
+.hw-keys button:nth-child(2) { background: radial-gradient(circle at 50% 35%, #ef7b44, #c9531f 70%) }
+.hw-keys button:active, .hw-keys button.down { transform: translateY(2px); box-shadow: 0 0 0 #0a0b0c }
+.hw-keys button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
+.ui-side { display: flex; flex-direction: column; gap: 22px; min-width: 0; width: 100% }
+.screens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px }
+@media (max-width: 520px) { .screens { grid-template-columns: minmax(0, 1fr) } }
+.scr { text-align: left; border: 1px solid var(--line); background: transparent; border-radius: 16px; padding: 12px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; transition: background .2s, border-color .2s }
+.scr:hover { background: var(--floor) }
+.scr b { font-weight: 600; font-size: 15px }
+.scr span { font-size: 13px; color: var(--ink-2); line-height: 1.4 }
+.scr[aria-pressed="true"] { background: var(--glass); border-color: var(--glass-edge); box-shadow: var(--shadow) }
+.scr[aria-pressed="true"] b::after { content: " ●"; color: var(--accent); font-size: 10px; vertical-align: 2px }
+.principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px }
+@media (max-width: 900px) { .principles { grid-template-columns: minmax(0, 1fr) } }
+.principles div { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line); padding-top: 16px }
+.principles p { color: var(--ink-2); font-size: 15px }
+
+/* spec sheet */
+.spec { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px }
+@media (max-width: 760px) { .spec { grid-template-columns: minmax(0, 1fr) } }
+.spec dl { margin: 0 }
+.spec .row { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 16px; padding: 13px 0; border-top: 1px solid var(--line) }
+.spec dt { color: var(--ink-2); font-size: 14px }
+.spec dd { margin: 0; font-size: 15px }
+.spec dd small { display: block; color: var(--ink-2); font-size: 13px }
+
+/* build */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; counter-reset: s }
+@media (max-width: 900px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+@media (max-width: 560px) { .steps { grid-template-columns: minmax(0, 1fr) } }
+.steps li { counter-increment: s; border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 8px; min-width: 0 }
+.steps li::before { content: "0" counter(s); font: 500 12px var(--font-data); color: var(--accent) }
+.steps p { color: var(--ink-2); font-size: 14px }
+.steps .meta { margin-top: auto; padding-top: 8px; display: flex; justify-content: space-between; gap: 8px; font: 12px var(--font-data); color: var(--ink-2); border-top: 1px solid var(--line) }
+.steps li.cta { background: var(--ink); color: var(--bg); border-color: transparent }
+.steps li.cta::before { color: var(--accent) }
+.steps li.cta p, .steps li.cta .meta { color: color-mix(in srgb, var(--bg) 70%, transparent); border-color: color-mix(in srgb, var(--bg) 18%, transparent) }
+.steps li.cta a { color: var(--bg); font-weight: 500 }
+
+.status-note { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; border-radius: 24px; padding: 28px }
+@media (max-width: 760px) { .status-note { grid-template-columns: minmax(0, 1fr); padding: 20px } }
+.status-note ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; display: grid; gap: 6px }
+.status-note .col { display: flex; flex-direction: column; gap: 12px; min-width: 0 }
+footer { padding-block: 64px 48px; color: var(--ink-2); font-size: 13px; display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between }
+</style>
+
+<header class="nav wrap">
+  <div class="bar glass">
+    <a class="brand" href="#top"><i aria-hidden="true"></i>OpenCycle</a>
+    <ul>
+      <li><a class="l" href="#top">Design</a></li>
+      <li><a class="l" href="#inside">Inside</a></li>
+      <li><a class="l" href="#interface">Interface</a></li>
+      <li><a class="l" href="#specs">Specs</a></li>
+      <li><a class="l" href="#build">Build one</a></li>
+    </ul>
+    <a class="gh" href="https://github.com/Vishvak365/OpenCycle" target="_blank" rel="noopener">GitHub ↗</a>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <div class="tour">
+    <div class="stage-col">
+      <div class="stage" id="stage">
+        <div class="status" id="status">Loading the CAD model…</div>
+        <div class="caption">
+          <span class="mono" id="cap">Standard shell · matte black PLA</span>
+          <nav class="progress" id="progress" aria-label="Tour chapters"></nav>
+        </div>
+      </div>
+    </div>
+
+    <div class="chapters">
+      <article class="chapter" data-view="hero" id="design">
+        <span class="eyebrow">Open-source GPS bike computer · v0.2</span>
+        <h1>The ride computer you print, solder and own.</h1>
+        <p class="lede">A 2.4-inch daylight-readable screen, GPS, ANT+ and Bluetooth in a 17 mm case that clips onto the Garmin mount already on your bars. Every file that makes it is in the repo, and every one is generated from source.</p>
+        <div class="stats">
+          <div><b class="mono">52 × 92.4 × 17</b><span>millimetres, case</span></div>
+          <div><b class="mono">1200 nit</b><span>2.4" IPS, 240 × 320</span></div>
+          <div><b class="mono">10–22 h</b><span>riding, 1200 mAh cell (estimate)</span></div>
+          <div><b class="mono">$89</b><span>in parts per unit</span></div>
+        </div>
+        <div class="controls" id="finishes" role="group" aria-label="Print finish"></div>
+      </article>
+
+      <article class="chapter" data-view="shells">
+        <span class="eyebrow">Three shells, one core</span>
+        <h2>Pick the case that suits the bike.</h2>
+        <p>The board, screen and battery never change. The shell does: a crisp standard edge, a softer aero profile for the front of a road bike, or a rugged version with a TPU bumper and covered buttons for gravel and mud. All three print without supports.</p>
+        <div class="controls" role="group" aria-label="Case variant">
+          <button class="pill plain" data-v="standard" aria-pressed="true">Standard</button>
+          <button class="pill plain" data-v="aero" aria-pressed="false">Aero</button>
+          <button class="pill plain" data-v="rugged" aria-pressed="false">Rugged</button>
+        </div>
+      </article>
+
+      <article class="chapter" data-view="exploded" id="inside">
+        <span class="eyebrow">Inside</span>
+        <h2>Seventeen millimetres, back to front.</h2>
+        <p>The stack is fit-checked in code against every real part on the routed board, down to the folded display cable.</p>
+        <ul class="layers">
+          <li><span>0.0 – 1.5 mm</span><span>Back shell, speaker grille, Garmin quarter-turn boss behind it</span></li>
+          <li><span>1.1 – 6.1 mm</span><span>1200 mAh LiPo in a floor pocket; 15 × 11 mm speaker beside it</span></li>
+          <li><span>6.75 – 11.0</span><span>Four-layer board: radios and GPS on the back, sensors on the front</span></li>
+          <li><span>13.45 – 16.0</span><span>Newhaven 2.4" IPS TFT on a foam ring</span></li>
+          <li><span>16.0 – 17.0</span><span>Cover lens, black mask with light-sensor and charge-LED windows</span></li>
+        </ul>
+      </article>
+
+      <article class="chapter" data-view="board">
+        <span class="eyebrow">The board</span>
+        <h2>Routed, checked, ready for JLCPCB.</h2>
+        <p>An ESP32-S3 runs the screen, logging and Wi-Fi. A BL652 handles ANT+ and Bluetooth sensors. A u-blox M10 reads a 12 mm ceramic patch tucked under the top of the lens. Seventy-five parts, all priced and in stock at Mouser or Digi-Key.</p>
+        <div class="controls">
+          <span class="check">DRC 0 errors · 0 unconnected</span>
+          <span class="check">Schematic ↔ board netlist match</span>
+          <span class="check">ERC 0 errors</span>
+        </div>
+        <div class="controls" role="group" aria-label="Board side">
+          <button class="pill plain" data-side="front" aria-pressed="true">Front · display side</button>
+          <button class="pill plain" data-side="back" aria-pressed="false">Back · radios</button>
+        </div>
+      </article>
+
+      <article class="chapter" data-view="back">
+        <span class="eyebrow">Everything else</span>
+        <h2>USB-C, a speaker, and the mount you already have.</h2>
+        <p>USB-C charges the cell at 500 mA from any charger. A small sealed speaker fires through the back for turn prompts and lap alerts. Two side buttons and three soft keys under the screen, each labelled on the display.</p>
+        <p class="mono" style="font-size:13px">Garmin quarter-turn geometry is approximate: check it against a real mount before a long ride.</p>
+      </article>
+    </div>
+  </div>
+
+  <section class="block" id="interface">
+    <div class="head">
+      <span class="eyebrow">Lucent interface</span>
+      <h2>Frosted glass, drawn the way the panel will draw it.</h2>
+      <p class="lede">This is the reference renderer the firmware ports to LVGL, running live at the panel's real 240 × 320 pixels and quantised to RGB565. Press the keys under the screen, or pick a page.</p>
+    </div>
+    <div class="ui">
+      <div class="unit" aria-label="OpenCycle front, interactive">
+        <div class="band"><span>OPENCYCLE</span><i aria-hidden="true"></i></div>
+        <div class="lcd"><canvas id="lcd2d" width="240" height="320" role="img" aria-label="Live device screen"></canvas></div>
+        <div class="hw-keys" id="hwkeys">
+          <button type="button" data-k="0"><span>Left key</span></button>
+          <button type="button" data-k="1"><span>Centre key</span></button>
+          <button type="button" data-k="2"><span>Right key</span></button>
+        </div>
+      </div>
+      <div class="ui-side">
+        <div class="screens" id="screens" role="group" aria-label="Screens"></div>
+      </div>
+    </div>
+    <div class="principles">
+      <div><h3>Colour means something</h3><p>Everything is calm glass over a deep backdrop until a number matters. Power and heart-rate zones, climb gradient and the route line are the only colours on screen.</p></div>
+      <div><h3>No blur at runtime</h3><p>The soft backdrop is a baked bitmap and glass is a translucent fill with a hairline edge. An ESP32-S3 draws it at full frame rate; no trick here needs a GPU.</p></div>
+      <div><h3>Read at a glance</h3><p>Inter at fixed sizes, figures that never shift width, and the three soft-key labels always in the same place above the keys you press.</p></div>
+    </div>
+  </section>
+
+  <section class="block" id="specs">
+    <div class="head">
+      <span class="eyebrow">Specifications</span>
+      <h2>What's in the box you build.</h2>
+    </div>
+    <div class="spec">
+      <dl>
+        <div class="row"><dt>Case</dt><dd>52 × 92.4 × 17 mm<small>Standard, aero or rugged; PLA, PETG or ASA with TPU parts</small></dd></div>
+        <div class="row"><dt>Display</dt><dd>2.4" IPS TFT, 240 × 320, 1200 nit<small>Newhaven NHD-2.4-240320AF-CSXP, ST7789, auto-dimmed by an LTR-303 light sensor</small></dd></div>
+        <div class="row"><dt>Processor</dt><dd>ESP32-S3, 16 MB flash, 8 MB PSRAM<small>Wi-Fi sync, Bluetooth to the phone, native USB</small></dd></div>
+        <div class="row"><dt>Sensors radio</dt><dd>ANT+ and Bluetooth LE<small>Ezurio BL652 (nRF52832): power, heart rate, cadence, speed, radar</small></dd></div>
+        <div class="row"><dt>GPS</dt><dd>GPS, Galileo, BeiDou, GLONASS<small>u-blox MAX-M10S with a 12 mm Taoglas ceramic patch</small></dd></div>
+      </dl>
+      <dl>
+        <div class="row"><dt>Altitude</dt><dd>Bosch BMP581 barometer<small>Vented through a 0.8 mm hole in the side wall</small></dd></div>
+        <div class="row"><dt>Battery</dt><dd>1200 mAh LiPo, USB-C charging<small>~10–22 h riding, depending on backlight (estimate, not measured)</small></dd></div>
+        <div class="row"><dt>Audio</dt><dd>MAX98357A I²S amp, 15 × 11 mm sealed speaker</dd></div>
+        <div class="row"><dt>Controls</dt><dd>Three soft keys, two side buttons</dd></div>
+        <div class="row"><dt>Board</dt><dd>4 layers, 1.0 mm, 46 × 86.4 mm<small>75 parts, both sides; Gerbers, BOM and pick-and-place exported</small></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="block" id="build">
+    <div class="head">
+      <span class="eyebrow">Build one</span>
+      <h2>From this repo to your handlebars.</h2>
+      <p class="lede">Order the parts and the boards on the same day, and print the case while they ship.</p>
+    </div>
+    <ol class="steps">
+      <li><h3>Order the parts</h3><p>Mouser and Digi-Key carts with every part number, price and link, plus the battery, lens and small hardware.</p><div class="meta"><span>1 h + ~1 week</span><span>~$89</span></div></li>
+      <li><h3>Order the boards</h3><p>Upload the Gerber zip to JLCPCB as it is. Five 4-layer boards and a stencil.</p><div class="meta"><span>30 min + 1–2 weeks</span><span>~$25–40</span></div></li>
+      <li><h3>Print the case</h3><p>Oriented STLs for the shells, keys and buttons. No supports.</p><div class="meta"><span>~5 h printing</span><span>~$1</span></div></li>
+      <li><h3>Assemble the board</h3><p>Back side on a hot plate with SAC305, then the front with low-temperature paste.</p><div class="meta"><span>3–5 h</span><span>—</span></div></li>
+      <li><h3>Bring it up</h3><p>Rails first, then each chip in turn until all of them answer.</p><div class="meta"><span>2 h</span><span>—</span></div></li>
+      <li class="cta"><h3>Close it up</h3><p>Display, lens, battery and four screws. Then read the step-by-step guides on GitHub.</p><div class="meta"><span>1 h</span><a href="https://github.com/Vishvak365/OpenCycle/tree/main/instructions" target="_blank" rel="noopener">Instructions ↗</a></div></li>
+    </ol>
+
+    <div class="status-note glass">
+      <div class="col">
+        <span class="eyebrow">Where it stands</span>
+        <h3>Designed and checked in software. Not yet built.</h3>
+        <p style="color:var(--ink-2);font-size:15px">Treat the first run of five boards as a prototype. Firmware is not written yet: the interface above is its specification.</p>
+      </div>
+      <div class="col">
+        <span class="check warn">Still to prove on a real unit</span>
+        <ul>
+          <li>RF performance of all three antennas in the case</li>
+          <li>Battery lead polarity against the socket (the board is protected either way)</li>
+          <li>Part rotations in JLCPCB's assembly preview</li>
+          <li>Battery life and backlight brightness in daylight</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>OpenCycle · open hardware bike computer · rev A, 2026</span>
+    <span class="mono">Rendered from cad/ and pcb/ in the repo · three.js</span>
+  </footer>
+</main>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { createDevice, SCREENS, SOFTKEYS, PAGES, fontsReady } from './ui/screens_color.js';
+
+const $ = (id) => document.getElementById(id);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(pointer: coarse)').matches;
+
+// ================================================================ live 2D screen (interface section)
+const dev2 = createDevice();
+const c2 = $('lcd2d').getContext('2d');
+const ui = { id: 'ride', t0: performance.now(), lapUntil: 0 };
+const scrBox = $('screens');
+const MAIN = SCREENS.filter((s) => s.id !== 'lap');
+function setUI(id) {
+  ui.id = id; ui.t0 = performance.now();
+  scrBox.querySelectorAll('.scr').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
+}
+for (const s of MAIN) {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'scr'; b.dataset.id = s.id; b.setAttribute('aria-pressed', String(s.id === 'ride'));
+  const n = document.createElement('b'); n.textContent = s.name; const d = document.createElement('span'); d.textContent = s.desc;
+  b.append(n, d); b.addEventListener('click', () => setUI(s.id)); scrBox.appendChild(b);
+}
+// the three keys do what their on-screen labels say (a subset of the firmware's behaviour)
+function press(k) {
+  const label = (SOFTKEYS[ui.id] || [])[k] || '';
+  if (label === 'LAP') { setUI('lap'); ui.lapUntil = performance.now() + 5200; return; }
+  if (label === 'PAGE') {
+    const base = ui.id === 'lap' ? 'ride' : ui.id; const i = PAGES.indexOf(base);
+    setUI(PAGES[(i + 1) % PAGES.length] || 'ride'); return;
+  }
+  if (label === 'OPEN') { setUI('ride'); return; }
+  if (label === 'SAVE' || label === 'DISCARD') { setUI('ride'); return; }
+  if (ui.id === 'boot') { setUI('ride'); return; }
+}
+$('hwkeys').querySelectorAll('button').forEach((b) => {
+  const k = +b.dataset.k;
+  b.addEventListener('click', () => press(k));
+});
+addEventListener('keydown', (e) => {
+  if (!$('interface').matches(':hover') && document.activeElement?.closest?.('#interface') == null) return;
+  const k = { ArrowLeft: 0, ArrowDown: 1, ' ': 1, ArrowRight: 2 }[e.key];
+  if (k === undefined || e.target.matches('button')) return;
+  e.preventDefault(); const b = $('hwkeys').children[k]; b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); press(k);
+});
+let uiVisible = true;
+new IntersectionObserver((es) => { uiVisible = es[0].isIntersecting; }).observe($('lcd2d'));
+function renderUI(now) {
+  if (ui.id === 'lap' && now > ui.lapUntil) setUI('ride');
+  dev2.render(ui.id, (now - ui.t0) / 1000);
+  c2.drawImage(dev2.canvas, 0, 0);
+}
+
+// ================================================================ 3D stage
+const stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.VSMShadowMap;
+stage.prepend(renderer.domElement);
+renderer.domElement.setAttribute('aria-label', '3D model of the OpenCycle case, rendered from the CAD files');
+renderer.domElement.setAttribute('role', 'img');
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envScene = new RoomEnvironment(renderer);
+scene.environment = pmrem.fromScene(envScene, 0.035).texture;
+scene.environmentIntensity = 0.9;
+
+const camera = new THREE.PerspectiveCamera(24, 1, 1, 4000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.enableZoom = false; controls.enablePan = false;
+controls.minPolarAngle = 0.25; controls.maxPolarAngle = Math.PI / 2 - 0.04;
+controls.enabled = !coarse;
+if (coarse) renderer.domElement.style.touchAction = 'pan-y';
+
+// studio lighting: a big soft key from upper right, a cool rim from behind-left, a low warm bounce
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9098a4, 0.35));
+const key = new THREE.DirectionalLight(0xfff6ec, 2.6);
+key.position.set(110, 190, 150); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -110, right: 110, top: 170, bottom: -60, near: 20, far: 600 });
+key.shadow.radius = 14; key.shadow.blurSamples = 20; key.shadow.bias = -0.0003;
+key.target.position.set(0, 46, 0); scene.add(key, key.target);
+const rim = new THREE.DirectionalLight(0xd6e4ff, 1.4); rim.position.set(-170, 110, -150); scene.add(rim);
+const bounce = new THREE.DirectionalLight(0xffe9d6, 0.35); bounce.position.set(40, -30, 160); scene.add(bounce);
+
+const floorMat = new THREE.ShadowMaterial({ opacity: 0.2 });
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), floorMat);
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+// soft contact shadow directly under the device (radial gradient texture)
+{
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  const gr = g.createRadialGradient(64, 64, 4, 64, 64, 64); gr.addColorStop(0, 'rgba(0,0,0,0.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(90, 44), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+  m.rotation.x = -Math.PI / 2; m.position.set(0, 0.05, 0); scene.add(m); var contact = m;
+}
+
+const root = new THREE.Group(); root.position.set(-26, 0, -8); scene.add(root);
+const G = {};
+for (const n of ['back', 'batt', 'pcb', 'disp', 'front']) { G[n] = new THREE.Group(); root.add(G[n]); }
+const EXPLODE = { back: -46, batt: -24, pcb: 0, disp: 22, front: 42 };
+
+function printed(color, rough, extra = {}) {
+  const m = new THREE.MeshPhysicalMaterial({ color, roughness: rough, metalness: extra.metal || 0,
+    clearcoat: extra.cc || 0, clearcoatRoughness: 0.45, sheen: extra.sheen || 0, sheenRoughness: 0.6 });
+  // FDM layer lines on walls (0.2 mm) and the diagonal infill texture on flat tops, as normal perturbation
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vObjP;\nvarying vec3 vLayerN;\nvarying vec3 vDiagN;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObjP = position;\nvLayerN = normalize(normalMatrix * vec3(0.0, 0.0, 1.0));\nvDiagN = normalize(normalMatrix * vec3(0.7071, -0.7071, 0.0));');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vObjP;\nvarying vec3 vLayerN;\nvarying vec3 vDiagN;')
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        {
+          float ph = vObjP.z * 6.2831853 / 0.2;
+          float aa = clamp(1.0 - fwidth(ph) / 2.5, 0.0, 1.0);
+          float wall = 1.0 - abs(dot(normal, vLayerN));
+          normal = normalize(normal + vLayerN * cos(ph) * 0.28 * wall * aa);
+          float ph2 = dot(vObjP.xy, vec2(0.7071, -0.7071)) * 6.2831853 / 0.45;
+          float aa2 = clamp(1.0 - fwidth(ph2) / 2.5, 0.0, 1.0);
+          float top = smoothstep(0.92, 1.0, abs(dot(normal, vLayerN)));
+          normal = normalize(normal + vDiagN * cos(ph2) * 0.08 * top * aa2);
+        }`);
+  };
+  return m;
+}
+const FINISHES = [
+  { id: 'black', name: 'Matte black PLA', body: '#1d1f23', bezel: '#141518', btn: '#e0662c', rough: 0.62 },
+  { id: 'orange', name: 'Signal orange PETG', body: '#d9602a', bezel: '#17181b', btn: '#17181b', rough: 0.34, cc: 0.25 },
+  { id: 'silver', name: 'Silver silk PLA', body: '#aeb4bd', bezel: '#1a1b1e', btn: '#2b6fae', rough: 0.3, metal: 0.45, sheen: 0.4 },
+  { id: 'stone', name: 'Stone grey PETG', body: '#7d8388', bezel: '#2a2d31', btn: '#d9e021', rough: 0.4, cc: 0.15 },
+];
+const M = {
+  body: printed('#1d1f23', 0.62), bezel: printed('#141518', 0.62), btn: printed('#e0662c', 0.5),
+  tpu: printed('#e0662c', 0.7, { sheen: 0.3 }), key: printed('#2c2f35', 0.55),
+  glass: new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: 0.02, transparent: true, opacity: 0.12, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 3, depthWrite: false }),
+  mask: new THREE.MeshStandardMaterial({ color: '#0a0b0d', roughness: 0.22 }),
+  panel: new THREE.MeshStandardMaterial({ color: '#0d0e10', roughness: 0.4, metalness: 0.2 }),
+  foam: new THREE.MeshStandardMaterial({ color: '#141416', roughness: 0.95 }),
+  pouch: new THREE.MeshPhysicalMaterial({ color: '#d4d6da', roughness: 0.3, metalness: 0.85, clearcoat: 0.3 }),
+  rubber: new THREE.MeshStandardMaterial({ color: '#111214', roughness: 0.8 }),
+  speaker: new THREE.MeshStandardMaterial({ color: '#191a1d', roughness: 0.55, metalness: 0.2 }),
+  membrane: new THREE.MeshStandardMaterial({ color: '#b08d4a', roughness: 0.4, metalness: 0.7 }),
+  fr4: new THREE.MeshStandardMaterial({ color: '#c8b98a', roughness: 0.7 }),
+  tin: new THREE.MeshStandardMaterial({ color: '#cdd1d6', roughness: 0.26, metalness: 1 }),
+  epoxy: new THREE.MeshStandardMaterial({ color: '#1b1c1f', roughness: 0.45, metalness: 0.05 }),
+  ceramic: new THREE.MeshStandardMaterial({ color: '#b39068', roughness: 0.5 }),
+  ceramicW: new THREE.MeshStandardMaterial({ color: '#efeee8', roughness: 0.45 }),
+  silver: new THREE.MeshStandardMaterial({ color: '#dfe2e6', roughness: 0.2, metalness: 1 }),
+  nylon: new THREE.MeshStandardMaterial({ color: '#efe9da', roughness: 0.55 }),
+  brown: new THREE.MeshStandardMaterial({ color: '#6b4a2c', roughness: 0.5 }),
+  ledG: new THREE.MeshPhysicalMaterial({ color: '#7dff9a', roughness: 0.1, transmission: 0.6, thickness: 0.4, transparent: true }),
+  kapton: new THREE.MeshPhysicalMaterial({ color: '#d98a2b', roughness: 0.35, clearcoat: 0.5, side: THREE.DoubleSide }),
+};
+
+// the 3D screen runs its own copy of the Lucent renderer, cycling the riding pages
+const dev3 = createDevice();
+const lcd3 = Object.assign(document.createElement('canvas'), { width: 240, height: 320 });
+const l3 = lcd3.getContext('2d');
+const screenTex = new THREE.CanvasTexture(lcd3);
+screenTex.colorSpace = THREE.SRGBColorSpace; screenTex.anisotropy = 8;
+const CYCLE = ['ride', 'map', 'climb', 'hr'];
+const s3 = { i: 0, since: performance.now(), t0: performance.now() };
+function render3DScreen(now) {
+  if (now - s3.since > 7000) { s3.i = (s3.i + 1) % CYCLE.length; s3.since = now; }
+  dev3.render(CYCLE[s3.i], (now - s3.t0) / 1000);
+  l3.drawImage(dev3.canvas, 0, 0); screenTex.needsUpdate = true;
+}
+
+const b64 = (s) => { const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
+const stl = new STLLoader();
+const meshes = {};
+function meshFrom(data, name, mat, group, creased = true) {
+  if (!data[name]) return null;
+  let geo = stl.parse(b64(data[name]));
+  geo = creased ? toCreasedNormals(geo, Math.PI / 5) : geo;
+  const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; m.name = name;
+  group.add(m); return m;
+}
+const K2C = (kx, ky) => [kx, 92.4 - ky];
+
+function buildBoard(data, tex) {
+  const { x0, y0, w, h, r, thickness } = data.board;
+  const s = new THREE.Shape(); const X1 = x0 + w, Y1 = y0 + h;
+  s.moveTo(x0 + r, y0); s.lineTo(X1 - r, y0); s.absarc(X1 - r, y0 + r, r, -Math.PI / 2, 0);
+  s.lineTo(X1, Y1 - r); s.absarc(X1 - r, Y1 - r, r, 0, Math.PI / 2);
+  s.lineTo(x0 + r, Y1); s.absarc(x0 + r, Y1 - r, r, Math.PI / 2, Math.PI);
+  s.lineTo(x0, y0 + r); s.absarc(x0 + r, y0 + r, r, Math.PI, Math.PI * 1.5);
+  for (const [hx, hy] of data.holes) { const [cx, cy] = K2C(hx, hy); const p = new THREE.Path(); p.absarc(cx, cy, 1.1, 0, Math.PI * 2, true); s.holes.push(p); }
+  const body = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: thickness - 0.02, bevelEnabled: false, curveSegments: 24 }), M.fr4);
+  body.position.z = 10.01; body.castShadow = body.receiveShadow = true; G.pcb.add(body);
+  for (const front of [true, false]) {
+    const g = new THREE.ShapeGeometry(s, 24); const pos = g.attributes.position, uv = g.attributes.uv;
+    for (let i = 0; i < pos.count; i++) uv.setXY(i, front ? (pos.getX(i) - x0) / w : 1 - (pos.getX(i) - x0) / w, (pos.getY(i) - y0) / h);
+    const t = front ? tex.front : tex.back;
+    const mat = new THREE.MeshStandardMaterial({ map: t.color, roughnessMap: t.orm, metalnessMap: t.orm, roughness: 1, metalness: 1, side: front ? THREE.FrontSide : THREE.BackSide });
+    const m = new THREE.Mesh(g, mat); m.position.z = front ? 11.003 : 9.997; m.receiveShadow = true; G.pcb.add(m);
+  }
+}
+function box(w, d, hgt, mat, x, y, z, rad = 0) {
+  const g = rad > 0 ? new RoundedBoxGeometry(w, d, hgt, 2, Math.min(rad, hgt / 2 - 0.001, w / 2, d / 2)) : new THREE.BoxGeometry(w, d, hgt);
+  const m = new THREE.Mesh(g, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; return m;
+}
+function buildParts(data) {
+  for (const p of data.parts) {
+    if (p.kind === 'pads') continue;
+    const [cx, cy] = K2C(p.cx, p.cy);
+    const up = p.side === 'F' ? 1 : -1, zb = p.side === 'F' ? 11 : 10, zc = (hh) => zb + up * hh / 2;
+    const g = new THREE.Group(); const add = (m) => g.add(m);
+    const horiz = p.w >= p.d, W = p.w, Dd = p.d, Hh = Math.max(p.h, 0.3);
+    switch (p.kind) {
+      case 'res': case 'cap': {
+        const big = p.h > 0.7; const L = big ? 1.6 : 1.0, Wd = big ? 0.8 : 0.5, H = big ? 0.8 : 0.45;
+        const [lx, ly] = horiz ? [L, Wd] : [Wd, L];
+        add(box(lx, ly, H, p.kind === 'res' ? M.epoxy : M.ceramic, cx, cy, zc(H)));
+        const e = L * 0.2, off = L / 2 - e / 2;
+        for (const sg of [-1, 1]) add(box(horiz ? e : Wd + 0.02, horiz ? Wd + 0.02 : e, H + 0.02, M.tin, cx + (horiz ? sg * off : 0), cy + (horiz ? 0 : sg * off), zc(H)));
+        break; }
+      case 'module': {
+        const ant = p.ref === 'U1' ? 6.0 : 2.2, dir = p.ref === 'U1' ? 1 : -1;
+        add(box(W, Dd, 0.8, M.fr4, cx, cy, zc(0.8)));
+        add(box(W - ant - 0.6, Dd - 1.2, Hh - 0.8, M.tin, cx - dir * ant / 2, cy, zb + up * (0.8 + (Hh - 0.8) / 2), 0.2));
+        add(box(ant - 0.4, Dd - 1.0, 0.05, M.epoxy, cx + dir * (W / 2 - ant / 2), cy, zb + up * 0.83));
+        break; }
+      case 'can': add(box(9.7, 10.1, Hh, M.tin, cx, cy, zc(Hh), 0.15)); break;
+      case 'patch': add(box(12, 12, 3.9, M.ceramicW, cx, cy, zc(3.9), 0.3)); add(box(9, 9, 0.1, M.silver, cx, cy, zb + up * 3.95)); break;
+      case 'usbc': add(box(8.94, 7.35, 3.2, M.tin, cx, cy + 0.1, zc(3.2), 1.55)); break;
+      case 'jst': add(box(W * 0.95, Dd * 0.95, Hh, M.nylon, cx, cy, zc(Hh), 0.2)); break;
+      case 'fpc': add(box(W * 0.96, 3.4, 2.0, M.epoxy, cx, cy + 0.3, zc(2.0), 0.1)); add(box(W * 0.9, 1.1, 0.6, M.brown, cx, cy + 2.3, zb + up * 1.7)); break;
+      case 'switch': add(box(W * 0.8, Dd * 0.8, Hh, M.tin, cx, cy, zc(Hh), 0.2)); break;
+      case 'led': add(box(1.6, 0.8, 0.6, M.ledG, cx, cy, zc(0.6), 0.1)); break;
+      default: {
+        const bw = Math.max(0.8, W * 0.8), bd = Math.max(0.8, Dd * 0.8);
+        add(box(bw, bd, Hh, M.epoxy, cx, cy, zc(Hh), 0.08));
+      }
+    }
+    G.pcb.add(g);
+  }
+}
+const DISP = { x0: 4.6, y0: 17.09, w: 42.8, h: 59.91, t: 2.55, z: 13.45, aaX: 7.64, aaY: 25.02, aaW: 36.72, aaH: 48.96 };
+function buildRibbon() {
+  const zc = DISP.z + DISP.t / 2, r = 0.8, yf = DISP.y0 - 0.2;
+  const pts = [[DISP.y0 + 1.5, zc], [yf, zc]];
+  for (let i = 1; i < 16; i++) { const t = Math.PI / 2 + (i / 16) * Math.PI; pts.push([yf + r * Math.cos(t), zc - r + r * Math.sin(t)]); }
+  pts.push([yf, zc - 2 * r], [yf + 4, zc - 2 * r], [yf + 6, 12.3], [DISP.y0 + 27.8, 12.3]);
+  const wdt = 20.5, x0 = DISP.x0 + DISP.w - 11.15 - wdt, pos = [], idx = [];
+  pts.forEach(([y, z], i) => { pos.push(x0, y, z, x0 + wdt, y, z); if (i) { const a = (i - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } });
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, M.kapton); m.castShadow = true; G.disp.add(m); return m;
+}
+function buildTopBand() {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 128; const g = c.getContext('2d');
+  const X = (mm) => (mm - 4) / 44 * 1024;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '600 64px "Inter", "Helvetica Neue", sans-serif';
+  if ('letterSpacing' in g) g.letterSpacing = '14px';
+  g.fillStyle = 'rgba(242,244,246,0.8)'; g.fillText('OPENCYCLE', X(20.5), 66);
+  g.fillStyle = '#6fd08c'; g.shadowColor = '#6fd08c'; g.shadowBlur = 16; g.beginPath(); g.arc(X(37.0), 64, 12, 0, 7); g.fill();
+  g.shadowBlur = 0; g.fillStyle = '#2f3237'; g.beginPath(); g.arc(X(40.8), 64, 17, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(255,255,255,0.22)'; g.lineWidth = 3; g.stroke();
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(44, 5.5), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+  m.position.set(26, 83.0, 16.06); G.front.add(m); return m;
+}
+
+// ---------------------------------------------------------------- views (one per chapter)
+const state = { view: 'hero', variant: 'standard', side: 'front', explode: 0, explodeTarget: 0, board: false, spin: !reduce };
+const cam = { pos: null, target: null };
+const VIEWS = {
+  hero:     { pos: [118, 92, 205], target: [2, 44, 0], explode: 0, spin: true },
+  shells:   { pos: [-150, 70, 150], target: [0, 42, 0], explode: 0 },
+  exploded: { pos: [190, 120, 150], target: [0, 50, 0], explode: 1 },
+  board:    { pos: [0, 46, 230], target: [0, 46, 2.5], explode: 0, board: true },
+  back:     { pos: [-95, 80, -190], target: [0, 44, 0], explode: 0 },
+};
+function flyTo(p, t) { cam.pos = new THREE.Vector3(...p); cam.target = new THREE.Vector3(...t); }
+function applyVisibility() {
+  const v = state.variant, board = state.board;
+  for (const [name, m] of Object.entries(meshes)) {
+    if (!m) continue;
+    let vis = true;
+    if (name.startsWith('std_')) vis = v !== 'aero';
+    if (name.startsWith('aero_')) vis = v === 'aero';
+    if (name.startsWith('rugged_')) vis = v === 'rugged';
+    if (board) vis = false;
+    m.visible = vis;
+  }
+  root.position.y = board ? 2 : v === 'rugged' ? 2.88 : 0.02;
+  contact.visible = !board;
+  caption();
+}
+function setView(id, fly = true) {
+  state.view = id; const V = VIEWS[id]; state.spin = !reduce;
+  state.explodeTarget = V.explode; state.board = !!V.board;
+  if (id === 'board') setSide(state.side, false);
+  if (fly) {
+    if (id === 'board') flyTo(state.side === 'front' ? V.pos : [0, 46, -230], V.target);
+    else flyTo(V.pos, V.target);
+  }
+  applyVisibility();
+  $('progress').querySelectorAll('button').forEach((b) => b.setAttribute('aria-current', String(b.dataset.view === id)));
+}
+function setSide(side, fly = true) {
+  state.side = side;
+  document.querySelectorAll('[data-side]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === side)));
+  if (fly && state.view === 'board') flyTo(side === 'front' ? [0, 46, 230] : [0, 46, -230], [0, 46, 2.5]);
+  caption();
+}
+function setVariant(v) {
+  state.variant = v;
+  document.querySelectorAll('[data-v]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+  applyVisibility();
+}
+let finish = FINISHES[0];
+function setFinish(f) {
+  finish = f;
+  M.body.color.set(f.body); M.body.roughness = f.rough; M.body.metalness = f.metal || 0; M.body.clearcoat = f.cc || 0; M.body.sheen = f.sheen || 0;
+  M.bezel.color.set(f.bezel); M.btn.color.set(f.btn); M.tpu.color.set(f.btn === '#17181b' ? '#2a2c30' : f.btn);
+  document.querySelectorAll('#finishes .pill').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.f === f.id)));
+  caption();
+}
+function caption() {
+  const names = { standard: 'Standard shell', aero: 'Aero shell', rugged: 'Rugged shell' };
+  $('cap').textContent = state.board
+    ? `Main board v0.2 · ${state.side === 'front' ? 'front, display side' : 'back, radios'} · 46 × 86.4 mm`
+    : state.view === 'exploded' ? 'Exploded · back shell, battery, board, display, lens'
+    : `${names[state.variant]} · ${finish.name.toLowerCase()}`;
+}
+for (const f of FINISHES) {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'pill'; b.dataset.f = f.id; b.setAttribute('aria-pressed', String(f.id === 'black'));
+  const d = document.createElement('span'); d.className = 'sw'; d.style.background = f.body;
+  b.append(d, document.createTextNode(f.name)); b.addEventListener('click', () => setFinish(f)); $('finishes').appendChild(b);
+}
+document.querySelectorAll('[data-v]').forEach((b) => b.addEventListener('click', () => { setVariant(b.dataset.v); if (state.view !== 'shells') setView('shells'); }));
+document.querySelectorAll('[data-side]').forEach((b) => b.addEventListener('click', () => setSide(b.dataset.side)));
+
+// chapters drive the camera
+const chapters = [...document.querySelectorAll('.chapter')];
+const labels = { hero: 'Design', shells: 'Shells', exploded: 'Inside', board: 'Board', back: 'Back' };
+for (const ch of chapters) {
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.view = ch.dataset.view; b.setAttribute('aria-label', labels[ch.dataset.view]);
+  b.addEventListener('click', () => { ch.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); setView(ch.dataset.view); });
+  $('progress').appendChild(b);
+}
+const io = new IntersectionObserver((es) => {
+  for (const e of es) if (e.isIntersecting && e.target.dataset.view !== state.view) setView(e.target.dataset.view);
+}, { rootMargin: '-58% 0px -38% 0px' });
+chapters.forEach((c) => io.observe(c));
+
+// user orbit pauses the turntable until the next chapter change
+controls.addEventListener('start', () => { state.spin = false; cam.pos = null; });
+
+function resize() { const r = stage.getBoundingClientRect(); if (!r.width) return; renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.fov = camera.aspect < 0.8 ? 30 : 24; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage);
+let stageVisible = true;
+new IntersectionObserver((es) => { stageVisible = es[0].isIntersecting; }).observe(stage);
+
+// theme-aware floor shadow
+const dark = () => getComputedStyle(document.documentElement).colorScheme.includes('dark');
+function tuneTheme() { floorMat.opacity = dark() ? 0.42 : 0.2; contact.material.opacity = dark() ? 0.9 : 0.6; renderer.toneMappingExposure = dark() ? 1.1 : 1.0; }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', tuneTheme);
+new MutationObserver(tuneTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+tuneTheme();
+
+const texLoader = new THREE.TextureLoader();
+const loadTex = (u, srgb) => new Promise((res, rej) => texLoader.load(u, (t) => { t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 8; res(t); }, undefined, rej));
+
+Promise.all([fetch('meshes.json').then((r) => r.json()), fetch('pcb.json').then((r) => r.json()),
+  loadTex('pcb_front_color.png', true), loadTex('pcb_front_orm.png', false), loadTex('pcb_back_color.png', true), loadTex('pcb_back_orm.png', false),
+  fontsReady()])
+.then(([data, pcb, fc, fo, bc, bo]) => {
+  const add = (n, mat, grp, cr) => { meshes[n] = meshFrom(data, n, mat, grp, cr); };
+  add('std_back_shell', M.body, G.back); add('aero_back_shell', M.body, G.back);
+  add('std_front_bezel', M.bezel, G.front); add('aero_front_bezel', M.bezel, G.front);
+  add('rugged_bumper', M.tpu, G.back); add('rugged_button_covers', M.tpu, G.back);
+  add('buttons', M.key, G.back); add('front_keys', M.key, G.front); add('key_primary', M.btn, G.front); add('usb_flap', M.rubber, G.back); add('oring', M.rubber, G.back);
+  add('battery', M.pouch, G.batt); add('speaker', M.speaker, G.batt); add('speaker_membrane', M.membrane, G.batt);
+  add('display', M.panel, G.disp); add('foam_gasket', M.foam, G.disp);
+  add('lens_mask', M.mask, G.front, false); add('cover_lens', M.glass, G.front);
+  if (meshes.cover_lens) meshes.cover_lens.castShadow = false;
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(DISP.aaW, DISP.aaH),
+    new THREE.MeshStandardMaterial({ color: '#000000', emissive: '#ffffff', emissiveMap: screenTex, emissiveIntensity: 1, roughness: 0.35, toneMapped: false }));
+  scr.position.set(DISP.aaX + DISP.aaW / 2, DISP.aaY + DISP.aaH / 2, DISP.z + DISP.t + 0.006);
+  G.disp.add(scr); meshes.screen = scr;
+  meshes.ribbon = buildRibbon(); meshes.topband = buildTopBand();
+  buildBoard(pcb, { front: { color: fc, orm: fo }, back: { color: bc, orm: bo } });
+  buildParts(pcb);
+  setFinish(FINISHES[0]);
+  $('status').hidden = true;
+  setView(state.view, true);
+  camera.position.copy(cam.pos); controls.target.copy(cam.target); cam.pos = null;
+}).catch((e) => { console.error(e); $('status').textContent = 'The 3D model did not load. Reload the page to try again.'; });
+
+let last = performance.now(), lcdLast = 0, spinA = 0;
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (uiVisible && now - lcdLast > 50) renderUI(now);
+  if (!stageVisible) return;
+  const k = reduce ? 1 : 1 - Math.exp(-dt * 3.2);
+  state.explode += (state.explodeTarget - state.explode) * k;
+  for (const [n, off] of Object.entries(EXPLODE)) G[n].position.z = off * state.explode;
+  if (meshes.ribbon) meshes.ribbon.visible = !state.board && state.explode < 0.05;
+  if (cam.pos) {
+    // move around the device, not through it: interpolate in spherical coordinates about the target
+    controls.target.lerp(cam.target, k);
+    const a = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+    const b = new THREE.Spherical().setFromVector3(cam.pos.clone().sub(cam.target));
+    let dth = b.theta - a.theta; dth = Math.atan2(Math.sin(dth), Math.cos(dth));
+    a.radius += (b.radius - a.radius) * k; a.phi += (b.phi - a.phi) * k; a.theta += dth * k;
+    camera.position.setFromSpherical(a).add(controls.target);
+    if (camera.position.distanceTo(cam.pos) < 0.4) cam.pos = null;
+  } else if (state.spin && VIEWS[state.view].spin && !reduce) {
+    // slow turntable around the device: ±22° sway so the screen always faces the viewer
+    spinA += dt * 0.35;
+    const base = VIEWS.hero.pos, r = Math.hypot(base[0], base[2]), a0 = Math.atan2(base[0], base[2]);
+    const a = a0 + Math.sin(spinA) * 0.38;
+    camera.position.set(Math.sin(a) * r, base[1], Math.cos(a) * r);
+  }
+  if (now - lcdLast > 50) { lcdLast = now; if (!state.board) render3DScreen(now); }
+  controls.update(); renderer.render(scene, camera);
+}
+resize(); requestAnimationFrame(loop);
+</script>

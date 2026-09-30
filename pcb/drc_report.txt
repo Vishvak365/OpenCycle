@@ -1,7 +1,7 @@
 ** Drc report for opencycle.kicad_pcb **
-** Created on 2026-09-30 05:57:57 **
+** Created on 2026-09-30 06:21:55 **
 
-** Found 5 DRC violations **
+** Found 6 DRC violations **
 [lib_footprint_mismatch]: Footprint 'ESP32-S3-WROOM-1' does not match copy in library 'RF_Module'.
     Local override; Severity: warning
     @(36.2500 mm, 21.0000 mm): Footprint U1
@@ -21,6 +21,9 @@
     Rule: board setup constraints silk; Severity: warning
     @(3.0000 mm, 85.4000 mm): Line on Edge.Cuts
     @(7.6210 mm, 16.7930 mm): Line on B.Silkscreen
+[via_dangling]: Via is not connected or connected on only one layer
+    Local override; Severity: warning
+    @(45.6000 mm, 46.3875 mm): Via [I2C_SDA] on F.Cu - B.Cu
 
 ** Found 0 unconnected pads **
 

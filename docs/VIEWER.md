@@ -1,6 +1,9 @@
 # 3D viewer
 
-`viewer/index.html` is a single static page (three.js r160 from jsDelivr via an import map).
+Two static pages (three.js r160 from jsDelivr via an import map), sharing the same generated assets:
+
+- `viewer/index.html` — the studio viewer: finishes, variants, exploded view, PCB net explorer, every Lucent screen.
+- `viewer/product.html` — the product page: a scroll-driven tour (hero → shells → exploded → board → back) with the device in a sticky studio stage, the live Lucent UI with working soft keys, specs and build steps. Serve the folder and open `/product.html`.
 
 Inputs (all generated, don't hand-edit):
 - `meshes.json` — base64 STL of the enclosure and mechanical parts (`tools/export_meshes.py`).

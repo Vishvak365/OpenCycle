@@ -49,7 +49,7 @@ python3 export_viewer.py opencycle.kicad_pcb             # viewer/pcb.json + tex
 | Check | Result | File |
 |---|---|---|
 | Placement (courtyards, heights, keep-outs, holes) | placement OK | `pcb/check_place.py` |
-| KiCad DRC | **0 errors, 0 unconnected**, 5 warnings (ESP32 footprint deliberately differs from the library: keep-out replaced; 4 × module silk clipped at the board edge) | `pcb/drc_report.txt` |
+| KiCad DRC | **0 errors, 0 unconnected**, 6 warnings (ESP32 footprint deliberately differs from the library: keep-out replaced; 4 × module silk clipped at the board edge; 1 redundant BMP581 escape via on SDA, connected on B.Cu only, harmless) | `pcb/drc_report.txt` |
 | Schematic vs. board | **netlist match: 55 nets, 282 pin connections** | `pcb/check_netlist.py` |
 | ERC (KiCad 9 CLI) | **0 errors**; 3 explained warnings (BMP581 SDO/INT tied to GND, amp thermal pad) + library-table notices | `pcb/erc_report.txt` |
 | Real parts vs. enclosure (3D) | **board fit OK** (67 parts, all three case styles) | `cad/board_fit.py` |
