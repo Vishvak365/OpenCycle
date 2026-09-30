@@ -15,3 +15,5 @@ pcb/routed.kicad_pro
 pcb/*.dsn
 pcb/*.ses
 pcb/freerouting*
+pcb/work.*
+pcb/logs/
